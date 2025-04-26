@@ -116,11 +116,11 @@ class _AppPageState extends State<AppPage> {
                   bottomText: "minSdkVersion",
                 ),
                 _InfoCard(
-                  topText: _appInfo?["ageLegal"],
+                  topText: _appInfo?["ageRestriction"]["category"] ?? "?",
                   bottomText: "Возраст",
                 ),
                 _InfoCard(
-                  topText: _appInfo?["category"],
+                  topText: _appInfo?["categories"][0] ?? "?",
                   bottomText: "Категория",
                 )
               ],

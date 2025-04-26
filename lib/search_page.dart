@@ -86,7 +86,7 @@ class _SearchPageState extends State<SearchPage> {
                     borderRadius: BorderRadius.circular(15),
                     child: Image.network(
                       width: 60,
-                      appInfo["icon"]
+                      appInfo["iconUrl"]
                     ),
                   ),
                   const SizedBox(width: 15,),
