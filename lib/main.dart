@@ -117,7 +117,7 @@ class HomePage extends StatelessWidget {
                           const SizedBox(
                             width: 8,
                           ),
-                          const Text("|"),
+                          !Platform.isAndroid ? const Text("|") : Container(),
                           !Platform.isAndroid
                               ? const SizedBox(
                                   width: 8,
