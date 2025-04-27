@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
-import 'package:openstore/app_page.dart';
 import 'package:openstore/get_app_link.dart';
 
 class SearchPage extends StatefulWidget {
@@ -56,9 +55,9 @@ class _SearchPageState extends State<SearchPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: Text("Поиск")),
+        appBar: AppBar(title: const Text("Поиск")),
         body: _searchResults == null
-            ? LinearProgressIndicator()
+            ? const LinearProgressIndicator()
             : ListView.builder(
                 itemCount: _searchResults?.length,
                 padding: const EdgeInsets.fromLTRB(15, 0, 15, 0),

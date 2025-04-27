@@ -179,7 +179,7 @@ class _AppPageState extends State<AppPage> {
 }
 
 class _InfoCard extends StatelessWidget {
-  const _InfoCard({super.key, required this.topText, required this.bottomText});
+  const _InfoCard({required this.topText, required this.bottomText});
   final String topText;
   final String bottomText;
 
