@@ -41,6 +41,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp.router(
       title: 'OpenStore',
       theme: ThemeData(
+        pageTransitionsTheme: const PageTransitionsTheme(builders: {
+          TargetPlatform.android: PredictiveBackPageTransitionsBuilder(),
+        }),
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.blue,
           brightness: Brightness.dark,
