@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:openstore/app_page.dart';
 import 'package:openstore/search_page.dart';
 import 'package:go_router/go_router.dart';
+import 'package:dynamic_color/dynamic_color.dart';
 
 void main() {
   runApp(const MyApp());
@@ -38,20 +39,23 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: 'OpenStore',
-      theme: ThemeData(
-        pageTransitionsTheme: const PageTransitionsTheme(builders: {
-          TargetPlatform.android: PredictiveBackPageTransitionsBuilder(),
-        }),
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.blue,
-          brightness: Brightness.dark,
-        ),
-        useMaterial3: true,
-      ),
-      routerConfig: _router,
-    );
+    return DynamicColorBuilder(
+        builder: (lightColorScheme, darkColorScheme) => MaterialApp.router(
+              title: 'OpenStore',
+              theme: ThemeData(
+                pageTransitionsTheme: const PageTransitionsTheme(builders: {
+                  TargetPlatform.android:
+                      PredictiveBackPageTransitionsBuilder(),
+                }),
+                colorScheme: darkColorScheme ??
+                    ColorScheme.fromSeed(
+                      seedColor: Colors.blue,
+                      brightness: Brightness.dark,
+                    ),
+                useMaterial3: true,
+              ),
+              routerConfig: _router,
+            ));
   }
 }
 
