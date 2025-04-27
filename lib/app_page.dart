@@ -18,146 +18,163 @@ class _AppPageState extends State<AppPage> {
     super.initState();
     _loadAppInfo();
   }
+
   void _loadAppInfo() async {
-    var rq = await http.get(
-      Uri.https(
-        "backapi.rustore.ru",
-        "/applicationData/overallInfo/${widget.packageName}",
-      )
-    );
+    var rq = await http.get(Uri.https(
+      "backapi.rustore.ru",
+      "/applicationData/overallInfo/${widget.packageName}",
+    ));
+    print(widget.packageName + "PN");
     if (rq.statusCode != 200) {
       showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text("Что то пошло не так"),
-          content: Text("RuStore вернул код ${rq.statusCode}"),
-          actions: [
-            FilledButton(
-              onPressed: () {
-                Navigator.of(context)
-                ..pop()
-                ..pop();
-              },
-              child: const Text("ок"),
-            )
-          ],
-        )
-      );
+          context: context,
+          builder: (context) => AlertDialog(
+                title: const Text("Что то пошло не так"),
+                content: Text("RuStore вернул код ${rq.statusCode}"),
+                actions: [
+                  FilledButton(
+                    onPressed: () {
+                      Navigator.of(context)
+                        ..pop()
+                        ..pop();
+                    },
+                    child: const Text("ок"),
+                  )
+                ],
+              ));
     }
     setState(() {
-      _appInfo = json.decode(utf8.decode(rq.bodyBytes))["body"];
-    }); 
+      _appInfo = json.decode(utf8.decode(rq.bodyBytes))["body"] ?? {};
+    });
   }
+
   @override
   Widget build(BuildContext context) {
-    return _appInfo != null ? ListView(
-        padding: const EdgeInsets.fromLTRB(15, 0, 15, 15),
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(25),
-                child: Image.network(
-                  _appInfo?["iconUrl"],
-                  width: 120,
-                ),
-              ),
-              const SizedBox(width: 15,),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                      Text(
-                        _appInfo?["appName"],
-                        //overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 21,
-                          fontWeight: FontWeight.bold,
+    return Scaffold(
+        appBar: AppBar(),
+        body: _appInfo != null
+            ? ListView(
+                padding: const EdgeInsets.fromLTRB(15, 0, 15, 15),
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(25),
+                        child: Image.network(
+                          _appInfo?["iconUrl"] ?? "",
+                          width: 120,
                         ),
                       ),
-                      const SizedBox(height: 10,),
-                      Text(
-                        _appInfo?["companyName"],
-                        overflow: TextOverflow.ellipsis,
-                        softWrap: false,
+                      const SizedBox(
+                        width: 15,
                       ),
-                  ],
-                )
-              ),
-            ],
-          ),
-          const SizedBox(height: 20,),
-          FilledButton.icon(
-            style: FilledButton.styleFrom(
-              minimumSize: const Size.fromHeight(40),
-            ),
-            onPressed: () async {
-              launchUrl(await getAppLink(_appInfo?["appId"], context));
-            },
-            label: const Text("Скачать APK"),
-          ),
-          const SizedBox(height: 15),
-          SizedBox(
-            height: 84,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              children: [
-                _InfoCard(
-                  topText: "${(_appInfo?["fileSize"]/1024/1024).toStringAsFixed(1)} MB",
-                  bottomText: "Размер",
-                ),
-                _InfoCard(
-                  topText: _appInfo?["versionName"],
-                  bottomText: "Версия",
-                ),
-                _InfoCard(
-                  topText: _appInfo?["minSdkVersion"].toString() ?? "",
-                  bottomText: "minSdkVersion",
-                ),
-                _InfoCard(
-                  topText: _appInfo?["ageRestriction"]["category"] ?? "?",
-                  bottomText: "Возраст",
-                ),
-                _InfoCard(
-                  topText: _appInfo?["categories"][0] ?? "?",
-                  bottomText: "Категория",
-                )
-              ],
-            ),
-          ),
-          const SizedBox(height: 15),
-          SizedBox(
-            height: 250,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: _appInfo?["fileUrls"].length,
-              itemBuilder: (context, i) {
-                var file = _appInfo?["fileUrls"][i];
-                if (file["type"] != "SCREENSHOT" && file["orientation"] != "PORTRAIT") {
-                  return const SizedBox();
-                }
-                //return Text("data${i}");
-                return Padding(
-                  padding: const EdgeInsets.all(5),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(15),
-                    child: Image.network(
-                      file["fileUrl"],
+                      Expanded(
+                          child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _appInfo?["appName"] ?? "null",
+                            //overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 21,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          Text(
+                            _appInfo?["companyName"] ?? "null",
+                            overflow: TextOverflow.ellipsis,
+                            softWrap: false,
+                          ),
+                        ],
+                      )),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  FilledButton.icon(
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size.fromHeight(40),
+                    ),
+                    onPressed: () async {
+                      launchUrl(await getAppLink(_appInfo?["appId"], context));
+                    },
+                    label: const Text("Скачать APK"),
+                  ),
+                  const SizedBox(height: 15),
+                  SizedBox(
+                    height: 84,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      children: [
+                        _InfoCard(
+                          topText:
+                              "${((_appInfo?["fileSize"] ?? 0) / 1024 / 1024).toStringAsFixed(1)} MB",
+                          bottomText: "Размер",
+                        ),
+                        _InfoCard(
+                          topText: _appInfo?["versionName"] ?? "0",
+                          bottomText: "Версия",
+                        ),
+                        _InfoCard(
+                          topText: _appInfo?["minSdkVersion"].toString() ?? "",
+                          bottomText: "minSdkVersion",
+                        ),
+                        _InfoCard(
+                          topText:
+                              _appInfo?["ageRestriction"]?["category"] ?? "?",
+                          bottomText: "Возраст",
+                        ),
+                        _InfoCard(
+                          topText: _appInfo?["categories"]?[0] ?? "?",
+                          bottomText: "Категория",
+                        )
+                      ],
                     ),
                   ),
-                );
-              }
-            ),
-          ),
-          const SizedBox(height: 15),
-          const Text("Что нового?", style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold),),
-          Text(_appInfo?["whatsNew"]),
-          const SizedBox(height: 15),
-          const Text("Описание", style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold),),
-          Text(_appInfo?["fullDescription"]),
-        ],
-      ) : const LinearProgressIndicator();
+                  const SizedBox(height: 15),
+                  SizedBox(
+                    height: 250,
+                    child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: _appInfo?["fileUrls"]?.length ?? 0,
+                        itemBuilder: (context, i) {
+                          var file = _appInfo?["fileUrls"][i];
+                          if (file["type"] != "SCREENSHOT" &&
+                              file["orientation"] != "PORTRAIT") {
+                            return const SizedBox();
+                          }
+                          //return Text("data${i}");
+                          return Padding(
+                            padding: const EdgeInsets.all(5),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(15),
+                              child: Image.network(
+                                file["fileUrl"],
+                              ),
+                            ),
+                          );
+                        }),
+                  ),
+                  const SizedBox(height: 15),
+                  const Text(
+                    "Что нового?",
+                    style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
+                  ),
+                  Text(_appInfo?["whatsNew"] ?? "null"),
+                  const SizedBox(height: 15),
+                  const Text(
+                    "Описание",
+                    style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
+                  ),
+                  Text(_appInfo?["fullDescription"] ?? "null"),
+                ],
+              )
+            : const LinearProgressIndicator());
   }
 }
 
@@ -183,5 +200,4 @@ class _InfoCard extends StatelessWidget {
       ),
     );
   }
-
 }
