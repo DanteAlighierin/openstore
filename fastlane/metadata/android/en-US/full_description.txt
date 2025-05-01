@@ -1,0 +1,1 @@
+FLOSS client for RuStore api, includes search and allows you to get direct links or download apk
