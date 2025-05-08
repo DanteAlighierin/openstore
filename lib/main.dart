@@ -22,7 +22,9 @@ final _router = GoRouter(
           path: 'instruction',
           builder: (context, state) {
             print(state.uri.queryParameters["utm_campaign"]);
-            return AppPage(packageName: "ru.nspk.mirpay");
+            return AppPage(
+                packageName: state.uri.queryParameters["utm_campaign"] ??
+                    "ru.nspk.mirpay");
           })
     ]),
     GoRoute(
@@ -45,10 +47,6 @@ class MyApp extends StatelessWidget {
         builder: (lightColorScheme, darkColorScheme) => MaterialApp.router(
               title: 'OpenStore',
               theme: ThemeData(
-                pageTransitionsTheme: const PageTransitionsTheme(builders: {
-                  TargetPlatform.android:
-                      PredictiveBackPageTransitionsBuilder(),
-                }),
                 colorScheme: darkColorScheme ??
                     ColorScheme.fromSeed(
                       seedColor: Colors.blue,
@@ -131,7 +129,7 @@ class HomePage extends StatelessWidget {
                         children: [
                           InkWell(
                             onTap: () async => await launchUrlString(
-                                "https://git.mi6e4ka.dev/mi6e4ka/openstore"),
+                                "https://codeberg.org/mi6e4ka/openstore"),
                             child: const Text(
                               "source code",
                               style: TextStyle(
