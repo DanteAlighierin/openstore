@@ -2,7 +2,7 @@ name: Flutter Build (Signed APK)
 on: [push, pull_request, workflow_dispatch]
 
 env:
-  FLUTTER_PATH: "./flutter" # Путь к подмодулю Flutter
+  FLUTTER_PATH: "flutter" # Путь к подмодулю Flutter
 
 jobs:
   build:
@@ -17,10 +17,8 @@ jobs:
       # 2. Устанавливаем Flutter из подмодуля
       - name: Setup Flutter
         run: |
-          echo "$GITHUB_WORKSPACE/$FLUTTER_PATH/bin"
           echo "$GITHUB_WORKSPACE/$FLUTTER_PATH/bin" >> $GITHUB_PATH
-          echo $GITHUB_PATH
-          flutter --version
+          ./flutter/bin/flutter --version
 
       # 3. Создаем key.properties и загружаем ключ (секреты Forgejo)
       - name: Setup signing keys
@@ -53,7 +51,7 @@ jobs:
       # 6. Собираем подписанный APK
       - name: Build signed APK
         run: |
-          flutter build apk --release --split-per-abi
+          ./flutter/bin/flutter build apk --release --split-per-abi
 
       # 7. Сохраняем артефакты
       - name: Upload artifacts
