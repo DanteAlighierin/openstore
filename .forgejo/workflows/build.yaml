@@ -31,7 +31,7 @@ jobs:
 
       - name: Check Flutter
         run: |
-          ./flutter/bin/flutter --doctor
+          ./flutter/bin/flutter doctor
 
       # 3. Создаем key.properties и загружаем ключ (секреты Forgejo)
       - name: Setup signing keys
