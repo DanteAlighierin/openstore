@@ -29,6 +29,10 @@ jobs:
           echo "$GITHUB_WORKSPACE/$FLUTTER_PATH/bin" >> $GITHUB_PATH
           ./flutter/bin/flutter --version
 
+      - name: Check Flutter
+        run: |
+          ./flutter/bin/flutter --doctor
+
       # 3. Создаем key.properties и загружаем ключ (секреты Forgejo)
       - name: Setup signing keys
         run: |
@@ -55,7 +59,7 @@ jobs:
 
       # 5. Восстанавливаем зависимости
       - name: Get packages
-        run: flutter pub get
+        run: ./flutter/bin/flutter pub get
 
       # 6. Собираем подписанный APK
       - name: Build signed APK
