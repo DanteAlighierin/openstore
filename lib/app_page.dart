@@ -97,6 +97,41 @@ class _AppPageState extends State<AppPage> {
             ? ListView(
                 padding: const EdgeInsets.fromLTRB(15, 0, 15, 15),
                 children: [
+                  Card(
+                      margin: const EdgeInsets.fromLTRB(0, 0, 0, 15),
+                      surfaceTintColor: _appInfo?["aggregatorInfo"] == null
+                          ? const Color.fromARGB(255, 0, 255, 0)
+                          : const Color.fromARGB(255, 255, 187, 0),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Row(
+                          spacing: 16,
+                          children: [
+                            const Icon(
+                              Icons.security,
+                              size: 32,
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "предоставлено ${_appInfo?["aggregatorInfo"]?["source"] ?? "RuStore"}",
+                                  style: TextStyle(fontSize: 16),
+                                ),
+                                Text(
+                                  _appInfo?["aggregatorInfo"] == null
+                                      ? (_appInfo?["companyLegalForm"] ==
+                                              "INDIVIDUAL"
+                                          ? "разработчик частное лицо"
+                                          : "разработчик компания")
+                                      : "разработчик ${_appInfo?["aggregatorInfo"]?["companyName"]}",
+                                  style: const TextStyle(fontSize: 14),
+                                )
+                              ],
+                            )
+                          ],
+                        ),
+                      )),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [

@@ -74,7 +74,31 @@ class HomePage extends StatelessWidget {
           child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Container(),
+                Padding(
+                  padding: EdgeInsets.all(10),
+                  child: InkWell(
+                      borderRadius: BorderRadius.circular(12),
+                      onTap: () => launchUrlString(
+                          "https://codeberg.org/mi6e4ka/openstore/src/branch/main/SAFETY.md"),
+                      child: const Card(
+                        child: Padding(
+                          padding: EdgeInsets.all(10),
+                          child: Row(
+                            spacing: 8,
+                            children: [
+                              Icon(
+                                Icons.info_rounded,
+                                size: 32,
+                              ),
+                              Text(
+                                "О безопасности приложений",
+                                style: TextStyle(fontSize: 18),
+                              )
+                            ],
+                          ),
+                        ),
+                      )),
+                ),
                 Row(
                   children: [
                     const SizedBox(
