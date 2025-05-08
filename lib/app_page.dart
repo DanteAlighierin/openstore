@@ -11,6 +11,47 @@ class AppPage extends StatefulWidget {
   State<AppPage> createState() => _AppPageState();
 }
 
+String getAndroidVersion(int apiLevel) {
+  const versions = {
+    1: '1.0',
+    2: '1.1',
+    3: '1.5',
+    4: '1.6',
+    5: '2.0',
+    6: '2.0.1',
+    7: '2.1',
+    8: '2.2',
+    9: '2.3',
+    10: '2.3.3',
+    11: '3.0',
+    12: '3.1',
+    13: '3.2',
+    14: '4.0',
+    15: '4.0.3',
+    16: '4.1',
+    17: '4.2',
+    18: '4.3',
+    19: '4.4',
+    20: '4.4W', // Wear-версия
+    21: '5.0',
+    22: '5.1',
+    23: '6.0',
+    24: '7.0',
+    25: '7.1',
+    26: '8.0',
+    27: '8.1',
+    28: '9.0',
+    29: '10',
+    30: '11',
+    31: '12',
+    32: '12L', // Android 12L
+    33: '13',
+    34: '14',
+  };
+
+  return versions[apiLevel] ?? '? (API $apiLevel)';
+}
+
 class _AppPageState extends State<AppPage> {
   Map? _appInfo;
   @override
@@ -121,8 +162,9 @@ class _AppPageState extends State<AppPage> {
                           bottomText: "Версия",
                         ),
                         _InfoCard(
-                          topText: _appInfo?["minSdkVersion"].toString() ?? "",
-                          bottomText: "minSdkVersion",
+                          topText:
+                              "${getAndroidVersion(_appInfo?["minSdkVersion"] ?? 0)}+",
+                          bottomText: "Android",
                         ),
                         _InfoCard(
                           topText:
