@@ -47,7 +47,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: |
-            ~/flutter/bin/cache
+            ./flutter/bin/cache
           key: ${{ runner.os }}-flutter-${{ hashFiles('.gitmodules') }}
 
       - name: Flutter install and check
@@ -83,8 +83,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: |
-            ~/.pub-cache
-            ~/android/.gradle
+            ./.pub-cache
+            ./android/.gradle
+            ~/.gradle
           key: ${{ runner.os }}-android-${{ github.sha }}
 
       - name: Build signed APK
