@@ -95,20 +95,8 @@ jobs:
         run: pwd
 
       # 7. Сохраняем артефакты
-      - name: Upload armeabi-v7a apk
+      - name: Upload release apk
         uses: actions/upload-artifact@v3
         with:
-          name: app-armeabi-v7a-release.apk
-          path: build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
-
-      - name: Upload arm64-v8a apk
-        uses: actions/upload-artifact@v3
-        with:
-          name: app-arm64-v8a-release.apk
-          path: build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
-
-      - name: Upload x86_64 apk
-        uses: actions/upload-artifact@v3
-        with:
-          name: app-x86_64-release.apk
-          path: build/app/outputs/flutter-apk/app-x86_64-release.apk
+          name: app-release
+          path: build/app/outputs/flutter-apk/*-release.apk
