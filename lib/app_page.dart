@@ -122,9 +122,9 @@ class _AppPageState extends State<AppPage> {
                                   _appInfo?["aggregatorInfo"] == null
                                       ? (_appInfo?["companyLegalForm"] ==
                                               "INDIVIDUAL"
-                                          ? "разработчик частное лицо"
-                                          : "разработчик компания")
-                                      : "разработчик ${_appInfo?["aggregatorInfo"]?["companyName"]}",
+                                          ? "разработчик - частное лицо"
+                                          : "разработчик - компания")
+                                      : "разработчик: ${_appInfo?["aggregatorInfo"]?["companyName"]}",
                                   style: const TextStyle(fontSize: 14),
                                 )
                               ],

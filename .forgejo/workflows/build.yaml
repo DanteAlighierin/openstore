@@ -7,12 +7,24 @@ env:
 jobs:
   build:
     runs-on: docker
+    container:
+      image: "data.forgejo.org/oci/node:20-bullseye"
+      env:
+        TAR_OPTIONS: "--no-same-owner"
+    # defaults:
+    #   run:
+    #     working-directory: /home/runner/openstore
     steps:
       # 1. Checkout репозиторий + подмодули
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           submodules: recursive
+          # fetch-depth: 0
+
+      - name: Pull flutter tags
+        run: |
+          cd flutter && git fetch --tags --depth=1 && cd ..
 
       - name: Set up JDK 21
         uses: https://github.com/actions/setup-java@v3
@@ -20,18 +32,26 @@ jobs:
           java-version: "21"
           distribution: "temurin"
 
+      - name: Cache Android SDK
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/android-sdk
+            ~/.android
+          key: ${{ runner.os }}-android-${{ hashFiles('android/build.gradle.kts') }}
+
       - name: Setup Android SDK
         uses: https://github.com/android-actions/setup-android@v3
 
-      # 2. Устанавливаем Flutter из подмодуля
-      - name: Setup Flutter
-        run: |
-          echo "$GITHUB_WORKSPACE/$FLUTTER_PATH/bin" >> $GITHUB_PATH
-          ./flutter/bin/flutter --version
+      - name: Cache Flutter
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/flutter/bin/cache
+          key: ${{ runner.os }}-flutter-${{ hashFiles('.gitmodules') }}
 
-      - name: Check Flutter
-        run: |
-          ./flutter/bin/flutter doctor
+      - name: Flutter install and check
+        run: ./flutter/bin/flutter doctor -v
 
       # 3. Создаем key.properties и загружаем ключ (секреты Forgejo)
       - name: Setup signing keys
@@ -49,26 +69,46 @@ jobs:
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/key.jks
 
       # 4. Кэширование
-      - name: Cache dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            ${{ env.FLUTTER_PATH }}/bin/cache
-            .dart_tool
-          key: ${{ runner.os }}-flutter-${{ hashFiles('pubspec.lock') }}
-
-      # 5. Восстанавливаем зависимости
-      - name: Get packages
-        run: ./flutter/bin/flutter pub get
+      # - name: Cache dependencies
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: |
+      #       flutter/bin/cache
+      #       .dart_tool
+      #     key: ${{ runner.os }}-flutter-${{ hashFiles('pubspec.lock') }}
 
       # 6. Собираем подписанный APK
+
+      - name: Cache Build
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.pub-cache
+            ~/android/.gradle
+          key: ${{ runner.os }}-android-${{ github.sha }}
+
       - name: Build signed APK
         run: |
-          ./flutter/bin/flutter build apk --release --split-per-abi
+          ./flutter/bin/flutter build apk --release --split-per-abi -v
+
+      - name: Print build dir
+        run: pwd
 
       # 7. Сохраняем артефакты
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+      - name: Upload armeabi-v7a apk
+        uses: actions/upload-artifact@v3
         with:
-          name: signed-apks
-          path: build/app/outputs/flutter-apk/*.apk
+          name: app-armeabi-v7a-release.apk
+          path: build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
+
+      - name: Upload arm64-v8a apk
+        uses: actions/upload-artifact@v3
+        with:
+          name: app-arm64-v8a-release.apk
+          path: build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
+
+      - name: Upload x86_64 apk
+        uses: actions/upload-artifact@v3
+        with:
+          name: app-x86_64-release.apk
+          path: build/app/outputs/flutter-apk/app-x86_64-release.apk
