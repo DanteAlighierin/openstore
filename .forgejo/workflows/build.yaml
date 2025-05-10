@@ -86,7 +86,7 @@ jobs:
             ./.pub-cache
             ./android/.gradle
             ~/.gradle
-          key: ${{ runner.os }}-android-${{ github.sha }}
+          key: ${{ runner.os }}-android-${{ hashFiles('android/') }}
 
       - name: Build signed APK
         run: |
