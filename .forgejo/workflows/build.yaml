@@ -1,5 +1,10 @@
 name: Flutter Build (Signed APK)
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+    branches:
+      - ci-dev
+    tags: ["*"]
+  workflow_dispatch:
 
 env:
   FLUTTER_PATH: "flutter" # Путь к подмодулю Flutter
@@ -100,3 +105,28 @@ jobs:
         with:
           name: app-release
           path: build/app/outputs/flutter-apk/*-release.apk
+
+      - name: Get Release ID
+        id: get_release
+        run: |
+          RESPONSE=$(curl -s -H "Authorization: token ${{ secrets.GITEA_TOKEN }}" \
+            ${{ env.GITHUB_API_URL }}/repos/${{ env.GITHUB_REPOSITORY }}/releases/tags/${{ env.GITHUB_REF_NAME })
+          echo "release_id=$(echo $RESPONSE | jq -r .id)" >> $GITHUB_OUTPUT
+
+      - name: Upload Asset
+        if: steps.get_release.outputs.release_id != 'null'
+        run: |
+          curl -X POST -H "Authorization: token ${{ secrets.GITEA_TOKEN }}" \
+            -H "Content-Type: multipart/form-data" \}
+            -F "attachment=@build/app/outputs/flutter-apk/app-arm64-v8a-release.apk" \
+            "${{ env.GITHUB_API_URL }}/repos/${{ env.GITHUB_REPOSITORY }}/releases/${{ steps.get_release.outputs.release_id }}/assets?name=app-arm64-v8a-release.apk"
+
+          curl -X POST -H "Authorization: token ${{ secrets.GITEA_TOKEN }}" \
+            -H "Content-Type: multipart/form-data" \}
+            -F "attachment=@build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk" \
+            "${{ env.GITHUB_API_URL }}/repos/${{ env.GITHUB_REPOSITORY }}/releases/${{ steps.get_release.outputs.release_id }}/assets?name=app-armeabi-v7a-release.apk"
+
+          curl -X POST -H "Authorization: token ${{ secrets.GITEA_TOKEN }}" \
+            -H "Content-Type: multipart/form-data" \}
+            -F "attachment=@build/app/outputs/flutter-apk/app-x86_64-release.apk" \
+            "${{ env.GITHUB_API_URL }}/repos/${{ env.GITHUB_REPOSITORY }}/releases/${{ steps.get_release.outputs.release_id }}/assets?name=app-x86_64-release.apk"
