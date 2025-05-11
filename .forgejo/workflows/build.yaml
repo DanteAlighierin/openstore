@@ -32,23 +32,23 @@ jobs:
           java-version: "21"
           distribution: "temurin"
 
-      - name: Cache Android SDK
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/android-sdk
-            ~/.android
-          key: ${{ runner.os }}-android-${{ hashFiles('android/build.gradle.kts') }}
+      # - name: Cache Android SDK
+      #   uses: actions/cache@v3
+      #   with:
+      #     path: |
+      #       ~/android-sdk
+      #       ~/.android
+      #     key: ${{ runner.os }}-android-${{ hashFiles('android/build.gradle.kts') }}
 
       - name: Setup Android SDK
         uses: https://github.com/android-actions/setup-android@v3
 
-      - name: Cache Flutter
-        uses: actions/cache@v3
-        with:
-          path: |
-            ./flutter/bin/cache
-          key: ${{ runner.os }}-flutter-${{ hashFiles('.gitmodules') }}
+      # - name: Cache Flutter
+      #   uses: actions/cache@v3
+      #   with:
+      #     path: |
+      #       ./flutter/bin/cache
+      #     key: ${{ runner.os }}-flutter-${{ hashFiles('.gitmodules') }}
 
       - name: Flutter install and check
         run: ./flutter/bin/flutter doctor -v
@@ -83,7 +83,6 @@ jobs:
         uses: actions/cache@v3
         with:
           path: |
-            ./.pub-cache
             ./android/.gradle
             ~/.gradle
           key: ${{ runner.os }}-android-${{ hashFiles('android/') }}
