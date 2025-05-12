@@ -13,7 +13,7 @@ jobs:
   build:
     runs-on: docker
     container:
-      image: "data.forgejo.org/oci/node:20-bullseye"
+      image: codeberg.org/mi6e4ka/android-build-ct:latest
       env:
         TAR_OPTIONS: "--no-same-owner"
     # defaults:
@@ -95,7 +95,7 @@ jobs:
       - name: Build unsigned APK
         run: |
           ./flutter/bin/flutter build apk --release --split-per-abi -v
-      
+
       - name: Sign apk
         uses: https://github.com/ilharp/sign-android-release@v2
         id: sign_app
