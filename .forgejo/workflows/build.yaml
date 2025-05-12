@@ -59,19 +59,19 @@ jobs:
         run: ./flutter/bin/flutter doctor -v
 
       # 3. Создаем key.properties и загружаем ключ (секреты Forgejo)
-      - name: Setup signing keys
-        run: |
-          # Создаем директорию для ключа
-          mkdir -p android/app
-
-          # Создаем key.properties
-          echo "storePassword=${{ secrets.KEY_PASSWORD }}" > android/key.properties
-          echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
-          echo "keyAlias=upload" >> android/key.properties
-          echo "storeFile=key.jks" >> android/key.properties
-
-          # Декодируем base64-ключ (хранится в secrets.KEYSTORE_BASE64)
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/key.jks
+      #- name: Setup signing keys
+      #  run: |
+      #    # Создаем директорию для ключа
+      #    mkdir -p android/app
+      #
+      #    # Создаем key.properties
+      #    echo "storePassword=${{ secrets.KEY_PASSWORD }}" > android/key.properties
+      #    echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
+      #    echo "keyAlias=upload" >> android/key.properties
+      #    echo "storeFile=key.jks" >> android/key.properties
+      #
+      #    # Декодируем base64-ключ (хранится в secrets.KEYSTORE_BASE64)
+      #    echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/key.jks
 
       # 4. Кэширование
       # - name: Cache dependencies
@@ -96,12 +96,13 @@ jobs:
         run: |
           ./flutter/bin/flutter build apk --release --split-per-abi -v
       
-      - uses: https://github.com/ilharp/sign-android-release@v2
+      - name: Sign apk
+        uses: https://github.com/ilharp/sign-android-release@v2
         id: sign_app
         with:
-          releaseDirectory: build/app/outputs/flutter-apk
-          signingKeyBase64: ${{ secrets.KEYSTORE_BASE64 }}
-          alias: uploads
+          releaseDir: build/app/outputs/flutter-apk
+          signingKey: ${{ secrets.KEYSTORE_BASE64 }}
+          keyAlias: uploads
           keyStorePassword: ${{ secrets.KEY_PASSWORD }}
           keyPassword: ${{ secrets.KEY_PASSWORD }}
 
