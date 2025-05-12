@@ -158,7 +158,7 @@ class HomePage extends StatelessWidget {
                               : Container(),
                         ],
                       ),
-                      const Text("v1.3.0")
+                      const Text("v1.3.1")
                     ],
                   ),
                 )
