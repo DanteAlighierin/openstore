@@ -31,11 +31,11 @@ jobs:
       #   run: |
       #     cd flutter && git fetch --tags --depth=1 && cd ..
 
-      - name: Set up JDK 21
-        uses: https://github.com/actions/setup-java@v3
-        with:
-          java-version: "21"
-          distribution: "temurin"
+      # - name: Set up JDK 21
+      #   uses: https://github.com/actions/setup-java@v3
+      #   with:
+      #     java-version: "21"
+      #     distribution: "temurin"
 
       # - name: Cache Android SDK
       #   uses: actions/cache@v3
@@ -45,8 +45,8 @@ jobs:
       #       ~/.android
       #     key: ${{ runner.os }}-android-${{ hashFiles('android/build.gradle.kts') }}
 
-      - name: Setup Android SDK
-        uses: https://github.com/android-actions/setup-android@v3
+      # - name: Setup Android SDK
+      #   uses: https://github.com/android-actions/setup-android@v3
 
       # - name: Cache Flutter
       #   uses: actions/cache@v3
