@@ -51,13 +51,9 @@ android {
     }
     buildTypes {
         release {
-            if (keystorePropertiesFile.exists()) {
-                println("Keystore properties file found. Signing by release keys")
-                signingConfig = signingConfigs.getByName("release")
-            } else {
-                println("Keystore properties file not found. Signing by debug keys")
-                signingConfig = signingConfigs.getByName("debug")
-            }
+            signingConfig = null
+            isMinifyEnabled = true
+            isShrinkResources = true
         }
     }
     dependenciesInfo {
