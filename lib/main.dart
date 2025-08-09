@@ -148,7 +148,7 @@ class HomePage extends StatelessWidget {
                           !Platform.isAndroid
                               ? InkWell(
                                   onTap: () async => await launchUrlString(
-                                      "https://git.mi6e4ka.dev/mi6e4ka/openstore/releases"),
+                                      "https://codeberg.org/mi6e4ka/openstore/releases"),
                                   child: const Text(
                                     "android app",
                                     style: TextStyle(
@@ -158,7 +158,7 @@ class HomePage extends StatelessWidget {
                               : Container(),
                         ],
                       ),
-                      const Text("v1.3.1")
+                      const Text("v1.3.2")
                     ],
                   ),
                 )
