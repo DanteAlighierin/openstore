@@ -11,7 +11,10 @@ Future<Uri> getAppLink(int appId, BuildContext context) async {
     ),
     body: json.encode({
       "appId": appId,
-      "signatureFingerprint": null
+      "firstInstall": true,
+      "screenDensity": 420,
+      "sdkVersion": 36,
+      "withoutSplits": true
     }),
     headers: {
       "Content-Type": "application/json"
