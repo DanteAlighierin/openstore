@@ -1,0 +1,42 @@
+package dev.mi6e4ka.openstore.internal.installer
+
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageInstaller
+import android.widget.Toast
+import dev.mi6e4ka.openstore.di.AppModule
+
+class PackageInstallerStatusReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+        val status = intent.getIntExtra(PackageInstaller.EXTRA_STATUS, -1)
+        val isUninstall = intent.getBooleanExtra(ACTION_UNINSTALL, false)
+
+        when (status) {
+            PackageInstaller.STATUS_SUCCESS -> {
+                Toast.makeText(context, if (isUninstall) "Удалено" else "Установлено", Toast.LENGTH_SHORT).show()
+                if (isUninstall) {
+                    AppModule.uninstallerEventFlow.trigger()
+                }
+            }
+            PackageInstaller.STATUS_PENDING_USER_ACTION -> {
+                val promptIntent: Intent? = intent.getParcelableExtra(Intent.EXTRA_INTENT)
+
+                promptIntent?.let {
+                    it.putExtra(Intent.EXTRA_NOT_UNKNOWN_SOURCE, true)
+                    it.putExtra(Intent.EXTRA_INSTALLER_PACKAGE_NAME, "com.android.vending")
+                    it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+
+                    context.startActivity(it)
+                }
+            }
+            else -> {
+                Toast.makeText(context, if (isUninstall) "Не удалось удалить" else "Не удалось установить", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    companion object {
+        const val ACTION_UNINSTALL = "action_uninstall"
+    }
+}

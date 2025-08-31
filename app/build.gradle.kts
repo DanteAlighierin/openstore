@@ -6,25 +6,46 @@ plugins {
 
 android {
     namespace = "dev.mi6e4ka.openstore"
-    compileSdk = 35
+    compileSdk = 36
+
+    androidResources {
+        localeFilters.addAll(arrayOf("ru", "en"))
+    }
 
     defaultConfig {
         applicationId = "dev.mi6e4ka.openstore"
         minSdk = 21
-        targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
-
+        targetSdk = 36
+        versionCode = 6
+        versionName = "2.0.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+        }
+        create("nightly") {
+            versionNameSuffix = "-nightly"
+            applicationIdSuffix = ".nightly"
+            signingConfig = signingConfigs.getByName("debug")
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+            isMinifyEnabled = true
+            isShrinkResources = true
+            resValue("string", "app_name", "OpenStore Nightly")
+        }
+        debug {
+            versionNameSuffix = "-debug"
+            applicationIdSuffix = ".debug"
+            resValue("string", "app_name", "OpenStore Debug")
         }
     }
     compileOptions {
@@ -36,6 +57,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -47,8 +69,14 @@ dependencies {
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
-    implementation(libs.androidx.ui.tooling.preview)
+    implementation(libs.androidx.material.icons.extended.android)
+    implementation(libs.accompanist.pager)
+    implementation(libs.accompanist.pager.indicators)
+    implementation(libs.androidx.runtime.livedata)
+    implementation(libs.material3)
+    debugImplementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.okhttp3.logging.interceptor)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
