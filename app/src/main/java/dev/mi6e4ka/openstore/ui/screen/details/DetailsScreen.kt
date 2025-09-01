@@ -4,7 +4,6 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Build
 import android.widget.Toast
 import androidx.compose.animation.animateContentSize
@@ -29,28 +28,30 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.ArrowForward
 import androidx.compose.material.icons.filled.ArrowCircleUp
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.OpenInBrowser
 import androidx.compose.material.icons.filled.SupervisedUserCircle
 import androidx.compose.material.icons.rounded.Android
-import androidx.compose.material.icons.rounded.Api
 import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.Security
+import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material3.AssistChip
-import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -81,7 +82,6 @@ import dev.mi6e4ka.openstore.di.AppModule
 import dev.mi6e4ka.openstore.internal.installer.ApkInstaller
 import dev.mi6e4ka.openstore.ui.components.AppIcon
 import dev.mi6e4ka.openstore.ui.components.GalleryWithPager
-import kotlinx.coroutines.flow.update
 import androidx.core.net.toUri
 import dev.mi6e4ka.openstore.R
 import kotlinx.coroutines.launch
@@ -135,14 +135,13 @@ fun DetailsScreen(
                 IconButton(onClick = {
                     scope.launch {
                         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                        val link = AppModule.searchRepository.getAppDownloadLink(state.item?.appId ?: 0)
-                        val clip = ClipData.newPlainText("", link)
+                        val clip = ClipData.newPlainText("", state.downloadLink)
                         clipboard.setPrimaryClip(clip)
                         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
                             Toast.makeText(context, "Скопировано в буфер обмена", Toast.LENGTH_SHORT).show()
                         }
                     }
-                }) {
+                }, enabled = !state.isLoading) {
                     Icon(painterResource(R.drawable.apk_install_24px), null)
                 }
                 IconButton(onClick = {
@@ -265,15 +264,24 @@ fun DetailsScreen(
                                 Text(item.aggregatorInfo?.companyName ?: item.companyName, maxLines = 2, overflow = TextOverflow.Ellipsis)
                             }
                         }
+                        if (!state.isSupported) {
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(Icons.Rounded.Warning, null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(22.dp))
+                                Text("Не поддерживается на этом устройстве", color = MaterialTheme.colorScheme.error)
+                            }
+                        }
                         Column {
                             Row(
-                                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 if (!state.isInstalled || state.isDownloading) {
                                     //FilledTonalButton(onClick = {}, modifier = Modifier.weight(1f)) { Text("Copy apk link") }
                                     Button(onClick = {
                                         viewModel.downloadAndInstallApk(context)
-                                    }, modifier = Modifier.weight(1f), enabled = !state.isDownloading) {
+                                    }, modifier = Modifier.weight(1f), enabled = !state.isDownloading && state.isSupported) {
                                         if (state.installStatus is InstallStatus.Pending) {
                                             Text("Установка...")
                                         } else if (state.isDownloading) {
@@ -289,11 +297,18 @@ fun DetailsScreen(
                                     if (state.isNeedUpgrade) {
                                         Button(onClick = {
                                             viewModel.downloadAndInstallApk(context)
-                                        }, modifier = Modifier.weight(1f)) { Text("Обновить") }
+                                        }, modifier = Modifier.weight(1f), enabled = state.isSupported) { Text("Обновить") }
                                     } else {
                                         Button(onClick = {
                                             viewModel.runApplication(context, itemId)
                                         }, modifier = Modifier.weight(1f)) { Text("Открыть") }
+                                    }
+                                }
+                                if (state.isDownloading) {
+                                    FilledTonalIconButton(onClick = {
+                                        viewModel.cancelDownload()
+                                    }, enabled = state.installStatus != InstallStatus.Pending) {
+                                        Icon(imageVector = Icons.Default.Close, null)
                                     }
                                 }
                             }
@@ -314,10 +329,19 @@ fun DetailsScreen(
 //                                }))
 //                            InfoBadge(item.ageLegal, "возраст")
 //                            InfoBadge(item.versionName, "версия")
+                                var detailedApiVersion by remember { mutableStateOf(false) }
                                 AssistChip(
                                     onClick = {
-                                        Toast.makeText(context, "MinSdkVersion ${item.minSdkVersion}\nTargetSdkVersion ${item.targetSdkVersion}", Toast.LENGTH_SHORT).show() },
-                                    label = {Text("Android ${getAndroidVersion(item.minSdkVersion)} +")},
+                                        //Toast.makeText(context, "MinSdkVersion ${item.minSdkVersion}\nTargetSdkVersion ${item.targetSdkVersion}", Toast.LENGTH_SHORT).show()
+                                        detailedApiVersion = !detailedApiVersion
+                                        },
+                                    label = {
+                                        if (!detailedApiVersion) {
+                                            Text("Android ${getAndroidVersion(item.minSdkVersion)} +")
+                                        } else {
+                                            Text("API ${item.minSdkVersion} +")
+                                        }
+                                            },
                                     leadingIcon = {Icon(imageVector = Icons.Rounded.Android, contentDescription = null)}
                                 )
                                 AssistChip(

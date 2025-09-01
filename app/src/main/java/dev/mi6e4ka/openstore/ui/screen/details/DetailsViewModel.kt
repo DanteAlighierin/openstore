@@ -26,7 +26,7 @@ import kotlinx.coroutines.launch
 import java.io.File
 
 data class DetailsState(
-    val isLoading: Boolean = false,
+    val isLoading: Boolean = true,
     val item: ItemDetails? = null,
     val rating: AppRatingResponseBody? = null,
     val error: String? = null,
@@ -38,6 +38,7 @@ data class DetailsState(
     val downloadTotalBytes: Long = 0,
     val isInstalled: Boolean = false,
     val isNeedUpgrade: Boolean = false,
+    val isSupported: Boolean = true,
 )
 
 sealed class InstallStatus {
@@ -49,6 +50,7 @@ sealed class InstallStatus {
 class DetailsViewModel(private val itemId: String, private val apkInstaller: ApkInstaller) : ViewModel() {
     private val _state = MutableStateFlow(DetailsState())
     val state: StateFlow<DetailsState> = _state.asStateFlow()
+    private var cancelDownload: (() -> Unit)? = null
 
     fun loadDetails(context: Context, itemId: String) {
         if (_state.value.item != null) {
@@ -62,15 +64,21 @@ class DetailsViewModel(private val itemId: String, private val apkInstaller: Apk
                 val packageInfo  = getPackageInfo(context, itemId)
                 _state.value = DetailsState(isLoading = true, isInstalled = packageInfo != null)
                 if (packageInfo != null) {
-                    if (packageInfo.versionCode < item.versionCode) {
+                    val installedVersionCode = (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                        packageInfo.longVersionCode
+                    } else {
+                        packageInfo.versionCode
+                    }) as Long
+                    if (installedVersionCode < item.versionCode) {
                         _state.update { it.copy(isNeedUpgrade = true) }
                     }
                 }
                 //
+                _state.update { it.copy(isSupported = Build.VERSION.SDK_INT >= item.minSdkVersion) }
+
                 val downloadLink = AppModule.searchRepository.getAppDownloadLink(item.appId)
                 val rating = AppModule.searchRepository.getAppRating(itemId)
                 _state.update{ it.copy(item = item, rating = rating, downloadLink = downloadLink, isLoading = false) }
-                Log.d("loading", "LOADED COMMENTS+RATING: ${state.value.rating}")
             } catch (e: Exception) {
                 _state.update { it.copy(error = e.message, isLoading = false) }
             }
@@ -81,13 +89,26 @@ class DetailsViewModel(private val itemId: String, private val apkInstaller: Apk
         viewModelScope.launch {
             _state.update { it.copy(isDownloading = true) }
             Log.d(null, "download apk " + state.value.downloadLink)
-            val file = apkInstaller.downloadApkWithProgress(state.value.downloadLink ?: "") { percent, downloaded, total ->
-                _state.update { it.copy(downloadProgress = percent, downloadCurrentBytes = downloaded, downloadTotalBytes = total) }
-            }
-            Log.d(null, "file: " + file.toUri())
-            try {
-                val apkFile = file
-                installApk(context, apkFile)
+            cancelDownload = apkInstaller.downloadApkWithProgress(
+                state.value.downloadLink ?: "",
+                onProgress = { percent, downloaded, total ->
+                    _state.update { it.copy(downloadProgress = percent, downloadCurrentBytes = downloaded, downloadTotalBytes = total) }
+                },
+                onSuccess = { apkFile ->
+                    installApk(context, apkFile)
+                },
+                onError = { error ->
+                    if (error.message?.contains("Failed to allocate") == true) {
+                        Toast.makeText(context, "Недостаточно памяти на устройстве", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(context, "Ошбика загрузки", Toast.LENGTH_SHORT).show()
+                    }
+                    _state.update { it.copy(isDownloading = false) }
+                },
+                onCancel = {
+                    _state.update { it.copy(isDownloading = false) }
+                }
+            )
 //                                        val uri = FileProvider.getUriForFile(
 //                                            context,
 //                                            "${context.packageName}.provider",
@@ -100,10 +121,12 @@ class DetailsViewModel(private val itemId: String, private val apkInstaller: Apk
 //                                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 //                                        }
 //                                        launcher.launch(intent)
-            } catch (e: Exception) {
-                Log.e(null, "ERROR: $e")
-            }
         }
+    }
+
+    fun cancelDownload() {
+        cancelDownload?.invoke()
+        cancelDownload = null
     }
 
     private fun installApk(context: Context, apkFile: File) {
@@ -122,7 +145,14 @@ class DetailsViewModel(private val itemId: String, private val apkInstaller: Apk
                     }
                 }
             }
-            apkInstaller.installApk(context, apkFile, installerCallback)
+            apkInstaller.installApk(context, apkFile, installerCallback, onError = { error ->
+                if (error.message?.contains("Failed to allocate") == true) {
+                    Toast.makeText(context, "Недостаточно памяти на устройстве", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(context, "Ошибка во время установки", Toast.LENGTH_SHORT).show()
+                }
+                _state.update { it.copy(installStatus = InstallStatus.Idle, isDownloading = false) }
+            })
         }
     }
 
