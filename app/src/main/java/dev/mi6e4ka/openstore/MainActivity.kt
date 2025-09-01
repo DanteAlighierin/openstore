@@ -5,21 +5,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.core.EaseIn
-import androidx.compose.animation.core.EaseOut
-import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandIn
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
-import androidx.compose.animation.shrinkOut
-import androidx.compose.animation.slideIn
 import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOut
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
@@ -82,24 +71,16 @@ class MainActivity : ComponentActivity() {
                         navController = navController,
                         startDestination = "search",
                         enterTransition = {
-                            fadeIn(
-                                animationSpec = tween(
-                                    250, easing = LinearEasing
-                                )
-                            )/* + slideIntoContainer(
-                                animationSpec = tween(300, easing = EaseIn),
-                                towards = AnimatedContentTransitionScope.SlideDirection.Start
-                            )*/
+                            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(300))
                         },
                         exitTransition = {
-                            fadeOut(
-                                animationSpec = tween(
-                                    250, easing = LinearEasing
-                                )
-                            )/* + slideOutOfContainer(
-                                animationSpec = tween(300, easing = EaseOut),
-                                towards = AnimatedContentTransitionScope.SlideDirection.End
-                            )*/
+                            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(300))
+                        },
+                        popEnterTransition = {
+                            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Right, animationSpec = tween(300))
+                        },
+                        popExitTransition = {
+                            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right, animationSpec = tween(300))
                         }
                     ) {
                         composable("search") {

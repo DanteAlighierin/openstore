@@ -74,6 +74,7 @@ dependencies {
     implementation(libs.accompanist.pager.indicators)
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.material3)
+    implementation(libs.androidx.animation)
     debugImplementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.okhttp3.logging.interceptor)
