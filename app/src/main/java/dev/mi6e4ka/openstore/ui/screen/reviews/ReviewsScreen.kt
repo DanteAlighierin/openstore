@@ -1,5 +1,11 @@
 package dev.mi6e4ka.openstore.ui.screen.reviews
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -14,26 +20,20 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.StarRate
-import androidx.compose.material.icons.filled.ThumbDown
 import androidx.compose.material.icons.filled.ThumbDownOffAlt
-import androidx.compose.material.icons.filled.ThumbUp
-import androidx.compose.material.icons.filled.ThumbUpAlt
 import androidx.compose.material.icons.filled.ThumbUpOffAlt
-import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material.icons.outlined.StarBorder
-import androidx.compose.material.icons.outlined.StarRate
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -74,8 +74,9 @@ fun ReviewsScreen(packageName: String, navController: NavController = rememberNa
     val scope = rememberCoroutineScope()
 
     LaunchedEffect(selectedFilter) {
-        isLoading = true
         scope.launch {
+            isLoading = true
+            reviews = listOf()
             reviews = try {
                 AppModule.searchRepository.getAppComments(packageName, 50, selectedFilter.value)
             } catch (e: Exception) {
@@ -91,8 +92,8 @@ fun ReviewsScreen(packageName: String, navController: NavController = rememberNa
                     devResponseDate = "",
                 ))
             }
+            isLoading = false
         }
-        isLoading = false
     }
 
     Scaffold(
@@ -112,9 +113,6 @@ fun ReviewsScreen(packageName: String, navController: NavController = rememberNa
         Column(
             Modifier.padding(innerPadding).padding(horizontal = 16.dp)
         ) {
-            if (isLoading) {
-                LinearProgressIndicator(Modifier.fillMaxWidth())
-            }
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
@@ -139,6 +137,9 @@ fun ReviewsScreen(packageName: String, navController: NavController = rememberNa
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                             Text("Отзывов пока нет")
                         }
+                    }
+                    if (isLoading) {
+                        LinearProgressIndicator(Modifier.fillMaxWidth())
                     }
                 }
                 items(reviews ?: listOf()) { review ->
@@ -166,10 +167,10 @@ fun ReviewsScreen(packageName: String, navController: NavController = rememberNa
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 repeat(review.appRating) {
-                                    Icon(Icons.Filled.Star, null, Modifier.size(16.dp))
+                                    Icon(Icons.Filled.Star, null, Modifier.size(16.dp), tint = MaterialTheme.colorScheme.primary)
                                 }
                                 repeat(5 - review.appRating) {
-                                    Icon(Icons.Outlined.StarBorder, null, Modifier.size(16.dp))
+                                    Icon(Icons.Outlined.StarBorder, null, Modifier.size(16.dp), tint = MaterialTheme.colorScheme.secondary)
                                 }
                             }
                             Spacer(Modifier.height(8.dp))
@@ -179,12 +180,12 @@ fun ReviewsScreen(packageName: String, navController: NavController = rememberNa
                                 horizontalArrangement = Arrangement.spacedBy(16.dp)
                             ) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(imageVector = Icons.Default.ThumbUpOffAlt, contentDescription = null, Modifier.size(20.dp))
+                                    Icon(imageVector = Icons.Default.ThumbUpOffAlt, contentDescription = null, Modifier.size(20.dp), tint = MaterialTheme.colorScheme.secondary)
                                     Spacer(Modifier.width(4.dp))
                                     Text("${review.likeCounter}")
                                 }
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(imageVector = Icons.Default.ThumbDownOffAlt, contentDescription = null, Modifier.size(20.dp))
+                                    Icon(imageVector = Icons.Default.ThumbDownOffAlt, contentDescription = null, Modifier.size(20.dp), tint = MaterialTheme.colorScheme.secondary)
                                     Spacer(Modifier.width(6.dp))
                                     Text("${review.dislikeCounter}")
                                 }
