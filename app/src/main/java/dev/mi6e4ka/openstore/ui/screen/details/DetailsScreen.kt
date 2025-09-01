@@ -2,8 +2,10 @@ package dev.mi6e4ka.openstore.ui.screen.details
 
 import android.content.ClipData
 import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.widget.Toast
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -132,10 +134,13 @@ fun DetailsScreen(
             actions = {
                 IconButton(onClick = {
                     scope.launch {
-                        val clipboard = context.getSystemService(ClipboardManager::class.java)
+                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                         val link = AppModule.searchRepository.getAppDownloadLink(state.item?.appId ?: 0)
                         val clip = ClipData.newPlainText("", link)
                         clipboard.setPrimaryClip(clip)
+                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+                            Toast.makeText(context, "Скопировано в буфер обмена", Toast.LENGTH_SHORT).show()
+                        }
                     }
                 }) {
                     Icon(painterResource(R.drawable.apk_install_24px), null)
