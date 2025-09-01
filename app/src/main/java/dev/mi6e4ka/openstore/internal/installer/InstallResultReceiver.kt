@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageInstaller
 import android.widget.Toast
+import androidx.core.os.BundleCompat
 import dev.mi6e4ka.openstore.di.AppModule
 
 class PackageInstallerStatusReceiver : BroadcastReceiver() {
@@ -20,7 +21,7 @@ class PackageInstallerStatusReceiver : BroadcastReceiver() {
                 }
             }
             PackageInstaller.STATUS_PENDING_USER_ACTION -> {
-                val promptIntent: Intent? = intent.getParcelableExtra(Intent.EXTRA_INTENT)
+                val promptIntent = BundleCompat.getParcelable(intent.extras!!, Intent.EXTRA_INTENT, Intent::class.java)
 
                 promptIntent?.let {
                     it.putExtra(Intent.EXTRA_NOT_UNKNOWN_SOURCE, true)
