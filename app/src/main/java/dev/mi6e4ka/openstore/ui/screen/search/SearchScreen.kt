@@ -16,8 +16,10 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -113,6 +115,7 @@ fun SearchScreen(navController: NavController = rememberNavController()) {
             modifier = Modifier
                 .padding(innerPadding)
                 .padding(horizontal = 15.dp)
+                .imePadding()
                 .fillMaxSize(),
             verticalArrangement = Arrangement.SpaceBetween,
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -144,7 +147,7 @@ fun SearchScreen(navController: NavController = rememberNavController()) {
                                 contentDescription = null,
                                 modifier = Modifier.size(32.dp),
                             )
-                            Text("Домены не подтвержены", fontSize = 18.sp)
+                            Text("Домены не подтверждены", fontSize = 18.sp)
                         }
                     }
                 }
