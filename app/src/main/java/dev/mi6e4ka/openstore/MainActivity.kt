@@ -27,7 +27,7 @@ import dev.mi6e4ka.openstore.ui.screen.details.DetailsScreen
 import dev.mi6e4ka.openstore.ui.screen.results.ResultsScreen
 import dev.mi6e4ka.openstore.ui.screen.reviews.ReviewsScreen
 import dev.mi6e4ka.openstore.ui.screen.search.SearchScreen
-import dev.mi6e4ka.openstore.ui.theme.Theme
+import dev.mi6e4ka.openstore.ui.theme.AppTheme
 
 class MainActivity : ComponentActivity() {
     override fun onStart() {
@@ -61,7 +61,7 @@ class MainActivity : ComponentActivity() {
         Coil.setImageLoader(imageLoader)
 
         setContent {
-            Theme {
+            AppTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
