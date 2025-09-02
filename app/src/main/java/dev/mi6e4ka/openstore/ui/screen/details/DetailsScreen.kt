@@ -5,6 +5,7 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -28,8 +29,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.ArrowForward
@@ -52,6 +51,7 @@ import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -75,15 +75,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import dev.mi6e4ka.openstore.R
 import dev.mi6e4ka.openstore.di.AppModule
 import dev.mi6e4ka.openstore.internal.installer.ApkInstaller
 import dev.mi6e4ka.openstore.ui.components.AppIcon
 import dev.mi6e4ka.openstore.ui.components.GalleryWithPager
-import androidx.core.net.toUri
-import dev.mi6e4ka.openstore.R
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
@@ -145,7 +145,10 @@ fun DetailsScreen(
                     Icon(painterResource(R.drawable.apk_install_24px), null)
                 }
                 IconButton(onClick = {
-                    val intent = Intent(Intent.ACTION_VIEW, "https://rustore.ru/catalog/app/${state.item?.packageName ?: ""}".toUri())
+                    val intent = Intent(Intent.ACTION_VIEW, "https://www.rustore.ru/catalog/app/${state.item?.packageName ?: ""}".toUri()).apply {
+                        addCategory(Intent.CATEGORY_BROWSABLE)
+                        setSelector(Intent(Intent.ACTION_VIEW, "http://".toUri()))
+                    }
                     context.startActivity(intent)
                 }) {
                     Icon(Icons.Default.OpenInBrowser, null)
@@ -163,7 +166,9 @@ fun DetailsScreen(
                     Modifier.systemBarsPadding()
                 ) {
                     Column(
-                        Modifier.verticalScroll(rememberScrollState()).padding(16.dp),
+                        Modifier
+                            .verticalScroll(rememberScrollState())
+                            .padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         Text("О приложении", fontWeight = FontWeight.Bold, fontSize = 18.sp)
@@ -195,7 +200,10 @@ fun DetailsScreen(
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(12.dp))
                                 .clickable(onClick = {
-                                    val intent = Intent(Intent.ACTION_VIEW, "https://codeberg.org/mi6e4ka/openstore/src/branch/main/SAFETY.md".toUri())
+                                    val intent = Intent(
+                                        Intent.ACTION_VIEW,
+                                        "https://codeberg.org/mi6e4ka/openstore/src/branch/main/SAFETY.md".toUri()
+                                    )
                                     context.startActivity(intent)
                                 })
                         ) {
@@ -368,7 +376,8 @@ fun DetailsScreen(
                             onClick = {isWhatsNewExpanded = !isWhatsNewExpanded}
                         ) {
                             Column(
-                                Modifier.padding(16.dp)
+                                Modifier
+                                    .padding(16.dp)
                                     .animateContentSize(
                                         animationSpec = tween(
                                             durationMillis = 300,
@@ -387,7 +396,10 @@ fun DetailsScreen(
                         Column(
                             Modifier
                                 .padding(bottom = 8.dp)
-                                .clickable(interactionSource = interactionSource, indication = null) {
+                                .clickable(
+                                    interactionSource = interactionSource,
+                                    indication = null
+                                ) {
                                     showAppDescriptionSheet = true
                                 }
                         ) {
@@ -407,10 +419,16 @@ fun DetailsScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(12.dp))
-                                .clickable(onClick = {navController.navigate("app/${item.packageName}/reviews"){restoreState=true} })
+                                .clickable(onClick = {
+                                    navController.navigate("app/${item.packageName}/reviews") {
+                                        restoreState = true
+                                    }
+                                })
                         ) {
                             Row(
-                                Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 8.dp),
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 8.dp),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
