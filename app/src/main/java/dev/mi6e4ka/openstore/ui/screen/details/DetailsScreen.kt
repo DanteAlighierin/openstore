@@ -141,7 +141,7 @@ fun DetailsScreen(
                             Toast.makeText(context, "Скопировано в буфер обмена", Toast.LENGTH_SHORT).show()
                         }
                     }
-                }, enabled = !state.isLoading) {
+                }, enabled = state.downloadLink != null) {
                     Icon(painterResource(R.drawable.apk_install_24px), null)
                 }
                 IconButton(onClick = {
