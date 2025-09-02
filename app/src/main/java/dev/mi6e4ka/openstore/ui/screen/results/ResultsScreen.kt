@@ -4,6 +4,7 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -37,12 +38,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import dev.mi6e4ka.openstore.R
 import dev.mi6e4ka.openstore.di.AppModule
 import dev.mi6e4ka.openstore.ui.components.AppIcon
 import kotlinx.coroutines.launch
@@ -83,7 +87,16 @@ fun ResultsScreen(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp)
                 )
             } else if (state.error != null) {
-                Text("Ошибка: ${state.error}", modifier = Modifier.padding(16.dp))
+                Box(
+                    Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(20.dp)) {
+                        Text("Ошибка", fontWeight = FontWeight.Bold, fontSize = 22.sp)
+                        Icon(painterResource(R.drawable.pest_control_24px), null, Modifier.size(62.dp))
+                        Text("${state.error}", modifier = Modifier.padding(16.dp))
+                    }
+                }
             } else {
                 LazyColumn(
                     modifier = Modifier.weight(1f).padding(horizontal = 16.dp),

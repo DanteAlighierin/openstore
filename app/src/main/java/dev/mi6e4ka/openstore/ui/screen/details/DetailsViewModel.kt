@@ -87,7 +87,7 @@ class DetailsViewModel(private val itemId: String, private val apkInstaller: Apk
 
     fun downloadAndInstallApk(context: Context) {
         viewModelScope.launch {
-            _state.update { it.copy(isDownloading = true) }
+            _state.update { it.copy(isDownloading = true, downloadProgress = 0, downloadTotalBytes = 0, downloadCurrentBytes = 0) }
             Log.d(null, "download apk " + state.value.downloadLink)
             cancelDownload = apkInstaller.downloadApkWithProgress(
                 state.value.downloadLink ?: "",
@@ -98,6 +98,9 @@ class DetailsViewModel(private val itemId: String, private val apkInstaller: Apk
                     installApk(context, apkFile)
                 },
                 onError = { error ->
+                    if (error.message?.contains("Canceled") == true) {
+                        return@downloadApkWithProgress
+                    }
                     if (error.message?.contains("Failed to allocate") == true) {
                         Toast.makeText(context, "Недостаточно памяти на устройстве", Toast.LENGTH_SHORT).show()
                     } else {
