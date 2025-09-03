@@ -25,9 +25,6 @@ jobs:
           submodules: recursive
           fetch-depth: 0
 
-      - name: Flutter install and check
-        run: ./flutter/bin/flutter doctor -v
-
       - name: Build unsigned APK
         run: |
           ./gradlew assembleNightly --stacktrace
