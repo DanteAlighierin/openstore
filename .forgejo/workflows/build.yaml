@@ -1,0 +1,74 @@
+name: Flutter Build (Signed APK)
+on:
+  push:
+    branches:
+      - kotlin
+    tags: ["*"]
+  workflow_dispatch:
+
+
+jobs:
+  build:
+    runs-on: docker
+    container:
+      image: codeberg.org/mi6e4ka/android-build-ct:latest
+      env:
+        TAR_OPTIONS: "--no-same-owner"
+    # defaults:
+    #   run:
+    #     working-directory: /home/runner/openstore
+    steps:
+      # 1. Checkout репозиторий + подмодули
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Flutter install and check
+        run: ./flutter/bin/flutter doctor -v
+
+      - name: Build unsigned APK
+        run: |
+          ./gradlew assembleNightly --stacktrace
+
+      - name: Sign apk
+        uses: https://github.com/ilharp/sign-android-release@v2
+        id: sign_app
+        with:
+          releaseDir: app/build/outputs/apk/nightly/app-nightly.apk
+          signingKey: ${{ secrets.KEYSTORE_BASE64 }}
+          keyAlias: upload
+          keyStorePassword: ${{ secrets.KEY_PASSWORD }}
+          keyPassword: ${{ secrets.KEY_PASSWORD }}
+
+      - name: Print build dir
+        run: pwd
+
+      - name: List release files
+        run: ls app/build/outputs/apk/nightly
+
+      - name: Upload release apk
+        uses: actions/upload-artifact@v3
+        with:
+          name: app-release
+          path: app/build/outputs/apk/nightly/*-signed.apk
+
+      - name: Get Release ID
+        id: get_release
+        run: |
+          RESPONSE=$(curl -s -H "Authorization: token ${{ secrets.GITEA_TOKEN }}" \
+            $GITHUB_API_URL/repos/$GITHUB_REPOSITORY/releases/tags/$GITHUB_REF_NAME)
+              RELEASE_ID=$(echo "$RESPONSE" | grep -o '"id":[0-9]*' | head -n1 | grep -o '[0-9]*')
+          if [ -z "$RELEASE_ID" ]; then
+            RELEASE_ID=null
+          fi
+          echo "release_id=$RELEASE_ID" >> $GITHUB_OUTPUT
+
+      - name: Upload Asset
+        if: steps.get_release.outputs.release_id != 'null'
+        run: |
+          curl -X POST -H "Authorization: token ${{ secrets.GITEA_TOKEN }}" \
+            -H "Content-Type: multipart/form-data" \
+            -F "attachment=@app/build/outputs/apk/nightly/app-nightly-signed.apk" \
+            "${{ env.GITHUB_API_URL }}/repos/${{ env.GITHUB_REPOSITORY }}/releases/${{ steps.get_release.outputs.release_id }}/assets?name=app-nightly.apk"
