@@ -25,6 +25,10 @@ jobs:
           submodules: recursive
           fetch-depth: 0
 
+      - name: Show gradle tasks
+        run: |
+          ./gradlew tasks
+
       - name: Build unsigned APK
         run: |
           ./gradlew assembleNightly --stacktrace
