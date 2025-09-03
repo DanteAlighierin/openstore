@@ -26,10 +26,6 @@ jobs:
           fetch-depth: 0
           ref: "kotlin"
 
-      - name: Show gradle tasks
-        run: |
-          ./gradlew tasks
-
       - name: Build unsigned APK
         run: |
           ./gradlew assembleNightly --stacktrace
@@ -38,7 +34,7 @@ jobs:
         uses: https://github.com/ilharp/sign-android-release@v2
         id: sign_app
         with:
-          releaseDir: app/build/outputs/apk/nightly/app-nightly.apk
+          releaseDir: app/build/outputs/apk/nightly
           signingKey: ${{ secrets.KEYSTORE_BASE64 }}
           keyAlias: upload
           keyStorePassword: ${{ secrets.KEY_PASSWORD }}
