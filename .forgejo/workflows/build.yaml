@@ -1,8 +1,8 @@
 name: Kotlin Build (Signed APK)
 on:
   push:
-    #branches:
-    #  - kotlin
+    branches:
+      - kotlin
     tags: ["*"]
   workflow_dispatch:
 
@@ -19,6 +19,12 @@ jobs:
         with:
           submodules: recursive
           fetch-depth: 0
+
+      - name: debug
+        run: |
+          echo ${{ gitea.event.release.prerelease }}
+          echo ${{ gitea.event.release.id }}
+          echo ${{ gitea.event.release.tag_name }}
 
       - name: Build unsigned nightly APK
         if: "gitea.event.release.prerelease"
