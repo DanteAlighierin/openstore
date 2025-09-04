@@ -16,9 +16,9 @@ android {
         applicationId = "dev.mi6e4ka.openstore"
         minSdk = 21
         targetSdk = 36
-        versionCode = 6
-        versionName = "2.0.0"
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        versionCode = (project.findProperty("versionCode") as String?)?.toInt() ?: 1
+        versionName = project.findProperty("versionName") as String? ?: "dev"
+        //testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
@@ -31,15 +31,10 @@ android {
             )
         }
         create("nightly") {
+            initWith(getByName("release"))
             versionNameSuffix = "-nightly"
             applicationIdSuffix = ".nightly"
             signingConfig = signingConfigs.getByName("debug")
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
-            isMinifyEnabled = true
-            isShrinkResources = true
             resValue("string", "app_name", "OpenStore Nightly")
         }
         debug {
@@ -86,14 +81,9 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation(libs.navigation.compose)
-    // Retrofit + Coroutine
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
     implementation(libs.kotlinx.coroutines.android)
-
-// ViewModel
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
-
-// Coil для картинок
     implementation(libs.coil.compose)
 }
