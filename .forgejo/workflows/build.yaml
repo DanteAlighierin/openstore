@@ -82,8 +82,7 @@ jobs:
           echo "release_id=$RELEASE_ID" >> $GITHUB_OUTPUT
 
       - name: Upload nightly Asset
-        if: "!gitea.event.release.prerelease"
-        if: steps.get_release.outputs.release_id != 'null'
+        if: "!gitea.event.release.prerelease && steps.get_release.outputs.release_id != 'null'"
         run: |
           curl -X POST -H "Authorization: token ${{ secrets.GITEA_TOKEN }}" \
             -H "Content-Type: multipart/form-data" \
@@ -91,8 +90,7 @@ jobs:
             "${{ env.GITHUB_API_URL }}/repos/${{ env.GITHUB_REPOSITORY }}/releases/${{ steps.get_release.outputs.release_id }}/assets?name=app-nightly.apk"
 
       - name: Upload release Asset
-        if: "gitea.event.release.prerelease"
-        if: steps.get_release.outputs.release_id != 'null'
+        if: "gitea.event.release.prerelease && steps.get_release.outputs.release_id != 'null'"
         run: |
           curl -X POST -H "Authorization: token ${{ secrets.GITEA_TOKEN }}" \
             -H "Content-Type: multipart/form-data" \
