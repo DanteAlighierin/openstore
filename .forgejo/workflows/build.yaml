@@ -20,28 +20,46 @@ jobs:
           submodules: recursive
           fetch-depth: 0
 
+      - name: Get release info
+        id: get_release
+        run: |
+          API_URL="https://${{ gitea.server_url }}/api/v1/repos/${{ gitea.repository }}/releases"
+          TAG=${{ gitea.ref_name }}
+          
+          RELEASE_JSON=$(curl -s "$API_URL/tags/$TAG")
+
+          echo "$RELEASE_JSON" | jq .
+          
+          PRERELEASE=$(echo "$RELEASE_JSON" | jq -r '.prerelease')
+          RELEASE_ID=$(echo "$RELEASE_JSON" | jq -r '.id')
+          TAG_NAME=$(echo "$RELEASE_JSON" | jq -r '.tag_name')
+
+          echo "prerelease=$PRERELEASE" >> $GITHUB_OUTPUT
+          echo "release_id=$RELEASE_ID" >> $GITHUB_OUTPUT
+          echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
+
       - name: debug
         run: |
-          echo ${{ gitea.event.release.prerelease }}
-          echo ${{ gitea.event.release.id }}
-          echo ${{ gitea.event.release.tag_name }}
+          echo ${{ steps.get_release.outputs.prerelease }}
+          echo ${{ steps.get_release.outputs.release_id }}
+          echo ${{ steps.get_release.outputs.tag_name }}
 
       - name: Build unsigned nightly APK
-        if: "gitea.event.release.prerelease"
+        if: steps.get_release.outputs.prerelease == 'true'
         run: |
           ./gradlew assembleNightly --stacktrace \
             -PversionName=$(git rev-parse --short HEAD) \
             -PversionCode=$(date +%s)
 
       - name: Build unsigned release APK
-        if: "!gitea.event.release.prerelease"
+        if: steps.get_release.outputs.prerelease == 'false'
         run: |
           ./gradlew assembleRelease --stacktrace \
             -PversionName=${{ gitea.event.release.tag_name }} \
             -PversionCode=${{ gitea.event.release.id }}
 
       - name: Sign nightly apk
-        if: "gitea.event.release.prerelease"
+        if: steps.get_release.outputs.prerelease == 'true'
         uses: https://github.com/ilharp/sign-android-release@v2
         id: sign_app
         with:
@@ -52,7 +70,7 @@ jobs:
           keyPassword: ${{ secrets.KEY_PASSWORD }}
 
       - name: Sign release apk
-        if: "!gitea.event.release.prerelease"
+        if: steps.get_release.outputs.prerelease == 'false'
         uses: https://github.com/ilharp/sign-android-release@v2
         id: sign_app
         with:
@@ -63,14 +81,14 @@ jobs:
           keyPassword: ${{ secrets.KEY_PASSWORD }}
 
       - name: Upload nightly apk
-        if: "gitea.event.release.prerelease"
+        if: steps.get_release.outputs.prerelease == 'true'
         uses: actions/upload-artifact@v3
         with:
           name: app-nightly
           path: app/build/outputs/apk/nightly/*-signed.apk
 
       - name: Upload release apk
-        if: "!gitea.event.release.prerelease"
+        if: steps.get_release.outputs.prerelease == 'false'
         uses: actions/upload-artifact@v3
         with:
           name: app-release
@@ -88,7 +106,7 @@ jobs:
           echo "release_id=$RELEASE_ID" >> $GITHUB_OUTPUT
 
       - name: Upload nightly Asset
-        if: "!gitea.event.release.prerelease && steps.get_release.outputs.release_id != 'null'"
+        if: steps.get_release.outputs.prerelease == 'true' && steps.get_release.outputs.release_id != 'null'
         run: |
           curl -X POST -H "Authorization: token ${{ secrets.GITEA_TOKEN }}" \
             -H "Content-Type: multipart/form-data" \
@@ -96,7 +114,7 @@ jobs:
             "${{ env.GITHUB_API_URL }}/repos/${{ env.GITHUB_REPOSITORY }}/releases/${{ steps.get_release.outputs.release_id }}/assets?name=app-nightly.apk"
 
       - name: Upload release Asset
-        if: "gitea.event.release.prerelease && steps.get_release.outputs.release_id != 'null'"
+        if: steps.get_release.outputs.prerelease == 'false' && steps.get_release.outputs.release_id != 'null'
         run: |
           curl -X POST -H "Authorization: token ${{ secrets.GITEA_TOKEN }}" \
             -H "Content-Type: multipart/form-data" \
