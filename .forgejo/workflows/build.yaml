@@ -52,14 +52,14 @@ jobs:
         if: steps.get_release.outputs.prerelease == 'true'
         run: |
           ./gradlew assembleNightly --stacktrace \
-            -PversionName=$(git rev-parse --short HEAD) \
+            -PversionName=${{ steps.get_release.outputs.tag_name }} \
             -PversionCode=$(date +%s)
 
       - name: Build unsigned release APK
         if: steps.get_release.outputs.prerelease == 'false'
         run: |
           ./gradlew assembleRelease --stacktrace \
-            -PversionName= \
+            -PversionName=${{ steps.get_release.outputs.tag_name }} \
             -PversionCode=${{ gitea.event.release.id }}
 
       - name: Sign nightly apk
