@@ -113,9 +113,7 @@ fun DetailsScreen(
     }
 
     LaunchedEffect(Unit) {
-        println("sub to flow")
         AppModule.uninstallerEventFlow.events.collect {
-            println("FLAG CATCHED!")
             viewModel.updateInstallStatus(false)
         }
     }
@@ -243,9 +241,8 @@ fun DetailsScreen(
                                     animationSpec = spring(dampingRatio = 0.6f),
                                     label = "cornerAnimation"
                                 )
-                                if (state.installStatus !is InstallStatus.Pending) {
+                                if (state.installStatus is InstallStatus.Pending || state.downloadTotalBytes.toInt() == 0) {
                                     CircularProgressIndicator(
-                                        progress = { state.downloadProgress / 100f },
                                         modifier = Modifier
                                             .size(128.dp)
                                             .alpha(if (state.isDownloading) 1f else 0f),
@@ -253,6 +250,7 @@ fun DetailsScreen(
                                     )
                                 } else {
                                     CircularProgressIndicator(
+                                        progress = { state.downloadProgress / 100f },
                                         modifier = Modifier
                                             .size(128.dp)
                                             .alpha(if (state.isDownloading) 1f else 0f),
@@ -293,7 +291,11 @@ fun DetailsScreen(
                                         if (state.installStatus is InstallStatus.Pending) {
                                             Text("Установка...")
                                         } else if (state.isDownloading) {
-                                            Text("Загрузка... ${state.downloadCurrentBytes/1024/1024}/${state.downloadTotalBytes/1024/1024}МБ")
+                                            if (state.downloadTotalBytes.toInt() != 0) {
+                                                Text("Загрузка... ${state.downloadCurrentBytes/1024/1024}/${state.downloadTotalBytes/1024/1024}МБ")
+                                            } else {
+                                                Text("Загрузка...")
+                                            }
                                         } else {
                                             Text("Установить")
                                         }
