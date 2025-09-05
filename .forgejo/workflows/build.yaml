@@ -1,8 +1,8 @@
 name: Kotlin Build (Signed APK)
 on:
   push:
-    branches:
-      - kotlin
+    #branches:
+    #  - kotlin
     tags: ["*"]
   workflow_dispatch:
 
