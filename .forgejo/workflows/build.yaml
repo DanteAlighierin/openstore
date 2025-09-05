@@ -23,8 +23,12 @@ jobs:
       - name: Get Release Info
         id: get_release
         run: |
+          echo $GITHUB_API_URL/repos/$GITHUB_REPOSITORY/releases/tags/$GITHUB_REF_NAME
+
           RESPONSE=$(curl -s -H "Authorization: token ${{ secrets.GITEA_TOKEN }}" \
-            $GITHUB_API_URL/repos/$GITHUB_REPOSITORY/releases/tags/$GITHUB_REF_NAME | tr -d '\r')
+            $GITHUB_API_URL/repos/$GITHUB_REPOSITORY/releases/tags/$GITHUB_REF_NAME)
+
+          echo $RESPONSE
 
           RELEASE_ID=$(echo "$RESPONSE" | jq -r '.id // empty')
           PRERELEASE=$(echo "$RESPONSE" | jq -r '.prerelease // empty')
