@@ -11,8 +11,9 @@ jobs:
     runs-on: docker
     container:
       image: codeberg.org/mi6e4ka/android-build-ct:latest
-      env:
-        TAR_OPTIONS: "--no-same-owner"
+    defaults:
+      run:
+        shell: bash
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
