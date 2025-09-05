@@ -24,9 +24,7 @@ jobs:
       - name: Get Release Info
         id: get_release
         run: |
-          echo $GITHUB_API_URL/repos/$GITHUB_REPOSITORY/releases/tags/$GITHUB_REF_NAME
-
-          RESPONSE=$(curl -s $GITHUB_API_URL/repos/$GITHUB_REPOSITORY/releases/tags/1.2.0)
+          RESPONSE=$(curl -s $GITHUB_API_URL/repos/$GITHUB_REPOSITORY/releases/tags/$GITHUB_REF_NAME)
 
           echo $RESPONSE | jq
 
