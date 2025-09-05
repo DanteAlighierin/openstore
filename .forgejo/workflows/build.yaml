@@ -28,7 +28,7 @@ jobs:
           RESPONSE=$(curl -s -H "Authorization: token ${{ secrets.GITEA_TOKEN }}" \
             $GITHUB_API_URL/repos/$GITHUB_REPOSITORY/releases/tags/$GITHUB_REF_NAME)
 
-          echo $RESPONSE
+          echo $RESPONSE | jq
 
           RELEASE_ID=$(echo "$RESPONSE" | jq -r '.id // empty')
           PRERELEASE=$(echo "$RESPONSE" | jq -r '.prerelease // empty')
