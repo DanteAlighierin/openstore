@@ -10,7 +10,9 @@ data class SearchResult(
 )
 
 data class SearchResponseBody(
-    @SerializedName("content") val content: List<SearchResult>
+    @SerializedName("content") val content: List<SearchResult>,
+    @SerializedName("totalElements") val totalElements: Int,
+    @SerializedName("totalPages") val totalPages: Int,
 )
 
 data class SearchResponse(

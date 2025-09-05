@@ -1,17 +1,27 @@
 package dev.mi6e4ka.openstore.data.repository
 
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
 import dev.mi6e4ka.openstore.data.api.ApiClient
 import dev.mi6e4ka.openstore.data.model.AppCommentsComments
 import dev.mi6e4ka.openstore.data.model.AppRatingResponseBody
 import dev.mi6e4ka.openstore.data.model.DownloadLinkRequest
 import dev.mi6e4ka.openstore.data.model.ItemDetails
 import dev.mi6e4ka.openstore.data.model.SearchResult
+import dev.mi6e4ka.openstore.data.paging.SearchPagingSource
 
 class SearchRepository {
     private val apiService = ApiClient.service
 
-    suspend fun search(query: String): List<SearchResult> {
-        return apiService.search(20, query).body.content
+    fun search(query: String): Pager<Int, SearchResult> {
+        return Pager(
+            config = PagingConfig(
+                pageSize = 20,
+                initialLoadSize = 20,
+                enablePlaceholders = false
+            ),
+            pagingSourceFactory = { SearchPagingSource(apiService, query) }
+        )
     }
 
     suspend fun getItemDetails(id: String): ItemDetails {

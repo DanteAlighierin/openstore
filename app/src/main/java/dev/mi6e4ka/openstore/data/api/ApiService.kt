@@ -14,7 +14,7 @@ import retrofit2.http.Query
 
 interface ApiService {
     @GET("applicationData/apps")
-    suspend fun search(@Query("pageSize") pageSize: Int, @Query("query") query: String): SearchResponse
+    suspend fun search(@Query("pageSize") pageSize: Int, @Query("pageNumber") pageNumber: Int, @Query("query") query: String): SearchResponse
 
     @GET("applicationData/overallInfo/{packageName}")
     suspend fun getItemDetails(@Path("packageName") packageName: String): ItemDetailsResponse
