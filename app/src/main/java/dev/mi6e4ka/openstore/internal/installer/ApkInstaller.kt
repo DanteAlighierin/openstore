@@ -19,6 +19,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.ResponseBody
 import java.io.IOException
+import java.util.concurrent.TimeUnit
 
 class ApkInstaller(private val context: Context) {
 
@@ -45,6 +46,12 @@ class ApkInstaller(private val context: Context) {
 
         val request = Request.Builder()
             .url(url)
+            .build()
+
+        val okHttpClient = OkHttpClient.Builder()
+            .connectTimeout(60, TimeUnit.SECONDS)
+            .readTimeout(120, TimeUnit.SECONDS)
+            .writeTimeout(120, TimeUnit.SECONDS)
             .build()
 
         val call = okHttpClient.newCall(request)

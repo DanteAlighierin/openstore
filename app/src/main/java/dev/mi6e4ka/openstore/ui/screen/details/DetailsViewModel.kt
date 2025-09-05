@@ -98,12 +98,14 @@ class DetailsViewModel(private val itemId: String, private val apkInstaller: Apk
                     installApk(context, apkFile)
                 },
                 onError = { error ->
-                    if (error.message?.contains("Canceled") == true) {
+                    if (error.message?.contains("Canceled") == true || error.message?.contains("Socket is closed") == true || error.message?.contains("CANCEL") == true) {
                         return@downloadApkWithProgress
-                    }
-                    if (error.message?.contains("Failed to allocate") == true) {
+                    } else if (error.message?.contains("timeout") == true) {
+                        Toast.makeText(context, "Превышено время ожидания", Toast.LENGTH_SHORT).show()
+                    } else if (error.message?.contains("Failed to allocate") == true) {
                         Toast.makeText(context, "Недостаточно памяти на устройстве", Toast.LENGTH_SHORT).show()
                     } else {
+                        println("ERROR: ${error.message}")
                         Toast.makeText(context, "Ошбика загрузки", Toast.LENGTH_SHORT).show()
                     }
                     _state.update { it.copy(isDownloading = false) }
