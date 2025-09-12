@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name">OpenStore</string>
     <string name="safety_card_text">About app safety</string>
     <string name="error_message">Error: %1$s</string>
     <string name="provided_by">Provided by %1$s</string>
