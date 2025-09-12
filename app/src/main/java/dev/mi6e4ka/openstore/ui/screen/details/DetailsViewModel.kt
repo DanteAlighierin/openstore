@@ -12,6 +12,7 @@ import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import dev.mi6e4ka.openstore.R
 import dev.mi6e4ka.openstore.data.model.AppCommentsResponseBody
 import dev.mi6e4ka.openstore.data.model.AppRatingResponseBody
 import dev.mi6e4ka.openstore.data.model.ItemDetails
@@ -101,12 +102,12 @@ class DetailsViewModel(private val itemId: String, private val apkInstaller: Apk
                     if (error.message?.contains("Canceled") == true || error.message?.contains("Socket is closed") == true || error.message?.contains("CANCEL") == true) {
                         return@downloadApkWithProgress
                     } else if (error.message?.contains("timeout") == true) {
-                        Toast.makeText(context, "Превышено время ожидания", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, R.string.timeout, Toast.LENGTH_SHORT).show()
                     } else if (error.message?.contains("Failed to allocate") == true) {
-                        Toast.makeText(context, "Недостаточно памяти на устройстве", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, R.string.insufficient_memory, Toast.LENGTH_SHORT).show()
                     } else {
                         println("ERROR: ${error.message}")
-                        Toast.makeText(context, "Ошбика загрузки", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, R.string.loading_error, Toast.LENGTH_SHORT).show()
                     }
                     _state.update { it.copy(isDownloading = false) }
                 },
@@ -152,9 +153,9 @@ class DetailsViewModel(private val itemId: String, private val apkInstaller: Apk
             }
             apkInstaller.installApk(context, apkFile, installerCallback, onError = { error ->
                 if (error.message?.contains("Failed to allocate") == true) {
-                    Toast.makeText(context, "Недостаточно памяти на устройстве", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.insufficient_memory, Toast.LENGTH_SHORT).show()
                 } else {
-                    Toast.makeText(context, "Ошибка во время установки", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.installing_error, Toast.LENGTH_SHORT).show()
                 }
                 _state.update { it.copy(installStatus = InstallStatus.Idle, isDownloading = false) }
             })
@@ -185,7 +186,7 @@ class DetailsViewModel(private val itemId: String, private val apkInstaller: Apk
         if (launchIntent != null) {
             context.startActivity(launchIntent)
         } else {
-            Toast.makeText(context, "Не удалось открыть приложение", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, R.string.failed_to_open_app, Toast.LENGTH_SHORT).show()
         }
     }
     fun deleteApplication(context: Context, packageName: String) {

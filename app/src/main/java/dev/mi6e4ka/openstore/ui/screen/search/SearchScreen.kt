@@ -147,7 +147,7 @@ fun SearchScreen(navController: NavController = rememberNavController()) {
                                 contentDescription = null,
                                 modifier = Modifier.size(32.dp),
                             )
-                            Text("Домены не подтверждены", fontSize = 18.sp)
+                            Text(stringResource(R.string.unconfirmed_domains), fontSize = 18.sp)
                         }
                     }
                 }

@@ -27,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -53,7 +54,7 @@ fun ResultsScreen(
 
     Scaffold(
         topBar = { TopAppBar(
-            title = {Text("Поиск")},
+            title = {Text(stringResource(R.string.search_title))},
             navigationIcon = {
                 IconButton(onClick = { navController.popBackStack() }) {
                     Icon(
@@ -94,7 +95,7 @@ fun ResultsScreen(
                         }
                     }
                 } else {
-                    Text("ошибка загрузки")
+                    Text(stringResource(R.string.loading_error))
                 }
             }
             resultsLazyPaging.apply {
@@ -127,7 +128,7 @@ fun ResultsScreen(
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(20.dp)) {
-                                        Text("Ошибка", fontWeight = FontWeight.Bold, fontSize = 22.sp)
+                                        Text(stringResource(R.string.error), fontWeight = FontWeight.Bold, fontSize = 22.sp)
                                         Icon(painterResource(R.drawable.pest_control_24px), null, Modifier.size(62.dp))
                                         Text("${(loadState.refresh as LoadState.Error).error}", modifier = Modifier.padding(16.dp))
                                     }

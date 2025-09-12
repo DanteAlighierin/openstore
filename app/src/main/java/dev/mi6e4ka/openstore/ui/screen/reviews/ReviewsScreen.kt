@@ -1,11 +1,6 @@
 package dev.mi6e4ka.openstore.ui.screen.reviews
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
+import androidx.annotation.StringRes
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -47,21 +42,23 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import dev.mi6e4ka.openstore.R
 import dev.mi6e4ka.openstore.data.model.AppCommentsComments
 import dev.mi6e4ka.openstore.di.AppModule
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-enum class ReviewsFilters(val value: String, val displayName: String) {
-    NewFirst("NEW_FIRST", "Новые"),
-    UsefulFirst("USEFUL_FIRST", "Полезные"),
-    PositiveFirst("POSITIVE_FIRST", "Позитивные"),
-    NegativeFirst("NEGATIVE_FIRST", "Негативные")
+enum class ReviewsFilters(val value: String, @param:StringRes val displayStringResource: Int) {
+    NewFirst("NEW_FIRST", R.string.new_first),
+    UsefulFirst("USEFUL_FIRST", R.string.useful_first),
+    PositiveFirst("POSITIVE_FIRST", R.string.positive_first),
+    NegativeFirst("NEGATIVE_FIRST", R.string.negative_first)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -99,7 +96,7 @@ fun ReviewsScreen(packageName: String, navController: NavController = rememberNa
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = { TopAppBar(
-            title = {Text("Отзывы")},
+            title = {Text(stringResource(R.string.reviews_title))},
             navigationIcon = {
                 IconButton(onClick = { navController.popBackStack() }) {
                     Icon(
@@ -125,7 +122,7 @@ fun ReviewsScreen(packageName: String, navController: NavController = rememberNa
                             FilterChip(
                                 selected = filter == selectedFilter,
                                 onClick = { selectedFilter = filter },
-                                label = {Text(filter.displayName)},
+                                label = {Text(stringResource(filter.displayStringResource))},
                                 leadingIcon = if (selectedFilter == filter) {
                                     { Icon(Icons.Default.Check, contentDescription = null) }
                                 } else null
@@ -135,7 +132,7 @@ fun ReviewsScreen(packageName: String, navController: NavController = rememberNa
                     if ((reviews?.size ?: 0) == 0 && !isLoading) {
                         Spacer(Modifier.height(8.dp))
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                            Text("Отзывов пока нет")
+                            Text(stringResource(R.string.no_reviews))
                         }
                     }
                     if (isLoading) {

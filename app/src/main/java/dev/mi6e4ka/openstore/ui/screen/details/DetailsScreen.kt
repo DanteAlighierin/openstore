@@ -71,6 +71,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -136,7 +137,7 @@ fun DetailsScreen(
                         val clip = ClipData.newPlainText("", state.downloadLink)
                         clipboard.setPrimaryClip(clip)
                         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
-                            Toast.makeText(context, "Скопировано в буфер обмена", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, R.string.copied_to_buffer, Toast.LENGTH_SHORT).show()
                         }
                     }
                 }, enabled = state.downloadLink != null) {
@@ -169,7 +170,7 @@ fun DetailsScreen(
                             .padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        Text("О приложении", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                        Text(stringResource(R.string.about_app), fontWeight = FontWeight.Bold, fontSize = 18.sp)
                         Text(state.item?.fullDescription ?: "")
                     }
                 }
@@ -179,7 +180,7 @@ fun DetailsScreen(
                     .padding(horizontal = 4.dp)
                     .fillMaxWidth())
             } else if (state.error != null) {
-                Text("Ошибка: ${state.error}", modifier = Modifier.padding(16.dp))
+                Text(stringResource(R.string.error_message, state.error!!), modifier = Modifier.padding(16.dp))
             } else {
                 val item = state.item
                 if (item != null) {
@@ -217,9 +218,9 @@ fun DetailsScreen(
                                     modifier = Modifier.size(28.dp)
                                 )
                                 if (item.aggregatorInfo != null) {
-                                    Text("Предоставлено ${item.aggregatorInfo.source}")
+                                    Text(stringResource(R.string.provided_by, item.aggregatorInfo.source))
                                 } else {
-                                    Text("Предоставлено RuStore")
+                                    Text(stringResource(R.string.provided_by, "RuStore"))
                                 }
                             }
                         }
@@ -276,7 +277,7 @@ fun DetailsScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Icon(Icons.Rounded.Warning, null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(22.dp))
-                                Text("Не поддерживается на этом устройстве", color = MaterialTheme.colorScheme.error)
+                                Text(stringResource(R.string.device_unsupported), color = MaterialTheme.colorScheme.error)
                             }
                         }
                         Column {
@@ -289,29 +290,29 @@ fun DetailsScreen(
                                         viewModel.downloadAndInstallApk(context)
                                     }, modifier = Modifier.weight(1f), enabled = !state.isDownloading && state.isSupported) {
                                         if (state.installStatus is InstallStatus.Pending) {
-                                            Text("Установка...")
+                                            Text(stringResource(R.string.installing))
                                         } else if (state.isDownloading) {
                                             if (state.downloadTotalBytes.toInt() != 0) {
-                                                Text("Загрузка... ${state.downloadCurrentBytes/1024/1024}/${state.downloadTotalBytes/1024/1024}МБ")
+                                                Text(stringResource(R.string.downloading, " ${state.downloadCurrentBytes / 1024 / 1024}/${state.downloadTotalBytes / 1024 / 1024}МБ"))
                                             } else {
-                                                Text("Загрузка...")
+                                                Text(stringResource(R.string.downloading, ""))
                                             }
                                         } else {
-                                            Text("Установить")
+                                            Text(stringResource(R.string.install_button))
                                         }
                                     }
                                 } else {
                                     FilledTonalButton(onClick = {
                                         viewModel.deleteApplication(context, itemId)
-                                    }, modifier = Modifier.weight(1f)) { Text("Удалить") }
+                                    }, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.uninstall)) }
                                     if (state.isNeedUpgrade) {
                                         Button(onClick = {
                                             viewModel.downloadAndInstallApk(context)
-                                        }, modifier = Modifier.weight(1f), enabled = state.isSupported) { Text("Обновить") }
+                                        }, modifier = Modifier.weight(1f), enabled = state.isSupported) { Text(stringResource(R.string.update)) }
                                     } else {
                                         Button(onClick = {
                                             viewModel.runApplication(context, itemId)
-                                        }, modifier = Modifier.weight(1f)) { Text("Открыть") }
+                                        }, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.open)) }
                                     }
                                 }
                                 if (state.isDownloading) {
@@ -388,7 +389,7 @@ fun DetailsScreen(
                                     )
                             ) {
                                 Row {
-                                    Text("Что нового?", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                                    Text(stringResource(R.string.whats_new), fontWeight = FontWeight.Bold, fontSize = 18.sp)
                                 }
 
                                 Text(item.whatsNew, maxLines = if (isWhatsNewExpanded) Int.MAX_VALUE else 4, overflow = TextOverflow.Ellipsis)
@@ -410,7 +411,7 @@ fun DetailsScreen(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text("О приложении", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                                Text(stringResource(R.string.about_app), fontWeight = FontWeight.Bold, fontSize = 18.sp)
                                 IconButton(onClick = {showAppDescriptionSheet = true}) {
                                     Icon(imageVector = Icons.AutoMirrored.Rounded.ArrowForward, contentDescription = null)
                                 }
@@ -434,7 +435,7 @@ fun DetailsScreen(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text("Рейтинг и отзывы", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                                Text(stringResource(R.string.rating_and_reviews), fontWeight = FontWeight.Bold, fontSize = 18.sp)
 //                                FilledTonalIconButton(onClick = {}) {
 //                                    Icon(imageVector = Icons.Rounded.ArrowForward, contentDescription = null)
 //                                }

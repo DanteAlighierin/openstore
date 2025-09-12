@@ -1,0 +1,35 @@
+<resources>
+    <string name="app_name">OpenStore</string>
+    <string name="safety_card_text">About app safety</string>
+    <string name="error_message">Error: %1$s</string>
+    <string name="provided_by">Provided by %1$s</string>
+    <string name="device_unsupported">Not compatible with your device</string>
+    <string name="installing">Installing…</string>
+    <string name="downloading">Downloading…%1$s</string>
+    <string name="install_button">Install</string>
+    <string name="uninstall">Uninstall</string>
+    <string name="update">Update</string>
+    <string name="open">Open</string>
+    <string name="about_app">About app</string>
+    <string name="rating_and_reviews">Rating and reviews</string>
+    <string name="whats_new">What\'s new?</string>
+    <string name="loading_error">Download error</string>
+    <string name="error">Error</string>
+    <string name="search_title">Search</string>
+    <string name="no_reviews">No reviews yet</string>
+    <string name="reviews_title">Reviews</string>
+    <string name="unconfirmed_domains">Domains not verified</string>
+    <string name="app_uninstalled">App deleted</string>
+    <string name="app_installed">App installed</string>
+    <string name="failed_uninstall">Unable to uninstall</string>
+    <string name="failed_install">Unable to install</string>
+    <string name="copied_to_buffer">Copied to the clipboard</string>
+    <string name="timeout">Waiting time exceeded</string>
+    <string name="insufficient_memory">Insufficient memory on the device</string>
+    <string name="installing_error">Error during installation</string>
+    <string name="failed_to_open_app">Unable to open app</string>
+    <string name="new_first">New</string>
+    <string name="useful_first">Useful</string>
+    <string name="positive_first">Positive</string>
+    <string name="negative_first">Negative</string>
+</resources>

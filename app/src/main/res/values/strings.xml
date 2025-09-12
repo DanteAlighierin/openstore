@@ -1,4 +1,35 @@
 <resources>
     <string name="app_name">OpenStore</string>
     <string name="safety_card_text">О безопасности приложений</string>
+    <string name="error_message">Ошибка: %1$s</string>
+    <string name="provided_by">Предоставлено %1$s</string>
+    <string name="device_unsupported">Не поддерживается на этом устройстве</string>
+    <string name="installing">Установка…</string>
+    <string name="downloading">Загрузка…%1$s</string>
+    <string name="install_button">Установить</string>
+    <string name="uninstall">Удалить</string>
+    <string name="update">Обновить</string>
+    <string name="open">Открыть</string>
+    <string name="about_app">О приложении</string>
+    <string name="rating_and_reviews">Рейтинг и отзывы</string>
+    <string name="whats_new">Что нового?</string>
+    <string name="loading_error">Ошибка загрузки</string>
+    <string name="error">Ошибка</string>
+    <string name="search_title">Поиск</string>
+    <string name="no_reviews">Отзывов пока нет</string>
+    <string name="reviews_title">Отзывы</string>
+    <string name="unconfirmed_domains">Домены не подтверждены</string>
+    <string name="app_uninstalled">Удалено</string>
+    <string name="app_installed">Установлено</string>
+    <string name="failed_uninstall">Не удалось удалить</string>
+    <string name="failed_install">Не удалось установить</string>
+    <string name="copied_to_buffer">Скопировано в буфер обмена</string>
+    <string name="timeout">Превышено время ожидания</string>
+    <string name="insufficient_memory">Недостаточно памяти на устройстве</string>
+    <string name="installing_error">Ошибка во время установки</string>
+    <string name="failed_to_open_app">Не удалось открыть приложение</string>
+    <string name="new_first">Новые</string>
+    <string name="useful_first">Полезные</string>
+    <string name="positive_first">Позитивные</string>
+    <string name="negative_first">Негативные</string>
 </resources>

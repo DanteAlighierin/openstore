@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.pm.PackageInstaller
 import android.widget.Toast
 import androidx.core.os.BundleCompat
+import dev.mi6e4ka.openstore.R
 import dev.mi6e4ka.openstore.di.AppModule
 
 class PackageInstallerStatusReceiver : BroadcastReceiver() {
@@ -15,7 +16,7 @@ class PackageInstallerStatusReceiver : BroadcastReceiver() {
 
         when (status) {
             PackageInstaller.STATUS_SUCCESS -> {
-                Toast.makeText(context, if (isUninstall) "Удалено" else "Установлено", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, if (isUninstall) R.string.app_uninstalled else R.string.app_installed, Toast.LENGTH_SHORT).show()
                 if (isUninstall) {
                     AppModule.uninstallerEventFlow.trigger()
                 }
@@ -32,7 +33,7 @@ class PackageInstallerStatusReceiver : BroadcastReceiver() {
                 }
             }
             else -> {
-                Toast.makeText(context, if (isUninstall) "Не удалось удалить" else "Не удалось установить", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, if (isUninstall) R.string.failed_uninstall else R.string.failed_install, Toast.LENGTH_SHORT).show()
             }
         }
     }
