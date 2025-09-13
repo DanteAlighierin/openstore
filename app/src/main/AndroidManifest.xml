@@ -20,13 +20,13 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.OpenStore"
+        android:theme="@style/AppTheme"
         android:localeConfig="@xml/locale_config"
         tools:targetApi="36">
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.OpenStore">
+            android:theme="@style/AppTheme">
             <!-- openstore deeplink, haha -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />

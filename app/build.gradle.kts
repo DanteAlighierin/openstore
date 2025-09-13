@@ -71,6 +71,7 @@ dependencies {
     implementation(libs.material3)
     implementation(libs.androidx.animation)
     implementation(libs.androidx.paging.compose)
+    implementation(libs.material)
     debugImplementation(libs.androidx.ui.tooling.preview)
     debugImplementation(libs.okhttp3.logging.interceptor)
     testImplementation(libs.junit)

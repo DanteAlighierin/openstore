@@ -20,6 +20,7 @@ accompanistPagerIndicators = "0.36.0"
 runtimeLivedata = "1.9.0"
 material3 = "1.3.2"
 animation = "1.9.0"
+material = "1.14.0-alpha04"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -47,9 +48,10 @@ androidx-material-icons-extended-android = { group = "androidx.compose.material"
 accompanist-pager = { group = "com.google.accompanist", name = "accompanist-pager", version.ref = "accompanistPager" }
 accompanist-pager-indicators = { group = "com.google.accompanist", name = "accompanist-pager-indicators", version.ref = "accompanistPagerIndicators" }
 androidx-runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata", version.ref = "runtimeLivedata" }
-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
+material3 = { group = "androidx.compose.material3", name = "material3", version = "1.4.0-rc01" }
 androidx-animation = { group = "androidx.compose.animation", name = "animation", version.ref = "animation" }
 androidx-paging-compose = { group = "androidx.paging", name = "paging-compose", version = "3.3.6" }
+material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
