@@ -58,7 +58,7 @@ jobs:
             -PversionCode=$(date +%s)
 
       - name: Build unsigned release APK
-        if: steps.get_release.outputs.prerelease == 'false'
+        if: steps.get_release.outputs.prerelease != 'true'
         run: |
           ./gradlew assembleRelease --stacktrace \
             -PversionName=${{ steps.get_release.outputs.tag_name }} \
@@ -76,7 +76,7 @@ jobs:
           keyPassword: ${{ secrets.KEY_PASSWORD }}
 
       - name: Sign release apk
-        if: steps.get_release.outputs.prerelease == 'false'
+        if: steps.get_release.outputs.prerelease != 'true'
         uses: https://github.com/ilharp/sign-android-release@v2
         id: sign_app
         with:
@@ -94,7 +94,7 @@ jobs:
           path: app/build/outputs/apk/nightly/*-signed.apk
 
       - name: Upload release apk
-        if: steps.get_release.outputs.prerelease == 'false'
+        if: steps.get_release.outputs.prerelease != 'true' && steps.get_release.outputs.release_id != 'null'
         uses: actions/upload-artifact@v3
         with:
           name: app-release
