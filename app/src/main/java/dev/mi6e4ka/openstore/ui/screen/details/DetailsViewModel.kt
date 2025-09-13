@@ -99,9 +99,7 @@ class DetailsViewModel(private val itemId: String, private val apkInstaller: Apk
                     installApk(context, apkFile)
                 },
                 onError = { error ->
-                    if (error.message?.contains("Canceled") == true || error.message?.contains("Socket is closed") == true || error.message?.contains("CANCEL") == true) {
-                        return@downloadApkWithProgress
-                    } else if (error.message?.contains("timeout") == true) {
+                    if (error.message?.contains("timeout") == true) {
                         Toast.makeText(context, R.string.timeout, Toast.LENGTH_SHORT).show()
                     } else if (error.message?.contains("Failed to allocate") == true) {
                         Toast.makeText(context, R.string.insufficient_memory, Toast.LENGTH_SHORT).show()

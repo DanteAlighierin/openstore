@@ -103,23 +103,16 @@ class ApkInstaller(private val context: Context) {
                         onSuccess(apkFile)
                     }
                 }
-            } catch (e: IOException) {
+            } catch (e: Exception) {
                 if (apkFile.exists()) {
                     apkFile.delete()
                 }
-                if (e.message == "Canceled") {
+                if (e.message?.contains("Canceled") == true || e.message?.contains("closed") == true || e.message?.contains("CANCEL") == true) {
                     onCancel()
                 } else {
                     withContext(Dispatchers.Main) {
                         onError(e)
                     }
-                }
-            } catch (e: Exception) {
-                if (apkFile.exists()) {
-                    apkFile.delete()
-                }
-                withContext(Dispatchers.Main) {
-                    onError(e)
                 }
             }
         }
