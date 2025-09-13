@@ -113,5 +113,5 @@ jobs:
         run: |
           curl -X POST -H "Authorization: token ${{ secrets.GITEA_TOKEN }}" \
             -H "Content-Type: multipart/form-data" \
-            -F "attachment=@app/build/outputs/apk/release/app-release-signed.apk" \
+            -F "attachment=@app/build/outputs/apk/release/app-release-unsigned-signed.apk" \
             "${{ env.GITHUB_API_URL }}/repos/${{ env.GITHUB_REPOSITORY }}/releases/${{ steps.get_release.outputs.release_id }}/assets?name=app-release.apk"
