@@ -62,7 +62,7 @@ jobs:
         run: |
           ./gradlew assembleRelease --stacktrace \
             -PversionName=${{ steps.get_release.outputs.tag_name }} \
-            -PversionCode=${{ gitea.event.release.id }}
+            -PversionCode=${{ steps.get_release.outputs.release_id }}
 
       - name: Sign nightly apk
         if: steps.get_release.outputs.prerelease == 'true'
