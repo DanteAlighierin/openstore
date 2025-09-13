@@ -10,10 +10,10 @@
 
 <img src="./logo.png" width=80 alt="logo"/>
 
-Open client for RuStore (unofficial)
+Open client for popular russian app store (unofficial)
 
 ## Features
-- [x] Search apps in RuStore
+- [x] Search apps
 - [x] View apps descriptions, rating and reviews
 - [x] Native app installing
 - [x] Updating apps (for now only manually)

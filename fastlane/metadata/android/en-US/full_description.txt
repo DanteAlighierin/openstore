@@ -1,1 +1,1 @@
-FLOSS client for RuStore api, completely replicates the functionality of RuStore for downloading and searching applications, without any tracking and intrusive advertising
+FLOSS client for the popular russian app store api, completely replicates the functionality for downloading and searching applications, without any tracking and intrusive advertising

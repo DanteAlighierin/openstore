@@ -1,1 +1,1 @@
-Libre client for RuStore
+Libre client for popular russian app store
