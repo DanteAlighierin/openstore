@@ -1,12 +1,6 @@
 package dev.mi6e4ka.openstore.ui.screen.details
 
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
 import android.content.Intent
-import android.os.Build
-import android.util.Log
-import android.widget.Toast
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
@@ -36,6 +30,7 @@ import androidx.compose.material.icons.filled.ArrowCircleUp
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.OpenInBrowser
 import androidx.compose.material.icons.filled.SupervisedUserCircle
+import androidx.compose.material.icons.filled.UploadFile
 import androidx.compose.material.icons.rounded.Android
 import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.Security
@@ -330,7 +325,15 @@ fun DetailsScreen(
                                     .padding(bottom = 4.dp, top = 2.dp),
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                             ) {
-                                //InfoBadge("%.1f MB".format(item.fileSize/1024/1024), "Вес")
+                                AssistChip(
+                                    label = {
+                                        Text("%.1f MB".format(
+                                            (state.appFiles?.sumOf { it.size } ?: 0L) / 1024.0 / 1024.0)
+                                        )
+                                    },
+                                    leadingIcon = {Icon(imageVector = Icons.Default.UploadFile, contentDescription = null)},
+                                    onClick = {},
+                                )
 //                            InfoBadge(, "загрузок")
 //                            InfoBadge("${getAndroidVersion(item.minSdkVersion)}+", "Android",
 //                                Modifier
