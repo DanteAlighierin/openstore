@@ -8,6 +8,7 @@ data class DownloadLinkRequest(
     @SerializedName("screenDensity") val screenDensity: Int,
     @SerializedName("sdkVersion") val sdkVersion: Int,
     @SerializedName("withoutSplits") val withoutSplits: Boolean,
+    @SerializedName("supportedAbis") val supportedAbis: List<String>,
 )
 
 data class DownloadLinkResponse(
@@ -20,4 +21,6 @@ data class DownloadLinkResponseBody(
 
 data class DownloadLinkResponseItem(
     @SerializedName("url") val url: String,
+    @SerializedName("size") val size: Long,
+    @SerializedName("hash") val hash: String,
 )

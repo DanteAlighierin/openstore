@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageInstaller
+import android.util.Log
 import android.widget.Toast
 import androidx.core.os.BundleCompat
 import dev.mi6e4ka.openstore.R
@@ -34,6 +35,8 @@ class PackageInstallerStatusReceiver : BroadcastReceiver() {
             }
             else -> {
                 Toast.makeText(context, if (isUninstall) R.string.failed_uninstall else R.string.failed_install, Toast.LENGTH_SHORT).show()
+                val errorMessage = intent.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE)
+                Log.e("app manager", errorMessage ?: "no error message")
             }
         }
     }

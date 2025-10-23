@@ -287,7 +287,7 @@ fun DetailsScreen(
                                 if (!state.isInstalled || state.isDownloading) {
                                     //FilledTonalButton(onClick = {}, modifier = Modifier.weight(1f)) { Text("Copy apk link") }
                                     Button(onClick = {
-                                        viewModel.downloadAndInstallApk(context)
+                                        viewModel.downloadAndInstallApp(context)
                                     }, modifier = Modifier.weight(1f), enabled = !state.isDownloading && state.isSupported) {
                                         if (state.installStatus is InstallStatus.Pending) {
                                             Text(stringResource(R.string.installing))
@@ -307,7 +307,7 @@ fun DetailsScreen(
                                     }, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.uninstall)) }
                                     if (state.isNeedUpgrade) {
                                         Button(onClick = {
-                                            viewModel.downloadAndInstallApk(context)
+                                            viewModel.downloadAndInstallApp(context)
                                         }, modifier = Modifier.weight(1f), enabled = state.isSupported) { Text(stringResource(R.string.update)) }
                                     } else {
                                         Button(onClick = {

@@ -7,118 +7,122 @@ import android.content.pm.PackageInstaller
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
-import androidx.annotation.RequiresApi
+import dev.mi6e4ka.openstore.data.model.DownloadLinkResponseItem
 import kotlinx.coroutines.CoroutineScope
 import java.io.File
 import java.io.FileOutputStream
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.ResponseBody
 import java.io.IOException
 import java.util.concurrent.TimeUnit
+import kotlin.concurrent.atomics.AtomicLong
+import kotlin.concurrent.atomics.ExperimentalAtomicApi
+import kotlin.coroutines.cancellation.CancellationException
 
 class ApkInstaller(private val context: Context) {
 
     companion object {
-        private val okHttpClient = OkHttpClient()
-    }
-
-    fun downloadApkWithProgress(
-        url: String,
-        onProgress: (percent: Int, downloaded: Long, total: Long) -> Unit,
-        onSuccess: (File) -> Unit,
-        onError: (Throwable) -> Unit,
-        onCancel: () -> Unit,
-    ): () -> Unit {
-
-        val fileName = url.split("/").last()
-        val apkFile = getApkFile(fileName)
-
-        // Проверяем, не скачан ли уже файл
-        if (isApkAlreadyDownloaded(fileName)) {
-            onSuccess(apkFile)
-            return {} // Пустая функция отмены
-        }
-
-        val request = Request.Builder()
-            .url(url)
-            .build()
-
-        val okHttpClient = OkHttpClient.Builder()
+        private val okHttpClient = OkHttpClient.Builder()
             .connectTimeout(60, TimeUnit.SECONDS)
             .readTimeout(120, TimeUnit.SECONDS)
             .writeTimeout(120, TimeUnit.SECONDS)
             .build()
+    }
 
-        val call = okHttpClient.newCall(request)
+    @OptIn(ExperimentalAtomicApi::class)
+    fun downloadFilesWithProgress(
+        files: List<DownloadLinkResponseItem>,
+        onProgress: (percent: Int, downloaded: Long, total: Long) -> Unit,
+        onSuccess: (List<File>) -> Unit,
+        onError: (Throwable) -> Unit,
+        onCancel: () -> Unit,
+    ): () -> Unit {
 
-        CoroutineScope(Dispatchers.IO).launch {
+        val downloadRunner = CoroutineScope(Dispatchers.IO).launch {
+            val totalBytesToDownload = files.sumOf { it.size }
+            val totalBytesDownloaded = AtomicLong(0)
+
+            val downloadedFiles = mutableListOf<File>()
+
             try {
-                call.execute().use { response ->
-                    if (!response.isSuccessful) {
-                        throw IOException("Ошибка загрузки: ${response.code}")
-                    }
 
-                    val responseBody = response.body
-                    if (responseBody == null) {
-                        throw IOException("Пустой ответ от сервера")
-                    }
+                val downloadJobs = files.map { file ->
+                    async {
+                        val fileName = file.url.split("/").last()
+                        val apkFile = getApkFile(fileName)
+                        downloadedFiles.add(apkFile)
 
-                    val contentLength = responseBody.contentLength()
-                    val inputStream = responseBody.byteStream()
-                    val outputStream = FileOutputStream(apkFile)
+                        val request = Request.Builder().url(file.url).build()
+                        val call = okHttpClient.newCall(request)
 
-                    val buffer = ByteArray(8192)
-                    var downloaded: Long = 0
-                    var bytesRead: Int
+                        call.execute().use { response ->
+                            if (!response.isSuccessful) throw IOException("Ошибка загрузки: ${response.code}")
 
-                    while (inputStream.read(buffer).also { bytesRead = it } != -1) {
-                        if (call.isCanceled()) {
-                            throw IOException("Canceled")
+                            val responseBody =
+                                response.body ?: throw IOException("Пустой ответ от сервера")
+                            val inputStream = responseBody.byteStream()
+                            val outputStream = FileOutputStream(apkFile)
+
+                            val buffer = ByteArray(8192)
+                            var bytesRead: Int
+
+                            while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                                if (call.isCanceled()) {
+                                    throw IOException("Canceled")
+                                }
+
+                                outputStream.write(buffer, 0, bytesRead)
+
+                                val newTotalDownloaded =
+                                    totalBytesDownloaded.addAndFetch(bytesRead.toLong())
+                                val percent = if (totalBytesToDownload > 0) {
+                                    (newTotalDownloaded * 100 / totalBytesToDownload).toInt()
+                                } else {
+                                    0
+                                }
+
+                                withContext(Dispatchers.Main) {
+                                    onProgress(percent, newTotalDownloaded, totalBytesToDownload)
+                                }
+                            }
+
+                            outputStream.flush()
+                            inputStream.close()
+                            outputStream.close()
+
+                            apkFile
                         }
-
-                        outputStream.write(buffer, 0, bytesRead)
-                        downloaded += bytesRead.toLong()
-
-                        val percent = if (contentLength > 0) {
-                            (downloaded * 100 / contentLength).toInt()
-                        } else {
-                            0
-                        }
-
-                        withContext(Dispatchers.Main) {
-                            onProgress(percent, downloaded, contentLength)
-                        }
                     }
+                }
+                val resultingFiles = downloadJobs.awaitAll()
 
-                    outputStream.flush()
-                    inputStream.close()
-                    outputStream.close()
-
-                    withContext(Dispatchers.Main) {
-                        onSuccess(apkFile)
-                    }
+                // Если мы здесь, значит все файлы скачаны успешно
+                withContext(Dispatchers.Main) {
+                    onSuccess(resultingFiles)
                 }
             } catch (e: Exception) {
-                if (apkFile.exists()) {
-                    apkFile.delete()
-                }
-                if (e.message?.contains("Canceled") == true || e.message?.contains("closed") == true || e.message?.contains("CANCEL") == true) {
-                    onCancel()
-                } else {
-                    withContext(Dispatchers.Main) {
-                        onError(e)
+                downloadedFiles.forEach { file ->
+                    if (file.exists()) {
+                        file.delete()
                     }
+                }
+
+                // Обрабатываем ошибки
+                if (e is CancellationException) {
+                    withContext(Dispatchers.Main) { onCancel() }
+                } else {
+                    withContext(Dispatchers.Main) { onError(e) }
                 }
             }
         }
 
         return {
-            call.cancel()
+            downloadRunner.cancel()
         }
     }
 
@@ -131,10 +135,12 @@ class ApkInstaller(private val context: Context) {
         return File(context.externalCacheDir, fileName)
     }
 
-    fun deleteApkFile(fileName: String) {
-        val apkFile = getApkFile(fileName)
-        if (apkFile.exists()) {
-            apkFile.delete()
+    fun cleanApkFiles(files: List<String>) {
+        files.forEach {
+            val apkFile = getApkFile(it)
+            if (apkFile.exists()) {
+                apkFile.delete()
+            }
         }
     }
 
@@ -155,31 +161,32 @@ class ApkInstaller(private val context: Context) {
             }
         }
 
-    fun installApk(context: Context, apkFile: File, installerCallback: PackageInstaller.SessionCallback, onError: (e: Exception) -> Unit) {
+    fun installSplitApk(context: Context, apkFiles: List<File>, installerCallback: PackageInstaller.SessionCallback, onError: (e: Exception) -> Unit) {
+        val sessionId = installer.createSession(sessionParams)
+        installer.registerSessionCallback(
+            installerCallback,
+            Handler(Looper.getMainLooper())
+        )
+
+        val session = installer.openSession(sessionId)
         try {
-            val id = installer.createSession(sessionParams)
-            installer.registerSessionCallback(
-                installerCallback,
-                Handler(Looper.getMainLooper())
-            )
-
-            val session = installer.openSession(id)
-
             session.use { activeSession ->
-                val sizeBytes = apkFile.length()
-                apkFile.inputStream().use { fileStream ->
-                    activeSession.openWrite(apkFile.name, 0, sizeBytes).use { outputStream ->
-                        fileStream.copyTo(outputStream)
-                        activeSession.fsync(outputStream)
+                apkFiles.forEach { file ->
+                    val sizeBytes = file.length()
+                    file.inputStream().use { fileStream ->
+                        activeSession.openWrite(file.name, 0, sizeBytes).use { outputStream ->
+                            fileStream.copyTo(outputStream)
+                            activeSession.fsync(outputStream)
+                        }
                     }
                 }
-                val pendingIntent = PendingIntent.getBroadcast(context, id, intent, flags)
+                val pendingIntent = PendingIntent.getBroadcast(context, sessionId, intent, flags)
                 activeSession.commit(pendingIntent.intentSender)
             }
         } catch (e: Exception) {
+            installer.abandonSession(sessionId)
             onError(e)
         }
-
     }
 
 }

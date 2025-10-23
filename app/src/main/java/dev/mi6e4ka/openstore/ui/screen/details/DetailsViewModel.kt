@@ -8,13 +8,12 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
 import android.widget.Toast
-import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import dev.mi6e4ka.openstore.R
-import dev.mi6e4ka.openstore.data.model.AppCommentsResponseBody
 import dev.mi6e4ka.openstore.data.model.AppRatingResponseBody
+import dev.mi6e4ka.openstore.data.model.DownloadLinkResponseItem
 import dev.mi6e4ka.openstore.data.model.ItemDetails
 import dev.mi6e4ka.openstore.di.AppModule
 import dev.mi6e4ka.openstore.internal.installer.ApkInstaller
@@ -31,7 +30,9 @@ data class DetailsState(
     val item: ItemDetails? = null,
     val rating: AppRatingResponseBody? = null,
     val error: String? = null,
-    val downloadLink: String? = null,
+    val appFiles: List<DownloadLinkResponseItem>? = null,
+    val plainApkUrl: String? = null,
+    val splitOnly: Boolean? = null,
     val installStatus: InstallStatus = InstallStatus.Idle,
     val isDownloading: Boolean = false,
     val downloadProgress: Int = 0,
@@ -77,26 +78,27 @@ class DetailsViewModel(private val itemId: String, private val apkInstaller: Apk
                 //
                 _state.update { it.copy(isSupported = Build.VERSION.SDK_INT >= item.minSdkVersion) }
 
-                val downloadLink = AppModule.searchRepository.getAppDownloadLink(item.appId)
+                val appFiles = AppModule.searchRepository.getAppFiles(item.appId, firstInstall = true, supportedAbis = Build.SUPPORTED_ABIS.toList(), withoutSplits = false)
+                val singleApkUrl = AppModule.searchRepository.getAppFiles(item.appId, firstInstall = true, supportedAbis = Build.SUPPORTED_ABIS.toList(), withoutSplits = true).firstOrNull()?.url
                 val rating = AppModule.searchRepository.getAppRating(itemId)
-                _state.update{ it.copy(item = item, rating = rating, downloadLink = downloadLink, isLoading = false) }
+                _state.update{ it.copy(item = item, rating = rating, appFiles = appFiles, isLoading = false, plainApkUrl = singleApkUrl, splitOnly = singleApkUrl == null) }
             } catch (e: Exception) {
                 _state.update { it.copy(error = e.message, isLoading = false) }
             }
         }
     }
 
-    fun downloadAndInstallApk(context: Context) {
+    fun downloadAndInstallApp(context: Context) {
         viewModelScope.launch {
             _state.update { it.copy(isDownloading = true, downloadProgress = 0, downloadTotalBytes = 0, downloadCurrentBytes = 0) }
-            Log.d(null, "download apk " + state.value.downloadLink)
-            cancelDownload = apkInstaller.downloadApkWithProgress(
-                state.value.downloadLink ?: "",
+            Log.d(null, "download apk " + state.value.appFiles)
+            cancelDownload = apkInstaller.downloadFilesWithProgress(
+                state.value.appFiles!!,
                 onProgress = { percent, downloaded, total ->
                     _state.update { it.copy(downloadProgress = percent, downloadCurrentBytes = downloaded, downloadTotalBytes = total) }
                 },
-                onSuccess = { apkFile ->
-                    installApk(context, apkFile)
+                onSuccess = { apkFiles ->
+                    installApp(context, apkFiles)
                 },
                 onError = { error ->
                     if (error.message?.contains("timeout") == true) {
@@ -104,7 +106,6 @@ class DetailsViewModel(private val itemId: String, private val apkInstaller: Apk
                     } else if (error.message?.contains("Failed to allocate") == true) {
                         Toast.makeText(context, R.string.insufficient_memory, Toast.LENGTH_SHORT).show()
                     } else {
-                        println("ERROR: ${error.message}")
                         Toast.makeText(context, R.string.loading_error, Toast.LENGTH_SHORT).show()
                     }
                     _state.update { it.copy(isDownloading = false) }
@@ -113,18 +114,6 @@ class DetailsViewModel(private val itemId: String, private val apkInstaller: Apk
                     _state.update { it.copy(isDownloading = false) }
                 }
             )
-//                                        val uri = FileProvider.getUriForFile(
-//                                            context,
-//                                            "${context.packageName}.provider",
-//                                            apkFile
-//                                        )
-//
-//                                        val intent = Intent(Intent.ACTION_VIEW).apply {
-//                                            setDataAndType(uri, "application/vnd.android.package-archive")
-//                                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-//                                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-//                                        }
-//                                        launcher.launch(intent)
         }
     }
 
@@ -133,7 +122,7 @@ class DetailsViewModel(private val itemId: String, private val apkInstaller: Apk
         cancelDownload = null
     }
 
-    private fun installApk(context: Context, apkFile: File) {
+    private fun installApp(context: Context, apkFiles: List<File>) {
         viewModelScope.launch {
             _state.update { it.copy(installStatus = InstallStatus.Pending) }
             val installerCallback = object : android.content.pm.PackageInstaller.SessionCallback() {
@@ -145,14 +134,15 @@ class DetailsViewModel(private val itemId: String, private val apkInstaller: Apk
                     _state.update { it.copy(installStatus = InstallStatus.Success, isDownloading = false)}
                     if (success) {
                         _state.update { it.copy(isInstalled = true, isNeedUpgrade = false) }
-                        apkInstaller.deleteApkFile(apkFile.name)
+                        apkInstaller.cleanApkFiles(apkFiles.map {it.name})
                     }
                 }
             }
-            apkInstaller.installApk(context, apkFile, installerCallback, onError = { error ->
+            apkInstaller.installSplitApk(context, apkFiles, installerCallback, onError = { error ->
                 if (error.message?.contains("Failed to allocate") == true) {
                     Toast.makeText(context, R.string.insufficient_memory, Toast.LENGTH_SHORT).show()
                 } else {
+                    println("apk installer $error")
                     Toast.makeText(context, R.string.installing_error, Toast.LENGTH_SHORT).show()
                 }
                 _state.update { it.copy(installStatus = InstallStatus.Idle, isDownloading = false) }
