@@ -1,5 +1,7 @@
 package dev.mi6e4ka.openstore.ui.screen.details
 
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Intent
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -8,6 +10,7 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -73,6 +76,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -387,8 +391,16 @@ fun DetailsScreen(
                         }
                         var isWhatsNewExpanded by remember { mutableStateOf(false) }
                         Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            onClick = {isWhatsNewExpanded = !isWhatsNewExpanded}
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .combinedClickable(
+                                    onClick = {isWhatsNewExpanded = !isWhatsNewExpanded},
+                                    onLongClick = {
+                                        val clipboardManager = getSystemService(context, ClipboardManager::class.java) as ClipboardManager
+                                        clipboardManager.setPrimaryClip(ClipData.newPlainText("about app", item.whatsNew))
+                                    }
+                                ),
                         ) {
                             Column(
                                 Modifier
