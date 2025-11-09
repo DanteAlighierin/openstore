@@ -32,4 +32,5 @@
     <string name="useful_first">Полезные</string>
     <string name="positive_first">Позитивные</string>
     <string name="negative_first">Негативные</string>
+    <string name="download_has_started">Загрузка началась</string>
 </resources>

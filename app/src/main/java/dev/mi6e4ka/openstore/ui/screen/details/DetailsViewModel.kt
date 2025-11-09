@@ -5,14 +5,12 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageInfo
+import android.content.pm.PackageInstaller
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.util.Log
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -132,7 +130,7 @@ class DetailsViewModel(private val itemId: String, private val apkInstaller: Apk
     private fun installApp(context: Context, apkFiles: List<File>) {
         viewModelScope.launch {
             _state.update { it.copy(installStatus = InstallStatus.Pending) }
-            val installerCallback = object : android.content.pm.PackageInstaller.SessionCallback() {
+            val installerCallback = object : PackageInstaller.SessionCallback() {
                 override fun onCreated(sessionId: Int) {}
                 override fun onBadgingChanged(sessionId: Int) {}
                 override fun onActiveChanged(sessionId: Int, active: Boolean) {}
@@ -199,8 +197,8 @@ class DetailsViewModel(private val itemId: String, private val apkInstaller: Apk
         val fileName = "${state.value.item?.packageName}-${state.value.item?.versionName}.apk"
         val request = DownloadManager.Request(state.value.plainApkUrl?.toUri())
             .setTitle(fileName)
-            .setDescription("Скачивание...")
             .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+            .setMimeType("application/vnd.android.package-archive")
             .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
 
         val downloadManager = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -210,7 +208,7 @@ class DetailsViewModel(private val itemId: String, private val apkInstaller: Apk
             context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
         }
         downloadManager.enqueue(request)
-        Toast.makeText(context, "Загрузка началась...", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, R.string.download_has_started, Toast.LENGTH_SHORT).show()
 
     }
 }

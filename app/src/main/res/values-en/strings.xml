@@ -31,4 +31,5 @@
     <string name="useful_first">Useful</string>
     <string name="positive_first">Positive</string>
     <string name="negative_first">Negative</string>
+    <string name="download_has_started">Download has started</string>
 </resources>
