@@ -28,15 +28,14 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.ArrowForward
 import androidx.compose.material.icons.filled.ArrowCircleUp
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.FileCopy
 import androidx.compose.material.icons.filled.OpenInBrowser
 import androidx.compose.material.icons.filled.SupervisedUserCircle
 import androidx.compose.material.icons.filled.UploadFile
 import androidx.compose.material.icons.rounded.Adb
 import androidx.compose.material.icons.rounded.Android
 import androidx.compose.material.icons.rounded.Download
-import androidx.compose.material.icons.rounded.FileCopy
 import androidx.compose.material.icons.rounded.Security
+import androidx.compose.material.icons.rounded.Update
 import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
@@ -84,8 +83,18 @@ import dev.mi6e4ka.openstore.internal.installer.ApkInstaller
 import dev.mi6e4ka.openstore.ui.components.AppIcon
 import dev.mi6e4ka.openstore.ui.components.GalleryWithPager
 import kotlinx.coroutines.launch
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.format
+import kotlinx.datetime.format.FormatStringsInDatetimeFormats
+import kotlinx.datetime.format.byUnicodePattern
+import kotlinx.datetime.toLocalDateTime
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class,
+    FormatStringsInDatetimeFormats::class, ExperimentalTime::class
+)
 @Composable
 fun DetailsScreen(
     itemId: String,
@@ -360,6 +369,13 @@ fun DetailsScreen(
                                     onClick = {},
                                     label = {Text(if ((state.appFiles?.size ?: 1) > 1) "${state.appFiles?.size} Split APKs" else  "APK")},
                                     leadingIcon = {Icon(imageVector = Icons.Rounded.Adb, contentDescription = null)}
+                                )
+                                AssistChip(
+                                    onClick = {},
+                                    label = {
+                                        val parsedDate = Instant.parse(item.appVerUpdatedAt).toLocalDateTime(TimeZone.currentSystemDefault())
+                                        Text(parsedDate.format(LocalDateTime.Format {byUnicodePattern("dd.MM.yyyy")}))},
+                                    leadingIcon = {Icon(imageVector = Icons.Rounded.Update, contentDescription = null)}
                                 )
                                 AssistChip(
                                     onClick = {},

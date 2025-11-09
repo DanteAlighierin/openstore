@@ -20,6 +20,7 @@ data class ItemDetails(
     @SerializedName("roundedDownloadsText") val roundedDownloadsText: String,
     @SerializedName("ageLegal") val ageLegal: String,
     @SerializedName("whatsNew") val whatsNew: String,
+    @SerializedName("appVerUpdatedAt") val appVerUpdatedAt: String,
 )
 
 data class Files(

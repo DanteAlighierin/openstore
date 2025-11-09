@@ -72,6 +72,7 @@ dependencies {
     implementation(libs.androidx.animation)
     implementation(libs.androidx.paging.compose)
     implementation(libs.material)
+    implementation(libs.kotlinx.datetime)
     debugImplementation(libs.androidx.ui.tooling.preview)
     debugImplementation(libs.okhttp3.logging.interceptor)
     testImplementation(libs.junit)
