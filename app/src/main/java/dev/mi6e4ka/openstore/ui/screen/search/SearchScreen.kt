@@ -2,12 +2,10 @@ package dev.mi6e4ka.openstore.ui.screen.search
 
 import android.content.Intent
 import android.content.pm.verify.domain.DomainVerificationManager
-import android.content.pm.verify.domain.DomainVerificationUserState
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import android.util.Log
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -19,15 +17,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DomainVerification
+import androidx.compose.material.icons.filled.AddLink
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Verified
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -35,11 +30,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -90,27 +83,6 @@ fun SearchScreen(navController: NavController = rememberNavController()) {
         modifier = Modifier.fillMaxSize(),
         topBar = { TopAppBar(title = {Text(stringResource(R.string.app_name))}) },
     ) { innerPadding ->
-//        if (showDialog) {
-//            AlertDialog(
-//                onDismissRequest = {showDialog=false},
-//                title = { Text("Добавьте ссылки RuStore") },
-//                text = { Text("Чтобы ") },
-//                confirmButton = {
-//                    TextButton(onClick = {
-//                        val intent = Intent(Settings.ACTION_APP_OPEN_BY_DEFAULT_SETTINGS)
-//                            .apply { data = Uri.fromParts("package", context.packageName, null) }
-//                        context.startActivity(intent)
-//                    }) {
-//                        Text("Подтвердить")
-//                    }
-//                },
-//                dismissButton = {
-//                    TextButton(onClick = {showDialog=false}) {
-//                        Text("Позже")
-//                    }
-//                }
-//            )
-//        }
         Column(
             modifier = Modifier
                 .padding(innerPadding)
@@ -129,11 +101,13 @@ fun SearchScreen(navController: NavController = rememberNavController()) {
                             .height(50.dp)
                             .clip(RoundedCornerShape(12.dp))
                             .clickable(onClick = {
-                                val intent = Intent(Settings.ACTION_APP_OPEN_BY_DEFAULT_SETTINGS)
-                                    .apply { data = Uri.fromParts("package", context.packageName, null) }
-                                context.startActivity(intent)
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                                    val intent = Intent(Settings.ACTION_APP_OPEN_BY_DEFAULT_SETTINGS)
+                                        .apply { data = Uri.fromParts("package", context.packageName, null) }
+                                    context.startActivity(intent)
+                                }
                             }),
-                        colors = CardDefaults.cardColors(containerColor = Color(255, 30, 30, 40))
+                        colors = CardDefaults.cardColors(containerColor = Color(109, 255, 30, 40))
                     ) {
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -143,7 +117,7 @@ fun SearchScreen(navController: NavController = rememberNavController()) {
                                 .padding(horizontal = 10.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Default.DomainVerification,
+                                imageVector = Icons.Default.AddLink,
                                 contentDescription = null,
                                 modifier = Modifier.size(32.dp),
                             )

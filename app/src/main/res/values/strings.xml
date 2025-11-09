@@ -18,7 +18,7 @@
     <string name="search_title">Поиск</string>
     <string name="no_reviews">Отзывов пока нет</string>
     <string name="reviews_title">Отзывы</string>
-    <string name="unconfirmed_domains">Домены не подтверждены</string>
+    <string name="unconfirmed_domains">Открывать ссылки в приложении</string>
     <string name="app_uninstalled">Удалено</string>
     <string name="app_installed">Установлено</string>
     <string name="failed_uninstall">Не удалось удалить</string>

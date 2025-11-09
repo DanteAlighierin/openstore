@@ -17,7 +17,7 @@
     <string name="search_title">Search</string>
     <string name="no_reviews">No reviews yet</string>
     <string name="reviews_title">Reviews</string>
-    <string name="unconfirmed_domains">Domains not verified</string>
+    <string name="unconfirmed_domains">Open links in the app</string>
     <string name="app_uninstalled">App deleted</string>
     <string name="app_installed">App installed</string>
     <string name="failed_uninstall">Unable to uninstall</string>
