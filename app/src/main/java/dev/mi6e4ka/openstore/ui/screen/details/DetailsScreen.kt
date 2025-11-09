@@ -102,6 +102,7 @@ import kotlin.time.Instant
 @Composable
 fun DetailsScreen(
     itemId: String,
+    appPlatform: String,
     navController: NavController = rememberNavController()
 ) {
     val context = LocalContext.current
@@ -109,7 +110,7 @@ fun DetailsScreen(
 
     //val viewModel = remember (itemId) { DetailsViewModel(itemId, apkInstaller) }
     val viewModel : DetailsViewModel = viewModel(
-        factory = DetailsViewModelFactory(itemId, apkInstaller)
+        factory = DetailsViewModelFactory(appPlatform, apkInstaller)
     )
     val state by viewModel.state.collectAsState()
 

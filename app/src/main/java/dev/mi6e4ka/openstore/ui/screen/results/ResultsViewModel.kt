@@ -5,14 +5,40 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
+import dev.mi6e4ka.openstore.data.model.AppRatingResponseBody
+import dev.mi6e4ka.openstore.data.model.DownloadLinkResponseItem
+import dev.mi6e4ka.openstore.data.model.ItemDetails
 import dev.mi6e4ka.openstore.data.model.SearchResult
 import dev.mi6e4ka.openstore.di.AppModule
+import dev.mi6e4ka.openstore.ui.screen.details.DetailsState
+import dev.mi6e4ka.openstore.ui.screen.details.InstallStatus
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.update
+
+data class Platform(
+    val label: String,
+    val value: String
+)
+data class ResultsState(
+    val selectedPlatform: Platform = Platform("Mobile", "mobile"),
+)
 
 class ResultsViewModel(private val query: String) : ViewModel() {
+    private val _state = MutableStateFlow(ResultsState())
+    val state: StateFlow<ResultsState> = _state.asStateFlow()
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val searchFlow: Flow<PagingData<SearchResult>> = state.flatMapLatest {
+        AppModule.searchRepository.search(query, it.selectedPlatform.value).flow.cachedIn(viewModelScope)
+    }
 
-    val searchFlow: Flow<PagingData<SearchResult>> =
-        AppModule.searchRepository.search(query).flow.cachedIn(viewModelScope)
+    fun selectPlatform(newPlatform: Platform) {
+        _state.update { it.copy(selectedPlatform = newPlatform) }
+    }
 
 }
 

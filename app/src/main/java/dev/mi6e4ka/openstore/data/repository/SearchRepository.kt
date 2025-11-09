@@ -14,22 +14,22 @@ import dev.mi6e4ka.openstore.data.paging.SearchPagingSource
 class SearchRepository {
     private val apiService = ApiClient.service
 
-    fun search(query: String): Pager<Int, SearchResult> {
+    fun search(query: String, deviceType : String): Pager<Int, SearchResult> {
         return Pager(
             config = PagingConfig(
                 pageSize = 20,
                 initialLoadSize = 20,
                 enablePlaceholders = false
             ),
-            pagingSourceFactory = { SearchPagingSource(apiService, query) }
+            pagingSourceFactory = { SearchPagingSource(apiService, query, deviceType) }
         )
     }
 
-    suspend fun getItemDetails(id: String): ItemDetails {
-        return apiService.getItemDetails(id).body
+    suspend fun getItemDetails(packageName: String, deviceType: String): ItemDetails {
+        return apiService.getItemDetails(deviceType, packageName).body
     }
 
-    suspend fun getAppFiles(id: Int, firstInstall: Boolean, supportedAbis: List<String>, withoutSplits: Boolean): List<DownloadLinkResponseItem> {
+    suspend fun getAppFiles(id: Int, firstInstall: Boolean, supportedAbis: List<String>, withoutSplits: Boolean, deviceType: String): List<DownloadLinkResponseItem> {
         val req = DownloadLinkRequest(
             appId = id,
             firstInstall = firstInstall,
@@ -38,7 +38,7 @@ class SearchRepository {
             withoutSplits = withoutSplits,
             supportedAbis = supportedAbis
         )
-        return  apiService.getAppDownloadLink(req).body.downloadUrls
+        return  apiService.getAppDownloadLink(deviceType, req).body.downloadUrls
     }
 
     suspend fun getAppRating(packageName: String): AppRatingResponseBody {

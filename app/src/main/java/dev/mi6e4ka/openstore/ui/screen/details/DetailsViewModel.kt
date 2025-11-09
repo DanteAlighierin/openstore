@@ -53,7 +53,7 @@ sealed class InstallStatus {
     object Success : InstallStatus()
 }
 
-class DetailsViewModel(private val itemId: String, private val apkInstaller: ApkInstaller) : ViewModel() {
+class DetailsViewModel(private val appPlatform: String, private val apkInstaller: ApkInstaller) : ViewModel() {
     private val _state = MutableStateFlow(DetailsState())
     val state: StateFlow<DetailsState> = _state.asStateFlow()
     private var cancelDownload: (() -> Unit)? = null
@@ -64,8 +64,10 @@ class DetailsViewModel(private val itemId: String, private val apkInstaller: Apk
         }
         Log.d(null, "Initial loading")
         viewModelScope.launch {
+            var item: ItemDetails? = null
+            // основная информация о приложении
             try {
-                val item = AppModule.searchRepository.getItemDetails(itemId)
+                item = AppModule.searchRepository.getItemDetails(itemId, appPlatform)
                 //
                 val packageInfo  = getPackageInfo(context, itemId)
                 _state.value = DetailsState(isLoading = true, isInstalled = packageInfo != null)
@@ -82,14 +84,29 @@ class DetailsViewModel(private val itemId: String, private val apkInstaller: Apk
                 }
                 //
                 _state.update { it.copy(isSupported = Build.VERSION.SDK_INT >= item.minSdkVersion) }
-
-                val appFiles = AppModule.searchRepository.getAppFiles(item.appId, firstInstall = true, supportedAbis = Build.SUPPORTED_ABIS.toList(), withoutSplits = false)
-                val singleApkUrl = AppModule.searchRepository.getAppFiles(item.appId, firstInstall = true, supportedAbis = Build.SUPPORTED_ABIS.toList(), withoutSplits = true).firstOrNull()?.url
-                val rating = AppModule.searchRepository.getAppRating(itemId)
-                _state.update{ it.copy(item = item, rating = rating, appFiles = appFiles, isLoading = false, plainApkUrl = singleApkUrl, splitOnly = singleApkUrl == null) }
+                _state.update{ it.copy(item = item) }
             } catch (e: Exception) {
                 _state.update { it.copy(error = e.message, isLoading = false) }
             }
+            // пробуем получить все файлы приложения (включая split)
+            try {
+                if (item == null) return@launch
+                val appFiles = AppModule.searchRepository.getAppFiles(item.appId, firstInstall = true, supportedAbis = Build.SUPPORTED_ABIS.toList(), withoutSplits = false, deviceType = appPlatform)
+                _state.update{ it.copy(appFiles = appFiles) }
+            } catch (e: Exception) {}
+            // пробуем получить файлы приложения указав что нам не нужны split apk
+            try {
+                if (item == null) return@launch
+                val singleApkUrl = AppModule.searchRepository.getAppFiles(item.appId, firstInstall = true, supportedAbis = Build.SUPPORTED_ABIS.toList(), withoutSplits = true, deviceType = appPlatform).firstOrNull()?.url
+                _state.update{ it.copy(plainApkUrl = singleApkUrl, splitOnly = singleApkUrl == null) }
+            } catch (e: Exception) {}
+            // рейтинг
+            try {
+                val rating = AppModule.searchRepository.getAppRating(itemId)
+                _state.update{ it.copy(rating = rating) }
+            } catch (e: Exception) {}
+
+            _state.update { it.copy(isLoading = false) }
         }
     }
 

@@ -8,19 +8,32 @@ import dev.mi6e4ka.openstore.data.model.ItemDetailsResponse
 import dev.mi6e4ka.openstore.data.model.SearchResponse
 import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.Header
 import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface ApiService {
     @GET("applicationData/apps")
-    suspend fun search(@Query("pageSize") pageSize: Int, @Query("pageNumber") pageNumber: Int, @Query("query") query: String): SearchResponse
+    suspend fun search(
+        @Query("pageSize") pageSize: Int,
+        @Query("pageNumber") pageNumber: Int,
+        @Query("query") query: String,
+        @Query("buyeruid") buyeruid : String,
+        @Header("deviceType") deviceType : String
+    ): SearchResponse
 
     @GET("applicationData/overallInfo/{packageName}")
-    suspend fun getItemDetails(@Path("packageName") packageName: String): ItemDetailsResponse
+    suspend fun getItemDetails(
+        @Header("deviceType") deviceType : String,
+        @Path("packageName") packageName: String
+    ): ItemDetailsResponse
 
     @POST("applicationData/v2/download-link")
-    suspend fun getAppDownloadLink(@Body request: DownloadLinkRequest) : DownloadLinkResponse
+    suspend fun getAppDownloadLink(
+        @Header("deviceType") deviceType : String,
+        @Body request: DownloadLinkRequest
+    ) : DownloadLinkResponse
 
     @GET("comment/findRating")
     suspend fun getAppRating(@Query("packageName") packageName: String) : AppRatingResponse

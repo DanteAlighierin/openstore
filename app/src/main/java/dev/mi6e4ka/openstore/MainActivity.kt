@@ -90,18 +90,19 @@ class MainActivity : ComponentActivity() {
                             val query = it.arguments?.getString("query") ?: ""
                             ResultsScreen(query = query, navController = navController)
                         }
-                        composable("app/{appId}", deepLinks = listOf(
+                        composable("app/{appId}?platform={platform}", deepLinks = listOf(
                             navDeepLink { uriPattern = "https://www.rustore.ru/catalog/app/{appId}" },
                             navDeepLink { uriPattern = "https://apps.rustore.ru/app/{appId}" },
                             navDeepLink { uriPattern = "https://www.rustore.ru/instruction?appName={appName}&utm_campaign={appId}" }
                         )) { backStackEntry ->
                             val itemId = backStackEntry.arguments?.getString("appId") ?: ""
+                            val platform = backStackEntry.arguments?.getString("platform") ?: "mobile"
                             AnimatedVisibility(
                                 visible = true,
                                 enter = slideInHorizontally(initialOffsetX = { 1000 }) + fadeIn(),
                                 exit = slideOutHorizontally(targetOffsetX = { -1000 }) + fadeOut()
                             ) {
-                                DetailsScreen(itemId = itemId, navController = navController)
+                                DetailsScreen(itemId = itemId, appPlatform=platform, navController = navController)
                             }
                         }
                         composable("app/{packageName}/reviews") {
