@@ -341,19 +341,21 @@ fun DetailsScreen(
                                     leadingIcon = {Icon(imageVector = Icons.Default.UploadFile, contentDescription = null)},
                                     onClick = {},
                                 )
-//                            InfoBadge(, "загрузок")
-//                            InfoBadge("${getAndroidVersion(item.minSdkVersion)}+", "Android",
-//                                Modifier
-//                                    .clip(RoundedCornerShape(12.dp))
-//                                    .clickable(onClick = {
-//
-//                                }))
-//                            InfoBadge(item.ageLegal, "возраст")
-//                            InfoBadge(item.versionName, "версия")
+                                AssistChip(
+                                    onClick = {},
+                                    label = {Text(item.versionName)},
+                                    leadingIcon = {Icon(imageVector = Icons.Default.ArrowCircleUp, contentDescription = null)}
+                                )
+                                AssistChip(
+                                    onClick = {},
+                                    label = {
+                                        val parsedDate = Instant.parse(item.appVerUpdatedAt).toLocalDateTime(TimeZone.currentSystemDefault())
+                                        Text(parsedDate.format(LocalDateTime.Format {byUnicodePattern("dd.MM.yyyy")}))},
+                                    leadingIcon = {Icon(imageVector = Icons.Rounded.Update, contentDescription = null)}
+                                )
                                 var detailedApiVersion by remember { mutableStateOf(false) }
                                 AssistChip(
                                     onClick = {
-                                        //Toast.makeText(context, "MinSdkVersion ${item.minSdkVersion}\nTargetSdkVersion ${item.targetSdkVersion}", Toast.LENGTH_SHORT).show()
                                         detailedApiVersion = !detailedApiVersion
                                         },
                                     label = {
@@ -372,20 +374,8 @@ fun DetailsScreen(
                                 )
                                 AssistChip(
                                     onClick = {},
-                                    label = {
-                                        val parsedDate = Instant.parse(item.appVerUpdatedAt).toLocalDateTime(TimeZone.currentSystemDefault())
-                                        Text(parsedDate.format(LocalDateTime.Format {byUnicodePattern("dd.MM.yyyy")}))},
-                                    leadingIcon = {Icon(imageVector = Icons.Rounded.Update, contentDescription = null)}
-                                )
-                                AssistChip(
-                                    onClick = {},
                                     label = {Text(item.roundedDownloadsText)},
                                     leadingIcon = {Icon(imageVector = Icons.Rounded.Download, contentDescription = null)}
-                                )
-                                AssistChip(
-                                    onClick = {},
-                                    label = {Text(item.versionName)},
-                                    leadingIcon = {Icon(imageVector = Icons.Default.ArrowCircleUp, contentDescription = null)}
                                 )
                                 AssistChip(
                                     onClick = {},
