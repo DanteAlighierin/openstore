@@ -42,15 +42,11 @@ class ApkInstaller(private val context: Context) {
         onError: (Throwable) -> Unit,
         onCancel: () -> Unit,
     ): () -> Unit {
-
         val downloadRunner = CoroutineScope(Dispatchers.IO).launch {
             val totalBytesToDownload = files.sumOf { it.size }
             val totalBytesDownloaded = AtomicLong(0)
-
             val downloadedFiles = mutableListOf<File>()
-
             try {
-
                 val downloadJobs = files.map { file ->
                     async {
                         val fileName = file.url.split("/").last()
@@ -101,7 +97,6 @@ class ApkInstaller(private val context: Context) {
                 }
                 val resultingFiles = downloadJobs.awaitAll()
 
-                // Если мы здесь, значит все файлы скачаны успешно
                 withContext(Dispatchers.Main) {
                     onSuccess(resultingFiles)
                 }
@@ -111,12 +106,11 @@ class ApkInstaller(private val context: Context) {
                         file.delete()
                     }
                 }
-
-                // Обрабатываем ошибки
+                println("STOP ${e is CancellationException}")
                 if (e is CancellationException) {
-                    withContext(Dispatchers.Main) { onCancel() }
+                    onCancel()
                 } else {
-                    withContext(Dispatchers.Main) { onError(e) }
+                    onError(e)
                 }
             }
         }

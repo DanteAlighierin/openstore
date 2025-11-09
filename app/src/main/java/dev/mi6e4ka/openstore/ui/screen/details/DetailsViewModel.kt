@@ -1,13 +1,18 @@
 package dev.mi6e4ka.openstore.ui.screen.details
 
+import android.app.DownloadManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
+import android.os.Environment
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -24,6 +29,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
+import androidx.core.net.toUri
 
 data class DetailsState(
     val isLoading: Boolean = true,
@@ -69,6 +75,7 @@ class DetailsViewModel(private val itemId: String, private val apkInstaller: Apk
                     val installedVersionCode = (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                         packageInfo.longVersionCode
                     } else {
+                        @Suppress("DEPRECATION")
                         packageInfo.versionCode
                     }) as Long
                     if (installedVersionCode < item.versionCode) {
@@ -186,6 +193,25 @@ class DetailsViewModel(private val itemId: String, private val apkInstaller: Apk
 
     fun updateInstallStatus(isInstalled: Boolean) {
         _state.update { it.copy(isInstalled = isInstalled) }
+    }
+
+    fun downloadFileToFolder(context: Context) {
+        val fileName = "${state.value.item?.packageName}-${state.value.item?.versionName}.apk"
+        val request = DownloadManager.Request(state.value.plainApkUrl?.toUri())
+            .setTitle(fileName)
+            .setDescription("Скачивание...")
+            .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+            .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
+
+        val downloadManager = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            context.getSystemService(DownloadManager::class.java)
+        } else {
+            @Suppress("DEPRECATION")
+            context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+        }
+        downloadManager.enqueue(request)
+        Toast.makeText(context, "Загрузка началась...", Toast.LENGTH_SHORT).show()
+
     }
 }
 

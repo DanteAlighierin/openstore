@@ -128,14 +128,9 @@ fun DetailsScreen(
             actions = {
                 IconButton(onClick = {
                     scope.launch {
-                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                        val clip = ClipData.newPlainText("", state.downloadLink)
-                        clipboard.setPrimaryClip(clip)
-                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
-                            Toast.makeText(context, R.string.copied_to_buffer, Toast.LENGTH_SHORT).show()
-                        }
+                        viewModel.downloadFileToFolder(context)
                     }
-                }, enabled = state.downloadLink != null) {
+                }, enabled = !(state.splitOnly ?: true)) {
                     Icon(painterResource(R.drawable.apk_install_24px), null)
                 }
                 IconButton(onClick = {
@@ -144,7 +139,7 @@ fun DetailsScreen(
                         setSelector(Intent(Intent.ACTION_VIEW, "http://".toUri()))
                     }
                     context.startActivity(intent)
-                }) {
+                }, enabled = state.item != null) {
                     Icon(Icons.Default.OpenInBrowser, null)
                 }
             }
