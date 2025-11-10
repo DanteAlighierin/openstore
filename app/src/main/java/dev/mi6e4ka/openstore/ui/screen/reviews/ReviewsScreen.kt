@@ -15,13 +15,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.ThumbDownOffAlt
-import androidx.compose.material.icons.filled.ThumbUpOffAlt
-import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -42,6 +35,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -100,7 +94,7 @@ fun ReviewsScreen(packageName: String, navController: NavController = rememberNa
             navigationIcon = {
                 IconButton(onClick = { navController.popBackStack() }) {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        painterResource(R.drawable.ic_arrow_back_24px),
                         contentDescription = "Back"
                     )
                 }
@@ -124,7 +118,7 @@ fun ReviewsScreen(packageName: String, navController: NavController = rememberNa
                                 onClick = { selectedFilter = filter },
                                 label = {Text(stringResource(filter.displayStringResource))},
                                 leadingIcon = if (selectedFilter == filter) {
-                                    { Icon(Icons.Default.Check, contentDescription = null) }
+                                    { Icon(painterResource(R.drawable.ic_check_24px), contentDescription = null) }
                                 } else null
                             )
                         }
@@ -164,10 +158,10 @@ fun ReviewsScreen(packageName: String, navController: NavController = rememberNa
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 repeat(review.appRating) {
-                                    Icon(Icons.Filled.Star, null, Modifier.size(16.dp), tint = MaterialTheme.colorScheme.primary)
+                                    Icon(painterResource(R.drawable.ic_star_filled_24px), null, Modifier.size(16.dp), tint = MaterialTheme.colorScheme.primary)
                                 }
                                 repeat(5 - review.appRating) {
-                                    Icon(Icons.Outlined.StarBorder, null, Modifier.size(16.dp), tint = MaterialTheme.colorScheme.secondary)
+                                    Icon(painterResource(R.drawable.ic_star_24px), null, Modifier.size(16.dp), tint = MaterialTheme.colorScheme.secondary)
                                 }
                             }
                             Spacer(Modifier.height(8.dp))
@@ -177,12 +171,12 @@ fun ReviewsScreen(packageName: String, navController: NavController = rememberNa
                                 horizontalArrangement = Arrangement.spacedBy(16.dp)
                             ) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(imageVector = Icons.Default.ThumbUpOffAlt, contentDescription = null, Modifier.size(20.dp), tint = MaterialTheme.colorScheme.secondary)
+                                    Icon(painterResource(R.drawable.ic_thumb_up_24px), contentDescription = null, Modifier.size(20.dp), tint = MaterialTheme.colorScheme.secondary)
                                     Spacer(Modifier.width(4.dp))
                                     Text("${review.likeCounter}")
                                 }
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(imageVector = Icons.Default.ThumbDownOffAlt, contentDescription = null, Modifier.size(20.dp), tint = MaterialTheme.colorScheme.secondary)
+                                    Icon(painterResource(R.drawable.ic_thumb_down_24px), contentDescription = null, Modifier.size(20.dp), tint = MaterialTheme.colorScheme.secondary)
                                     Spacer(Modifier.width(6.dp))
                                     Text("${review.dislikeCounter}")
                                 }

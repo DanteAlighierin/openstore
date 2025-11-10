@@ -25,21 +25,6 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.rounded.ArrowForward
-import androidx.compose.material.icons.filled.ArrowCircleUp
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Link
-import androidx.compose.material.icons.filled.OpenInBrowser
-import androidx.compose.material.icons.filled.SupervisedUserCircle
-import androidx.compose.material.icons.filled.UploadFile
-import androidx.compose.material.icons.rounded.Adb
-import androidx.compose.material.icons.rounded.Android
-import androidx.compose.material.icons.rounded.Download
-import androidx.compose.material.icons.rounded.Security
-import androidx.compose.material.icons.rounded.Update
-import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -149,7 +134,7 @@ fun DetailsScreen(
             navigationIcon = {
                 IconButton(onClick = { navController.popBackStack() }) {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        painter = painterResource(R.drawable.ic_arrow_back_24px),
                         contentDescription = "Back"
                     )
                 }
@@ -162,7 +147,7 @@ fun DetailsScreen(
                         }
                     }
                 ){
-                    Icon(Icons.Default.Link, null)
+                    Icon(painterResource(R.drawable.ic_link_24px), null)
                 }
                 IconButton(
                     {
@@ -193,7 +178,7 @@ fun DetailsScreen(
                     }
                     context.startActivity(intent)
                 }, enabled = state.item != null) {
-                    Icon(Icons.Default.OpenInBrowser, null)
+                    Icon(painterResource(R.drawable.ic_open_in_browser_24px), null)
                 }
             }
         ) }
@@ -256,7 +241,7 @@ fun DetailsScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Icon(
-                                    imageVector = Icons.Rounded.Security,
+                                    painter = painterResource(R.drawable.ic_security_24px),
                                     contentDescription = null,
                                     modifier = Modifier.size(28.dp)
                                 )
@@ -319,7 +304,7 @@ fun DetailsScreen(
                                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Icon(Icons.Rounded.Warning, null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(22.dp))
+                                Icon(painterResource(R.drawable.ic_warning_24px), null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(22.dp))
                                 Text(stringResource(R.string.device_unsupported), color = MaterialTheme.colorScheme.error)
                             }
                         }
@@ -362,7 +347,7 @@ fun DetailsScreen(
                                     FilledTonalIconButton(onClick = {
                                         viewModel.cancelDownload()
                                     }, enabled = state.installStatus != InstallStatus.Pending) {
-                                        Icon(imageVector = Icons.Default.Close, null)
+                                        Icon(painterResource(R.drawable.ic_close_24px), null)
                                     }
                                 }
                             }
@@ -379,18 +364,18 @@ fun DetailsScreen(
                                             (state.appFiles?.sumOf { it.size } ?: 0L) / 1024.0 / 1024.0)
                                         )
                                     },
-                                    leadingIcon = {Icon(imageVector = Icons.Default.UploadFile, contentDescription = null)},
+                                    leadingIcon = {Icon(painterResource(R.drawable.ic_upload_file_24px), contentDescription = null)},
                                     onClick = {},
                                 )
                                 AssistChip(
                                     onClick = {},
                                     label = {Text(item.versionName)},
-                                    leadingIcon = {Icon(imageVector = Icons.Default.ArrowCircleUp, contentDescription = null)}
+                                    leadingIcon = {Icon(painterResource(R.drawable.ic_arrow_circle_up_24px), contentDescription = null)}
                                 )
                                 AssistChip(
                                     onClick = {},
                                     label = {FormattedDateText(item.appVerUpdatedAt)},
-                                    leadingIcon = {Icon(imageVector = Icons.Rounded.Update, contentDescription = null)}
+                                    leadingIcon = {Icon(painterResource(R.drawable.ic_update_24px), contentDescription = null)}
                                 )
                                 var detailedApiVersion by remember { mutableStateOf(false) }
                                 AssistChip(
@@ -404,22 +389,22 @@ fun DetailsScreen(
                                             Text("API ${item.minSdkVersion} +")
                                         }
                                             },
-                                    leadingIcon = {Icon(imageVector = Icons.Rounded.Android, contentDescription = null)}
+                                    leadingIcon = {Icon(painterResource(R.drawable.ic_android_24px), contentDescription = null)}
                                 )
                                 AssistChip(
                                     onClick = {},
                                     label = {Text(if ((state.appFiles?.size ?: 1) > 1) "${state.appFiles?.size} Split APKs" else  "APK")},
-                                    leadingIcon = {Icon(imageVector = Icons.Rounded.Adb, contentDescription = null)}
+                                    leadingIcon = {Icon(painterResource(R.drawable.ic_adb_24px), contentDescription = null)}
                                 )
                                 AssistChip(
                                     onClick = {},
                                     label = {Text(item.roundedDownloadsText)},
-                                    leadingIcon = {Icon(imageVector = Icons.Rounded.Download, contentDescription = null)}
+                                    leadingIcon = {Icon(painterResource(R.drawable.ic_download_24px), contentDescription = null)}
                                 )
                                 AssistChip(
                                     onClick = {},
                                     label = {Text(item.ageLegal)},
-                                    leadingIcon = {Icon(imageVector = Icons.Default.SupervisedUserCircle, contentDescription = null)}
+                                    leadingIcon = {Icon(painterResource(R.drawable.ic_supervised_user_circle_24px), contentDescription = null)}
                                 )
                             }
                             GalleryWithPager(item.fileUrls)
@@ -471,7 +456,7 @@ fun DetailsScreen(
                             ) {
                                 Text(stringResource(R.string.about_app), fontWeight = FontWeight.Bold, fontSize = 18.sp)
                                 IconButton(onClick = {showAppDescriptionSheet = true}) {
-                                    Icon(imageVector = Icons.AutoMirrored.Rounded.ArrowForward, contentDescription = null)
+                                    Icon(painterResource(R.drawable.ic_arrow_forward_24px), contentDescription = null)
                                 }
                             }
                             Text(text = item.shortDescription)

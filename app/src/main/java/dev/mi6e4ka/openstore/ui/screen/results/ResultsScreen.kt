@@ -12,11 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.PhoneAndroid
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Tv
 import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -72,7 +67,7 @@ fun ResultsScreen(
             navigationIcon = {
                 IconButton(onClick = { navController.popBackStack() }) {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        painterResource(R.drawable.ic_arrow_back_24px),
                         contentDescription = "Back"
                     )
                 }
@@ -80,13 +75,13 @@ fun ResultsScreen(
             actions = {
                 val platforms = remember {
                     listOf(
-                        Platform("Mobile", "mobile", Icons.Default.PhoneAndroid),
-                        Platform("TV", "tv", Icons.Default.Tv)
+                        Platform("Mobile", "mobile", R.drawable.ic_mobile_24px),
+                        Platform("TV", "tv", R.drawable.ic_tv_gen_24px)
                     )
                 }
 
                 TextButton({platformSelectorExpanded = true}) {
-                    Icon(state.selectedPlatform.icon, null)
+                    Icon(painterResource(state.selectedPlatform.icon), null)
                     Spacer(Modifier.size(8.dp))
                     Text(state.selectedPlatform.label)
                 }
@@ -96,7 +91,7 @@ fun ResultsScreen(
                 ) {
                     platforms.forEach {
                         DropdownMenuItem(
-                            leadingIcon = {Icon(it.icon, null)},
+                            leadingIcon = {Icon(painterResource(it.icon), null)},
                             text = { Text(it.label) },
                             onClick = { viewModel.selectPlatform(it); platformSelectorExpanded=false }
                         )
@@ -190,7 +185,7 @@ fun ResultsScreen(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Icon(Icons.Default.Search, "", modifier = Modifier.size(64.dp))
+                Icon(painterResource(R.drawable.ic_search_24px), "", modifier = Modifier.size(64.dp))
                 Spacer(Modifier.size(4.dp))
                 Text(stringResource(R.string.not_found_error))
             }

@@ -20,9 +20,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddLink
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -43,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextDecoration
@@ -117,7 +115,7 @@ fun SearchScreen(navController: NavController = rememberNavController()) {
                                 .padding(horizontal = 10.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Default.AddLink,
+                                painterResource(R.drawable.ic_add_link_24px),
                                 contentDescription = null,
                                 modifier = Modifier.size(32.dp),
                             )
@@ -129,7 +127,7 @@ fun SearchScreen(navController: NavController = rememberNavController()) {
             OutlinedTextField(
                 value = search,
                 onValueChange = {s -> search=s},
-                leadingIcon = { Icon(imageVector = Icons.Default.Search, contentDescription = null) },
+                leadingIcon = { Icon(painterResource(R.drawable.ic_search_24px), contentDescription = null) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(

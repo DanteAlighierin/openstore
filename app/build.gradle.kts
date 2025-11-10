@@ -58,12 +58,10 @@ android {
 }
 
 dependencies {
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.material.icons.extended.android)
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.material3)
     implementation(libs.androidx.paging.compose)

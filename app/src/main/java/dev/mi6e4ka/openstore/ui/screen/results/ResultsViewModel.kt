@@ -1,13 +1,11 @@
 package dev.mi6e4ka.openstore.ui.screen.results
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.PhoneAndroid
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
+import dev.mi6e4ka.openstore.R
 import dev.mi6e4ka.openstore.data.model.SearchResult
 import dev.mi6e4ka.openstore.di.AppModule
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -21,10 +19,10 @@ import kotlinx.coroutines.flow.update
 data class Platform(
     val label: String,
     val value: String,
-    val icon: ImageVector
+    val icon: Int
 )
 data class ResultsState(
-    val selectedPlatform: Platform = Platform("Mobile", "mobile", Icons.Default.PhoneAndroid),
+    val selectedPlatform: Platform = Platform("Mobile", "mobile", R.drawable.ic_mobile_24px),
 )
 
 class ResultsViewModel(private val query: String) : ViewModel() {
