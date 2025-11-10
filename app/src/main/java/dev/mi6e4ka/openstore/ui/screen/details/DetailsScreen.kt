@@ -353,9 +353,7 @@ fun DetailsScreen(
                                 )
                                 AssistChip(
                                     onClick = {},
-                                    label = {
-                                        val parsedDate = Instant.parse(item.appVerUpdatedAt).toLocalDateTime(TimeZone.currentSystemDefault())
-                                        Text(parsedDate.format(LocalDateTime.Format {byUnicodePattern("dd.MM.yyyy")}))},
+                                    label = {FormattedDateText(item.appVerUpdatedAt)},
                                     leadingIcon = {Icon(imageVector = Icons.Rounded.Update, contentDescription = null)}
                                 )
                                 var detailedApiVersion by remember { mutableStateOf(false) }
@@ -521,6 +519,22 @@ fun DetailsScreen(
             }
         }
     }
+}
+
+@OptIn(ExperimentalTime::class, FormatStringsInDatetimeFormats::class)
+@Composable
+fun FormattedDateText(dateString: String) {
+    val formattedDate = remember(dateString) {
+        try {
+            Instant.parse(dateString)
+                .toLocalDateTime(TimeZone.currentSystemDefault())
+                .format(LocalDateTime.Format { byUnicodePattern("dd.MM.yyyy") })
+        } catch (e: Exception) {
+            "..."
+        }
+    }
+
+    Text(text = formattedDate)
 }
 
 fun getAndroidVersion(apiLevel: Int): String {
