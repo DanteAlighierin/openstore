@@ -78,8 +78,8 @@ class DetailsViewModel(private val appPlatform: String, private val apkInstaller
                         packageInfo.longVersionCode
                     } else {
                         @Suppress("DEPRECATION")
-                        packageInfo.versionCode
-                    }) as Long
+                        packageInfo.versionCode.toLong()
+                    })
                     if (installedVersionCode < item.versionCode) {
                         _state.update { it.copy(isNeedUpgrade = true) }
                     }
