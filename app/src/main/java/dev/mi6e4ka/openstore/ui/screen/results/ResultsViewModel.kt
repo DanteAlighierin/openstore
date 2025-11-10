@@ -33,8 +33,8 @@ class ResultsViewModel(private val query: String) : ViewModel() {
     val state: StateFlow<ResultsState> = _state.asStateFlow()
     @OptIn(ExperimentalCoroutinesApi::class)
     val searchFlow: Flow<PagingData<SearchResult>> = state.flatMapLatest {
-        AppModule.searchRepository.search(query, it.selectedPlatform.value).flow.cachedIn(viewModelScope)
-    }
+        AppModule.searchRepository.search(query, it.selectedPlatform.value).flow
+    }.cachedIn(viewModelScope)
 
     fun selectPlatform(newPlatform: Platform) {
         _state.update { it.copy(selectedPlatform = newPlatform) }
