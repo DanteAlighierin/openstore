@@ -14,7 +14,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Tv
 import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -78,12 +80,14 @@ fun ResultsScreen(
             actions = {
                 val platforms = remember {
                     listOf(
-                        Platform("Mobile", "mobile"),
-                        Platform("TV", "tv")
+                        Platform("Mobile", "mobile", Icons.Default.PhoneAndroid),
+                        Platform("TV", "tv", Icons.Default.Tv)
                     )
                 }
 
                 TextButton({platformSelectorExpanded = true}) {
+                    Icon(state.selectedPlatform.icon, null)
+                    Spacer(Modifier.size(8.dp))
                     Text(state.selectedPlatform.label)
                 }
                 DropdownMenu(
@@ -92,6 +96,7 @@ fun ResultsScreen(
                 ) {
                     platforms.forEach {
                         DropdownMenuItem(
+                            leadingIcon = {Icon(it.icon, null)},
                             text = { Text(it.label) },
                             onClick = { viewModel.selectPlatform(it); platformSelectorExpanded=false }
                         )
