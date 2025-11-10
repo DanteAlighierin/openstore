@@ -76,6 +76,13 @@ fun ResultsScreen(
                 }
             },
             actions = {
+                val platforms = remember {
+                    listOf(
+                        Platform("Mobile", "mobile"),
+                        Platform("TV", "tv")
+                    )
+                }
+
                 TextButton({platformSelectorExpanded = true}) {
                     Text(state.selectedPlatform.label)
                 }
@@ -83,14 +90,12 @@ fun ResultsScreen(
                     expanded = platformSelectorExpanded,
                     onDismissRequest = {platformSelectorExpanded = false}
                 ) {
-                    DropdownMenuItem(
-                        text = { Text("Mobile") },
-                        onClick = { viewModel.selectPlatform(Platform("Mobile", "mobile")); platformSelectorExpanded=false }
-                    )
-                    DropdownMenuItem(
-                        text = { Text("TV") },
-                        onClick = { viewModel.selectPlatform(Platform("TV", "tv")); platformSelectorExpanded=false }
-                    )
+                    platforms.forEach {
+                        DropdownMenuItem(
+                            text = { Text(it.label) },
+                            onClick = { viewModel.selectPlatform(it); platformSelectorExpanded=false }
+                        )
+                    }
                 }
             }
         ) }
