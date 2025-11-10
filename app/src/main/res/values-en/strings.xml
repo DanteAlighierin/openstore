@@ -32,4 +32,5 @@
     <string name="positive_first">Positive</string>
     <string name="negative_first">Negative</string>
     <string name="download_has_started">Download has started</string>
+    <string name="not_found_error">Nothing found</string>
 </resources>
