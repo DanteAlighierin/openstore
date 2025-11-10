@@ -2,6 +2,8 @@ package dev.mi6e4ka.openstore.ui.screen.details
 
 import android.app.DownloadManager
 import android.app.PendingIntent
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageInfo
@@ -226,7 +228,15 @@ class DetailsViewModel(private val appPlatform: String, private val apkInstaller
         }
         downloadManager.enqueue(request)
         Toast.makeText(context, R.string.download_has_started, Toast.LENGTH_SHORT).show()
+    }
 
+    fun copyTextToCB(context: Context, text: String) {
+        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val clip = ClipData.newPlainText("", text)
+        clipboard.setPrimaryClip(clip)
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+            Toast.makeText(context, R.string.copied_to_buffer, Toast.LENGTH_SHORT).show()
+        }
     }
 }
 

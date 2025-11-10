@@ -1,7 +1,5 @@
 package dev.mi6e4ka.openstore.ui.screen.details
 
-import android.content.ClipData
-import android.content.ClipboardManager
 import android.content.Intent
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -31,6 +29,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.ArrowForward
 import androidx.compose.material.icons.filled.ArrowCircleUp
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.OpenInBrowser
 import androidx.compose.material.icons.filled.SupervisedUserCircle
 import androidx.compose.material.icons.filled.UploadFile
@@ -76,7 +75,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -143,11 +141,22 @@ fun DetailsScreen(
                 }
             },
             actions = {
-                IconButton(onClick = {
-                    scope.launch {
-                        viewModel.downloadFileToFolder(context)
+                IconButton(
+                    {
+                        scope.launch {
+                            viewModel.copyTextToCB(context, state.plainApkUrl ?: "")
+                        }
                     }
-                }, enabled = !(state.splitOnly ?: true)) {
+                ){
+                    Icon(Icons.Default.Link, null)
+                }
+                IconButton(
+                    {
+                        scope.launch {
+                            viewModel.downloadFileToFolder(context)
+                        }
+                    }
+                ){
                     Icon(painterResource(R.drawable.apk_install_24px), null)
                 }
                 IconButton(onClick = {
@@ -396,8 +405,7 @@ fun DetailsScreen(
                                 .combinedClickable(
                                     onClick = {isWhatsNewExpanded = !isWhatsNewExpanded},
                                     onLongClick = {
-                                        val clipboardManager = getSystemService(context, ClipboardManager::class.java) as ClipboardManager
-                                        clipboardManager.setPrimaryClip(ClipData.newPlainText("about app", item.whatsNew))
+                                        viewModel.copyTextToCB(context, item.whatsNew)
                                     }
                                 ),
                         ) {
