@@ -1,6 +1,8 @@
 package dev.mi6e4ka.openstore.ui.screen.details
 
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
@@ -75,6 +77,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -91,6 +94,9 @@ import kotlinx.datetime.format
 import kotlinx.datetime.format.FormatStringsInDatetimeFormats
 import kotlinx.datetime.format.byUnicodePattern
 import kotlinx.datetime.toLocalDateTime
+import android.Manifest
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
@@ -118,6 +124,15 @@ fun DetailsScreen(
 //    val appDescriptionSheetState = rememberModalBottomSheetState(
 //        skipPartiallyExpanded = true
 //    )
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { isGranted ->
+            if (isGranted) {
+                viewModel.downloadFileToFolder(context)
+            }
+        }
+    )
 
     LaunchedEffect(itemId) {
         viewModel.loadDetails(context, itemId)
@@ -153,7 +168,20 @@ fun DetailsScreen(
                 IconButton(
                     {
                         scope.launch {
-                            viewModel.downloadFileToFolder(context)
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                viewModel.downloadFileToFolder(context)
+                            } else {
+                                val permissionStatus = ContextCompat.checkSelfPermission(
+                                    context,
+                                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                                )
+
+                                if (permissionStatus == PackageManager.PERMISSION_GRANTED) {
+                                    viewModel.downloadFileToFolder(context)
+                                } else {
+                                    permissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                                }
+                            }
                         }
                     }
                 ){
