@@ -53,6 +53,10 @@ class ApkInstaller(private val context: Context) {
                         val apkFile = getApkFile(fileName)
                         downloadedFiles.add(apkFile)
 
+                        if (apkFile.exists() && apkFile.length() == file.size) {
+                            return@async apkFile
+                        }
+
                         val request = Request.Builder().url(file.url).build()
                         val call = okHttpClient.newCall(request)
 
@@ -106,7 +110,6 @@ class ApkInstaller(private val context: Context) {
                         file.delete()
                     }
                 }
-                println("STOP ${e is CancellationException}")
                 if (e is CancellationException) {
                     onCancel()
                 } else {
