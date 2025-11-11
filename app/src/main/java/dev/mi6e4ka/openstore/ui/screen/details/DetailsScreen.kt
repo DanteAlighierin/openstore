@@ -178,7 +178,7 @@ fun DetailsScreen(
                     }
                     context.startActivity(intent)
                 }, enabled = state.item != null) {
-                    Icon(painterResource(R.drawable.ic_open_in_browser_24px), null)
+                    Icon(painterResource(R.drawable.ic_captive_portal_24px), null)
                 }
             }
         ) }
