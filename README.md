@@ -42,3 +42,6 @@ Verification info:
 [<img src="https://codeberg.org/mi6e4ka/openstore/raw/main/fastlane/metadata/android/en-US/images/phoneScreenshots/3.png" width=250>](https://codeberg.org/mi6e4ka/openstore/raw/main/fastlane/metadata/android/en-US/images/phoneScreenshots/3.png)
 [<img src="https://codeberg.org/mi6e4ka/openstore/raw/main/fastlane/metadata/android/en-US/images/phoneScreenshots/4.png" width=250>](https://codeberg.org/mi6e4ka/openstore/raw/main/fastlane/metadata/android/en-US/images/phoneScreenshots/4.png)
 [<img src="https://codeberg.org/mi6e4ka/openstore/raw/main/fastlane/metadata/android/en-US/images/phoneScreenshots/5.png" width=250>](https://codeberg.org/mi6e4ka/openstore/raw/main/fastlane/metadata/android/en-US/images/phoneScreenshots/5.png)
+
+## Building the app
+See [here](https://codeberg.org/mi6e4ka/openstore/src/branch/main/BUILDING.md)
