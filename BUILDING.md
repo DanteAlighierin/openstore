@@ -2,7 +2,7 @@
 
 ### Getting started
 Requirements/Dependencies: 
-- tools: `git`
+- tools: [listed here](https://codeberg.org/mi6e4ka/android-build-ct/src/branch/main/Dockerfile#L9-L26)
 - SDK: `OpenJDK 17`
 - [Android Studio](https://developer.android.com/studio) for app debugging
 
