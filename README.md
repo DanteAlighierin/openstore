@@ -29,9 +29,9 @@ Verification info:
 - [x] Native app installing
 - [x] Updating apps (for now only manually)
 - [x] Android 5.0+ support!
+- [x] Search and view TV apps
 
 ## Roadmap
-- [ ] Search and view TV apps
 - [ ] TV navigation support
 - [ ] Automatically check for updates
 - [ ] ...maybe more?
