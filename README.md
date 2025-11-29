@@ -6,11 +6,22 @@
 
 ---
 
-<img src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png" alt="Get it on IzzyOnDroid" height="90"/></a>
-
 <img src="./logo.png" width=80 alt="logo"/>
 
 Open client for popular russian app store (unofficial)
+
+## Installation
+
+<a href="https://apt.izzysoft.de/fdroid/index/apk/dev.mi6e4ka.openstore">
+    <img src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png" alt="Get it on IzzyOnDroid" height="70"/>
+</a>
+<a href="https://codeberg.org/mi6e4ka/openstore/releases/latest">
+    <img alt="Get it on Codeberg" src="https://get-it-on.codeberg.org/get-it-on-white-on-black.png" height="60">
+</a>
+
+Verification info:
+- Package ID: `dev.mi6e4ka.openstore`
+- SHA-256 hash of signing certificate: `57:F7:EA:8B:41:B7:2E:6E:CF:C5:08:46:AF:ED:12:01:47:1A:8D:37:8E:18:D7:6A:AD:AC:BD:9F:B2:19:DF:98`
 
 ## Features
 - [x] Search apps
