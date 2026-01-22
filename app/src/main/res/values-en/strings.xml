@@ -33,4 +33,11 @@
     <string name="negative_first">Negative</string>
     <string name="download_has_started">Download has started</string>
     <string name="not_found_error">Nothing found</string>
+    <string name="updates_title">Updates</string>
+    <string name="check_updates">Check for updates</string>
+    <string name="checking_updates">Checking for updates…</string>
+    <string name="all_apps_updated">All apps are up to date</string>
+    <string name="available_updates">Available updates: %1$d</string>
+    <string name="check_updates_hint">Tap to check for updates</string>
+    <string name="exclude_google_play">Exclude Google Play</string>
 </resources>

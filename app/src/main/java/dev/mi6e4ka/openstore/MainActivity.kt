@@ -27,6 +27,7 @@ import dev.mi6e4ka.openstore.ui.screen.details.DetailsScreen
 import dev.mi6e4ka.openstore.ui.screen.results.ResultsScreen
 import dev.mi6e4ka.openstore.ui.screen.reviews.ReviewsScreen
 import dev.mi6e4ka.openstore.ui.screen.search.SearchScreen
+import dev.mi6e4ka.openstore.ui.screen.updates.UpdatesScreen
 import dev.mi6e4ka.openstore.ui.theme.AppTheme
 
 class MainActivity : ComponentActivity() {
@@ -105,6 +106,9 @@ class MainActivity : ComponentActivity() {
                         composable("app/{packageName}/reviews") {
                             val packageName = it.arguments?.getString("packageName") ?: ""
                             ReviewsScreen(packageName = packageName, navController = navController)
+                        }
+                        composable("updates") {
+                            UpdatesScreen(navController = navController)
                         }
                     }
                 }

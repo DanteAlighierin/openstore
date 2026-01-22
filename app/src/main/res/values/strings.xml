@@ -34,4 +34,11 @@
     <string name="negative_first">Негативные</string>
     <string name="download_has_started">Загрузка началась</string>
     <string name="not_found_error">Ничего не найдено</string>
+    <string name="updates_title">Обновления</string>
+    <string name="check_updates">Проверить обновления</string>
+    <string name="checking_updates">Проверка обновлений…</string>
+    <string name="all_apps_updated">Все приложения обновлены</string>
+    <string name="available_updates">Доступно обновлений: %1$d</string>
+    <string name="check_updates_hint">Нажмите для проверки обновлений</string>
+    <string name="exclude_google_play">Исключить Google Play</string>
 </resources>

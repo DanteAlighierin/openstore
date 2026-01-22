@@ -24,6 +24,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -79,7 +80,17 @@ fun SearchScreen(navController: NavController = rememberNavController()) {
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        topBar = { TopAppBar(title = {Text(stringResource(R.string.app_name))}) },
+        topBar = { TopAppBar(
+            title = {Text(stringResource(R.string.app_name))},
+            actions = {
+                IconButton(onClick = { navController.navigate("updates") }) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_update_24px),
+                        contentDescription = stringResource(R.string.updates_title)
+                    )
+                }
+            }
+        ) },
     ) { innerPadding ->
         Column(
             modifier = Modifier
