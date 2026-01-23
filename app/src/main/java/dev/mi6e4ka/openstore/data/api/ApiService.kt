@@ -2,10 +2,14 @@ package dev.mi6e4ka.openstore.data.api
 
 import dev.mi6e4ka.openstore.data.model.AppCommentsResponse
 import dev.mi6e4ka.openstore.data.model.AppRatingResponse
+import dev.mi6e4ka.openstore.data.model.AppUpdateRequest
+import dev.mi6e4ka.openstore.data.model.AppUpdateResponse
+import dev.mi6e4ka.openstore.data.model.BatchItemDetailsRequest
 import dev.mi6e4ka.openstore.data.model.DownloadLinkRequest
 import dev.mi6e4ka.openstore.data.model.DownloadLinkResponse
 import dev.mi6e4ka.openstore.data.model.ItemDetailsResponse
 import dev.mi6e4ka.openstore.data.model.SearchResponse
+import dev.mi6e4ka.openstore.data.model.ShortItemDetails
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
@@ -45,4 +49,14 @@ interface ApiService {
         @Query("pageSize") pageSize: Int,
         @Query("sortBy") sortBy: String,
     ) : AppCommentsResponse
+
+    @POST("applicationData/newApps")
+    suspend fun getBatchUpdates(
+        @Body request: AppUpdateRequest
+    ) : AppUpdateResponse
+
+    @POST("v2/showcase/store-app")
+    suspend fun getBatchItemDetails(
+        @Body request: BatchItemDetailsRequest
+    ) : List<ShortItemDetails>
 }

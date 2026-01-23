@@ -23,6 +23,18 @@ data class ItemDetails(
     @SerializedName("appVerUpdatedAt") val appVerUpdatedAt: String,
 )
 
+data class ShortItemDetails(
+    @SerializedName("appId") val appId: Int,
+    @SerializedName("appName") val appName: String,
+    @SerializedName("packageName") val packageName: String,
+    @SerializedName("iconUrl") val iconUrl: String,
+    @SerializedName("versionCode") val versionCode: Long,
+)
+
+data class BatchItemDetailsRequest(
+    @SerializedName("packageNames") val packageNames: List<String>,
+)
+
 data class Files(
     @SerializedName("fileUrl") val fileUrl: String,
     @SerializedName("ordinal") val ordinal: Int,

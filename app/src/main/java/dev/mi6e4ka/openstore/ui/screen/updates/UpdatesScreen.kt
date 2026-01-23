@@ -45,7 +45,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import dev.mi6e4ka.openstore.R
-import dev.mi6e4ka.openstore.data.model.InstalledApp
 import dev.mi6e4ka.openstore.internal.installer.ApkInstaller
 import dev.mi6e4ka.openstore.ui.components.AppIcon
 
@@ -113,24 +112,8 @@ fun UpdatesScreen(navController: NavController) {
                     CircularProgressIndicator()
                     Spacer(modifier = Modifier.size(16.dp))
                     Text(stringResource(R.string.checking_updates))
-                    Spacer(modifier = Modifier.size(8.dp))
-                    Text(
-                        "${state.checkedCount} / ${state.totalToCheck}",
-                        color = MaterialTheme.colorScheme.secondary
-                    )
-                    Spacer(modifier = Modifier.size(8.dp))
-                    LinearProgressIndicator(
-                        progress = { 
-                            if (state.totalToCheck > 0) {
-                                state.checkedCount.toFloat() / state.totalToCheck
-                            } else 0f
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 32.dp)
-                    )
                 }
-            } else if (state.appsWithUpdates.isEmpty() && state.checkedCount > 0) {
+            } else if (state.appsWithUpdates.isEmpty()) {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -172,7 +155,7 @@ fun UpdatesScreen(navController: NavController) {
                     
                     Spacer(modifier = Modifier.weight(1f))
                 }
-            } else if (state.appsWithUpdates.isNotEmpty()) {
+            } else {
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
@@ -197,7 +180,7 @@ fun UpdatesScreen(navController: NavController) {
                             )
                         }
                     }
-                    
+
                     item {
                         Text(
                             stringResource(R.string.available_updates, state.appsWithUpdates.size),
@@ -205,7 +188,7 @@ fun UpdatesScreen(navController: NavController) {
                             modifier = Modifier.padding(vertical = 8.dp)
                         )
                     }
-                    
+
                     items(state.appsWithUpdates, key = { it.packageName }) { app ->
                         UpdateAppCard(
                             app = app,
@@ -217,29 +200,6 @@ fun UpdatesScreen(navController: NavController) {
                         )
                     }
                 }
-            } else {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_update_24px),
-                        contentDescription = null,
-                        modifier = Modifier.size(64.dp)
-                    )
-                    Spacer(modifier = Modifier.size(16.dp))
-                    Text(
-                        stringResource(R.string.check_updates_hint),
-                        fontSize = 16.sp
-                    )
-                    Spacer(modifier = Modifier.size(16.dp))
-                    Button(onClick = { viewModel.checkForUpdates(context) }) {
-                        Text(stringResource(R.string.check_updates))
-                    }
-                }
             }
         }
     }
@@ -247,7 +207,7 @@ fun UpdatesScreen(navController: NavController) {
 
 @Composable
 fun UpdateAppCard(
-    app: InstalledApp,
+    app: AppWithUpdates,
     isDownloading: Boolean,
     downloadProgress: Int,
     onUpdateClick: () -> Unit,
@@ -301,7 +261,14 @@ fun UpdateAppCard(
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    text = "${app.installedVersionName} → ${app.latestVersionName}",
+                    text = "${app.installedVersionCode} → ${app.latestVersionCode}",
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.secondary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = "from ${app.installSource}",
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.secondary,
                     maxLines = 1,

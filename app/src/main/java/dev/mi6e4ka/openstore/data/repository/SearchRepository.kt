@@ -5,10 +5,16 @@ import androidx.paging.PagingConfig
 import dev.mi6e4ka.openstore.data.api.ApiClient
 import dev.mi6e4ka.openstore.data.model.AppCommentsComments
 import dev.mi6e4ka.openstore.data.model.AppRatingResponseBody
+import dev.mi6e4ka.openstore.data.model.AppUpdateRequest
+import dev.mi6e4ka.openstore.data.model.AppUpdateRequestEntry
+import dev.mi6e4ka.openstore.data.model.AppUpdateResponse
+import dev.mi6e4ka.openstore.data.model.AppUpdateResponseEntry
+import dev.mi6e4ka.openstore.data.model.BatchItemDetailsRequest
 import dev.mi6e4ka.openstore.data.model.DownloadLinkRequest
 import dev.mi6e4ka.openstore.data.model.DownloadLinkResponseItem
 import dev.mi6e4ka.openstore.data.model.ItemDetails
 import dev.mi6e4ka.openstore.data.model.SearchResult
+import dev.mi6e4ka.openstore.data.model.ShortItemDetails
 import dev.mi6e4ka.openstore.data.paging.SearchPagingSource
 
 class SearchRepository {
@@ -47,5 +53,13 @@ class SearchRepository {
 
     suspend fun getAppComments(packageName: String, pageSize: Int, sortBy: String): List<AppCommentsComments> {
         return apiService.getAppComments(packageName, pageSize = pageSize, sortBy = sortBy).body.content
+    }
+
+    suspend fun getBatchUpdates(apps: List<AppUpdateRequestEntry>): List<AppUpdateResponseEntry> {
+        return apiService.getBatchUpdates(AppUpdateRequest(content = apps)).body.content
+    }
+
+    suspend fun getBatchItemDetails(packageNames: List<String>) : List<ShortItemDetails> {
+        return apiService.getBatchItemDetails(request = BatchItemDetailsRequest(packageNames = packageNames))
     }
 }

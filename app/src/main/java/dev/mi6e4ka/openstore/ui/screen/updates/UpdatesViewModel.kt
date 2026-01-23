@@ -1,36 +1,43 @@
 package dev.mi6e4ka.openstore.ui.screen.updates
 
 import android.content.Context
+import android.content.pm.ApplicationInfo
 import android.content.pm.PackageInfo
+import android.content.pm.PackageInstaller
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import dev.mi6e4ka.openstore.data.model.InstalledApp
+import dev.mi6e4ka.openstore.data.model.AppUpdateRequestEntry
 import dev.mi6e4ka.openstore.di.AppModule
 import dev.mi6e4ka.openstore.internal.installer.ApkInstaller
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Semaphore
-import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
-import java.util.concurrent.atomic.AtomicInteger
+import java.io.File
+
+data class AppWithUpdates (
+    val packageName: String,
+    val appName: String,
+    val installedVersionCode: Long,
+    val installedVersionName: String,
+    val iconUrl: String? = null,
+    val latestVersionCode: Long? = null,
+    val latestVersionName: String? = null,
+    val appId: Int? = null,
+    val installSource: String
+)
 
 data class UpdatesState(
     val isLoading: Boolean = false,
     val isCheckingUpdates: Boolean = false,
-    val installedApps: List<InstalledApp> = emptyList(),
-    val appsWithUpdates: List<InstalledApp> = emptyList(),
+    val installedApps: List<AppUpdateRequestEntry> = emptyList(),
+    val appsWithUpdates: List<AppWithUpdates> = emptyList(),
     val error: String? = null,
-    val checkedCount: Int = 0,
-    val totalToCheck: Int = 0,
     val downloadingPackages: Set<String> = emptySet(),
     val downloadProgress: Map<String, Int> = emptyMap(),
     val excludeGooglePlay: Boolean = true
@@ -86,21 +93,7 @@ class UpdatesViewModel(private val apkInstaller: ApkInstaller) : ViewModel() {
             _state.update { it.copy(installedApps = installedApps, isLoading = false) }
             
             // Сразу запускаем проверку
-            checkForUpdatesInternal(context, installedApps)
-        }
-    }
-
-    fun loadInstalledApps(context: Context) {
-        viewModelScope.launch {
-            _state.update { it.copy(isLoading = true, error = null) }
-            try {
-                val installedApps = withContext(Dispatchers.IO) {
-                    getInstalledApps(context)
-                }
-                _state.update { it.copy(installedApps = installedApps, isLoading = false) }
-            } catch (e: Exception) {
-                _state.update { it.copy(error = e.message, isLoading = false) }
-            }
+            checkForUpdatesInternal(installedApps)
         }
     }
 
@@ -109,31 +102,46 @@ class UpdatesViewModel(private val apkInstaller: ApkInstaller) : ViewModel() {
             val installedApps = _state.value.installedApps.ifEmpty {
                 withContext(Dispatchers.IO) { getInstalledApps(context) }
             }
-            checkForUpdatesInternal(context, installedApps)
+            checkForUpdatesInternal(installedApps)
         }
     }
     
-    private suspend fun checkForUpdatesInternal(context: Context, installedApps: List<InstalledApp>) {
-        _state.update { it.copy(isCheckingUpdates = true, checkedCount = 0, appsWithUpdates = emptyList(), totalToCheck = installedApps.size) }
-        
-        val semaphore = Semaphore(5) // Уменьшил до 5 параллельных запросов
-        val checkedCounter = AtomicInteger(0)
-        
-        val results = withContext(Dispatchers.IO) {
-            installedApps.map { app ->
-                async {
-                    semaphore.withPermit {
-                        val result = fetchDetailsWithRetry(app, maxRetries = 3)
-                        val count = checkedCounter.incrementAndGet()
-                        _state.update { it.copy(checkedCount = count) }
-                        result
-                    }
-                }
-            }.awaitAll()
+    private suspend fun checkForUpdatesInternal(installedApps: List<AppUpdateRequestEntry>) {
+        _state.update { it.copy(isCheckingUpdates = true, appsWithUpdates = emptyList()) }
+
+        val rawUpdates = AppModule.searchRepository.getBatchUpdates(installedApps)
+
+        if (rawUpdates.isEmpty()) {
+            _state.update {
+                it.copy(
+                    isCheckingUpdates = false,
+                    appsWithUpdates = emptyList()
+                )
+            }
+            return
         }
-        
-        val appsWithUpdates = results.filterNotNull()
-        
+
+        val detailsUpdates = AppModule.searchRepository.getBatchItemDetails(rawUpdates.map {it.packageName} )
+
+        val detailsByPackageName = detailsUpdates.associateBy {it.packageName}
+        val installedAppsByPackageName = installedApps.associateBy {it.packageName}
+
+        val appsWithUpdates = rawUpdates.mapNotNull {
+            val details = detailsByPackageName[it.packageName] ?: return@mapNotNull null
+            val installedApp = installedAppsByPackageName[it.packageName] ?: return@mapNotNull null
+            AppWithUpdates(
+                packageName = it.packageName,
+                appName = it.appName,
+                installedVersionCode = installedApp.versionCode,
+                installedVersionName = installedApp.versionName,
+                iconUrl = details.iconUrl,
+                latestVersionCode = details.versionCode,
+                latestVersionName = "?",
+                appId = it.appId,
+                installSource = installedApp.installSource
+            )
+        }
+
         _state.update { 
             it.copy(
                 isCheckingUpdates = false, 
@@ -141,32 +149,8 @@ class UpdatesViewModel(private val apkInstaller: ApkInstaller) : ViewModel() {
             ) 
         }
     }
-    
-    private suspend fun fetchDetailsWithRetry(app: InstalledApp, maxRetries: Int): InstalledApp? {
-        repeat(maxRetries) { attempt ->
-            try {
-                val details = AppModule.searchRepository.getItemDetails(app.packageName, "mobile")
-                if (details.versionCode > app.installedVersionCode) {
-                    return app.copy(
-                        iconUrl = details.iconUrl,
-                        latestVersionCode = details.versionCode,
-                        latestVersionName = details.versionName,
-                        hasUpdate = true,
-                        appId = details.appId,
-                        fileSize = details.fileSize
-                    )
-                }
-                return null // Приложение найдено, но обновления нет
-            } catch (e: Exception) {
-                if (attempt < maxRetries - 1) {
-                    delay(1000L * (attempt + 1)) // Увеличил задержку: 1с, 2с, 3с
-                }
-            }
-        }
-        return null
-    }
 
-    fun downloadAndUpdateApp(context: Context, app: InstalledApp) {
+    fun downloadAndUpdateApp(context: Context, app: AppWithUpdates) {
         if (app.appId == null) return
         
         viewModelScope.launch {
@@ -226,9 +210,9 @@ class UpdatesViewModel(private val apkInstaller: ApkInstaller) : ViewModel() {
         }
     }
 
-    private fun installApp(context: Context, packageName: String, apkFiles: List<java.io.File>) {
+    private fun installApp(context: Context, packageName: String, apkFiles: List<File>) {
         viewModelScope.launch {
-            val installerCallback = object : android.content.pm.PackageInstaller.SessionCallback() {
+            val installerCallback = object : PackageInstaller.SessionCallback() {
                 override fun onCreated(sessionId: Int) {}
                 override fun onBadgingChanged(sessionId: Int) {}
                 override fun onActiveChanged(sessionId: Int, active: Boolean) {}
@@ -265,7 +249,7 @@ class UpdatesViewModel(private val apkInstaller: ApkInstaller) : ViewModel() {
         cancelDownloads.remove(packageName)
     }
 
-    private fun getInstalledApps(context: Context): List<InstalledApp> {
+    private fun getInstalledApps(context: Context): List<AppUpdateRequestEntry> {
         val pm = context.packageManager
         val packages = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             pm.getInstalledPackages(PackageManager.PackageInfoFlags.of(0))
@@ -277,7 +261,7 @@ class UpdatesViewModel(private val apkInstaller: ApkInstaller) : ViewModel() {
         val excludeGooglePlay = _state.value.excludeGooglePlay
         
         return packages
-            .filter { !isSystemApp(it) && (!excludeGooglePlay || !isFromGooglePlay(pm, it.packageName)) }
+            .filter { !isSystemApp(it) && !(excludeGooglePlay && getInstallSource(pm, it.packageName) == "com.android.vending") }
             .map { packageInfo ->
                 val versionCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                     packageInfo.longVersionCode
@@ -285,22 +269,22 @@ class UpdatesViewModel(private val apkInstaller: ApkInstaller) : ViewModel() {
                     @Suppress("DEPRECATION")
                     packageInfo.versionCode.toLong()
                 }
-                
-                InstalledApp(
+
+                AppUpdateRequestEntry(
                     packageName = packageInfo.packageName,
                     appName = pm.getApplicationLabel(packageInfo.applicationInfo!!).toString(),
-                    installedVersionCode = versionCode,
-                    installedVersionName = packageInfo.versionName ?: "Unknown"
+                    versionCode = versionCode,
+                    versionName = packageInfo.versionName ?: "Unknown",
+                    installSource = getInstallSource(pm, packageInfo.packageName)
                 )
             }
-            .sortedBy { it.appName.lowercase() }
     }
 
     private fun isSystemApp(packageInfo: PackageInfo): Boolean {
-        return (packageInfo.applicationInfo?.flags?.and(android.content.pm.ApplicationInfo.FLAG_SYSTEM) ?: 0) != 0
+        return (packageInfo.applicationInfo?.flags?.and(ApplicationInfo.FLAG_SYSTEM) ?: 0) != 0
     }
     
-    private fun isFromGooglePlay(pm: PackageManager, packageName: String): Boolean {
+    private fun getInstallSource(pm: PackageManager, packageName: String): String {
         val installer = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             try {
                 pm.getInstallSourceInfo(packageName).installingPackageName
@@ -311,6 +295,6 @@ class UpdatesViewModel(private val apkInstaller: ApkInstaller) : ViewModel() {
             @Suppress("DEPRECATION")
             pm.getInstallerPackageName(packageName)
         }
-        return installer == "com.android.vending"
+        return installer ?: "null"
     }
 }
