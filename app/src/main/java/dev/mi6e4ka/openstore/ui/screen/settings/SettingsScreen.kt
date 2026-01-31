@@ -43,8 +43,8 @@ import androidx.core.content.edit
 
 data class SettingsSection(
     val id: String,
-    val title: String,
-    val description: String?,
+    val title: Int,
+    val description: Int,
     val icon: Int,
     val type: ParamType,
     val defaultVal: String,
@@ -70,8 +70,8 @@ fun SettingsScreen(
     val sections = listOf(
         SettingsSection(
             id = "installer_type",
-            title = "Установщик",
-            description = "Если есть проблемы при установке приложений",
+            title = R.string.settings_installer_title,
+            description = R.string.settings_installer_description,
             icon = R.drawable.apk_install_24px,
             type = ParamType.SELECT,
             defaultVal = "session",
@@ -88,8 +88,8 @@ fun SettingsScreen(
         ),
         SettingsSection(
             id = "updates_sources",
-            title = "Проверка обновлений",
-            description = "Для приложений из каких источников проверять обновления",
+            title = R.string.settings_updates_sources_title,
+            description = R.string.settings_updates_sources_description,
             icon = R.drawable.ic_update_24px,
             type = ParamType.MULTI_SELECT,
             defaultVal = "",
@@ -110,8 +110,8 @@ fun SettingsScreen(
         ),
         SettingsSection(
             id = "updates_check_all",
-            title = "Проверять обновления для всех не системных приложений",
-            description = "RuStore получает полный список установленных приложений, не безопасно",
+            title = R.string.settings_updates_check_all_title,
+            description = R.string.settings_updates_check_all_description,
             icon = R.drawable.ic_arrow_circle_up_24px,
             type = ParamType.SWITCH,
             defaultVal = ""
@@ -186,8 +186,8 @@ fun SettingsCard(
             Column(
                 modifier = Modifier.weight(1f)
             ) {
-                Text(item.title, fontWeight = FontWeight.Medium)
-                Text(item.description?:"", color = Color.Gray, fontWeight = FontWeight.Normal)
+                Text(stringResource(item.title), fontWeight = FontWeight.Medium)
+                Text(stringResource(item.description), color = Color.Gray, fontWeight = FontWeight.Normal)
             }
             if (item.type == ParamType.SWITCH) {
 
@@ -213,7 +213,7 @@ fun SettingsCard(
                 onDismissRequest = { showDialog = false },
 
                 title = {
-                    Text(item.title)
+                    Text(stringResource(item.title))
                 },
 
                 text = {
@@ -270,7 +270,7 @@ fun SettingsCard(
                         }
                         showDialog = false
                     }) {
-                        Text("Сохранить")
+                        Text(stringResource(R.string.settings_save_button))
                     }
                 }
             )
