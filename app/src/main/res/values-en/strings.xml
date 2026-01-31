@@ -33,4 +33,12 @@
     <string name="negative_first">Negative</string>
     <string name="download_has_started">Download has started</string>
     <string name="not_found_error">Nothing found</string>
+    <string name="settings_title">Settings</string>
+    <string name="settings_installer_title">Installer</string>
+    <string name="settings_installer_description">If there are problems installing applications</string>
+    <string name="settings_updates_sources_title">Check for updates</string>
+    <string name="settings_updates_sources_description">Sources for which to check for app updates</string>
+    <string name="settings_updates_check_all_title">Check for updates for all non-system applications</string>
+    <string name="settings_updates_check_all_description">!!! RuStore gets the full list of installed applications, it is not safe</string>
+    <string name="settings_save_button">Save</string>
 </resources>

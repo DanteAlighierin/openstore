@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">OpenStore</string>
+    <string name="app_name" translatable="false">OpenStore</string>
     <string name="safety_card_text">О безопасности приложений</string>
     <string name="error_message">Ошибка: %1$s</string>
     <string name="provided_by">Предоставлено %1$s</string>
@@ -34,4 +34,12 @@
     <string name="negative_first">Негативные</string>
     <string name="download_has_started">Загрузка началась</string>
     <string name="not_found_error">Ничего не найдено</string>
+    <string name="settings_title">Настройки</string>
+    <string name="settings_installer_title">Установщик</string>
+    <string name="settings_installer_description">Если есть проблемы при установке приложений</string>
+    <string name="settings_updates_sources_title">Проверка обновлений</string>
+    <string name="settings_updates_sources_description">Источники, для который проверять обновления приложений</string>
+    <string name="settings_updates_check_all_title">Проверять обновления для всех не системных приложений</string>
+    <string name="settings_updates_check_all_description">!!! RuStore получает полный список установленных приложений, не безопасно</string>
+    <string name="settings_save_button">Сохранить</string>
 </resources>
