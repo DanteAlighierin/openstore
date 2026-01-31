@@ -105,6 +105,10 @@ fun SettingsScreen(
                 SettingsSectionSelect(
                     title = "Google Play",
                     value = "com.android.vending"
+                ),
+                SettingsSectionSelect(
+                    title = "Manual Installed",
+                    value = "com.android.packageinstaller"
                 )
             )
         ),

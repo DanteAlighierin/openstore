@@ -1,13 +1,19 @@
 package dev.mi6e4ka.openstore.ui.screen.updates
 
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
+import android.provider.Settings
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -15,6 +21,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
@@ -35,6 +42,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -121,25 +129,9 @@ fun UpdatesScreen(navController: NavController) {
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 32.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            stringResource(R.string.exclude_google_play),
-                            fontSize = 14.sp
-                        )
-                        Switch(
-                            checked = state.excludeGooglePlay,
-                            onCheckedChange = { viewModel.toggleExcludeGooglePlay(context) }
-                        )
-                    }
-                    
+                    UpdatesBanner(navController, state.installedApps.size)
                     Spacer(modifier = Modifier.weight(1f))
-                    
+
                     Icon(
                         painter = painterResource(R.drawable.ic_check_circle_24px),
                         contentDescription = null,
@@ -163,22 +155,7 @@ fun UpdatesScreen(navController: NavController) {
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     item {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 8.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                stringResource(R.string.exclude_google_play),
-                                fontSize = 14.sp
-                            )
-                            Switch(
-                                checked = state.excludeGooglePlay,
-                                onCheckedChange = { viewModel.toggleExcludeGooglePlay(context) }
-                            )
-                        }
+                        UpdatesBanner(navController, state.installedApps.size)
                     }
 
                     item {
@@ -200,6 +177,40 @@ fun UpdatesScreen(navController: NavController) {
                         )
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun UpdatesBanner(navController: NavController, checkAppsCount: Int) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(0.dp)
+            .height(80.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .clickable(onClick = {
+                navController.navigate("settings")
+            }),
+        //colors = CardDefaults.cardColors(containerColor = Color(109, 255, 30, 40))
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxHeight()
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
+        ) {
+            Icon(
+                painterResource(R.drawable.ic_settings_24px),
+                contentDescription = null,
+                modifier = Modifier.size(32.dp),
+            )
+            Column {
+                Text(stringResource(R.string.updates_app_count, checkAppsCount))
+                Text(stringResource(R.string.updates_change_settings))
             }
         }
     }

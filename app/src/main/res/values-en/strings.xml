@@ -48,4 +48,6 @@
     <string name="available_updates">Available updates: %1$d</string>
     <string name="check_updates_hint">Tap to check for updates</string>
     <string name="exclude_google_play">Exclude Google Play</string>
+    <string name="updates_change_settings">Open settings</string>
+    <string name="updates_app_count">Applications checked: %1$d</string>
 </resources>

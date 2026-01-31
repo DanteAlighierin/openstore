@@ -247,11 +247,14 @@ class UpdatesViewModel(private val apkInstaller: ApkInstaller) : ViewModel() {
             @Suppress("DEPRECATION")
             pm.getInstalledPackages(0)
         }
-        
-        val excludeGooglePlay = _state.value.excludeGooglePlay
-        
+
+        val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+
+        val allowedSources = prefs.getString("updates_sources", "")?.split(";") ?: listOf()
+        val allowAllSources = prefs.getBoolean("updates_check_all", false)
+
         return packages
-            .filter { !isSystemApp(it) && !(excludeGooglePlay && getInstallSource(pm, it.packageName) == "com.android.vending") }
+            .filter { !isSystemApp(it) && (allowAllSources || allowedSources.contains(getInstallSource(pm, it.packageName))) }
             .map { packageInfo ->
                 val versionCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                     packageInfo.longVersionCode
@@ -259,7 +262,7 @@ class UpdatesViewModel(private val apkInstaller: ApkInstaller) : ViewModel() {
                     @Suppress("DEPRECATION")
                     packageInfo.versionCode.toLong()
                 }
-
+                println("package "+packageInfo.packageName+" from "+getInstallSource(pm, packageInfo.packageName))
                 AppUpdateRequestEntry(
                     packageName = packageInfo.packageName,
                     appName = pm.getApplicationLabel(packageInfo.applicationInfo!!).toString(),

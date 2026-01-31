@@ -49,4 +49,6 @@
     <string name="available_updates">Доступно обновлений: %1$d</string>
     <string name="check_updates_hint">Нажмите для проверки обновлений</string>
     <string name="exclude_google_play">Исключить Google Play</string>
+    <string name="updates_change_settings">Открыть настройки</string>
+    <string name="updates_app_count">Проверяется приложений: %1$d</string>
 </resources>
