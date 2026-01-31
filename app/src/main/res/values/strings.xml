@@ -34,4 +34,5 @@
     <string name="negative_first">Негативные</string>
     <string name="download_has_started">Загрузка началась</string>
     <string name="not_found_error">Ничего не найдено</string>
+    <string name="settings_title">Настройки</string>
 </resources>
