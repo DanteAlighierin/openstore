@@ -129,7 +129,7 @@ class ApkInstaller(private val context: Context) {
     }
 
     fun getApkFile(fileName: String): File {
-        return File(context.externalCacheDir, fileName)
+        return File(context.externalCacheDir ?: context.cacheDir, fileName)
     }
 
     fun cleanApkFiles(files: List<String>) {

@@ -50,4 +50,6 @@
     <string name="exclude_google_play">Exclude Google Play</string>
     <string name="updates_change_settings">Open settings</string>
     <string name="updates_app_count">Applications checked: %1$d</string>
+    <string name="intent_installer_warning">Installation via intent, go back to the page after installation</string>
+    <string name="intent_installer_split_apk_build">The assembly is in progress .apks file, installation is possible only with a custom installer…</string>
 </resources>

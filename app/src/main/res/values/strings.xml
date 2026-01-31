@@ -51,4 +51,6 @@
     <string name="exclude_google_play">Исключить Google Play</string>
     <string name="updates_change_settings">Открыть настройки</string>
     <string name="updates_app_count">Проверяется приложений: %1$d</string>
+    <string name="intent_installer_warning">Установка через intent, перезайдите на страницу после установки</string>
+    <string name="intent_installer_split_apk_build">Выполняется сборка .apks файла, установка возможно только кастомным установщиком…</string>
 </resources>
