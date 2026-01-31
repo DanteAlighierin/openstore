@@ -30,18 +30,15 @@ import dev.mi6e4ka.openstore.ui.screen.search.SearchScreen
 import dev.mi6e4ka.openstore.ui.theme.AppTheme
 
 class MainActivity : ComponentActivity() {
-    override fun onStart() {
-        super.onStart()
-    }
     override fun onCreate(savedInstanceState: Bundle?) {
-        val cacheDir = externalCacheDir ?: return
+        super.onCreate(savedInstanceState)
+        val cacheDir = externalCacheDir ?: cacheDir
         cacheDir.listFiles()?.forEach { file ->
             if (file.isFile && file.name.endsWith(".apk", ignoreCase = true)) {
                 file.delete()
                 println("CacheCleaner" + "Удален: ${file.name}")
             }
         }
-        super.onCreate(savedInstanceState)
         val imageLoader = ImageLoader.Builder(this)
             .diskCache {
                 DiskCache.Builder()
