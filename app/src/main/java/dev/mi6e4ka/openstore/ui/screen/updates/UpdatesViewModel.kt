@@ -48,7 +48,6 @@ class UpdatesViewModel(private val apkInstaller: ApkInstaller) : ViewModel() {
     val state: StateFlow<UpdatesState> = _state.asStateFlow()
     
     private val cancelDownloads = mutableMapOf<String, () -> Unit>()
-    private var hasStartedCheck = false
     
     companion object {
         private const val PREFS_NAME = "updates_prefs"
@@ -70,15 +69,11 @@ class UpdatesViewModel(private val apkInstaller: ApkInstaller) : ViewModel() {
             .edit()
             .putBoolean(KEY_EXCLUDE_GOOGLE_PLAY, newValue)
             .apply()
-        
-        hasStartedCheck = false
+
         loadAndCheckUpdates(context)
     }
 
     fun loadAndCheckUpdates(context: Context) {
-        if (hasStartedCheck) return
-        hasStartedCheck = true
-        
         viewModelScope.launch {
             // Загружаем список приложений
             _state.update { it.copy(isLoading = true, error = null) }
@@ -98,12 +93,7 @@ class UpdatesViewModel(private val apkInstaller: ApkInstaller) : ViewModel() {
     }
 
     fun checkForUpdates(context: Context) {
-        viewModelScope.launch {
-            val installedApps = _state.value.installedApps.ifEmpty {
-                withContext(Dispatchers.IO) { getInstalledApps(context) }
-            }
-            checkForUpdatesInternal(installedApps)
-        }
+        loadAndCheckUpdates(context)
     }
     
     private suspend fun checkForUpdatesInternal(installedApps: List<AppUpdateRequestEntry>) {
