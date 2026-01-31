@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name" translatable="false">OpenStore</string>
+    <string name="app_name">OpenStore</string>
     <string name="safety_card_text">О безопасности приложений</string>
     <string name="error_message">Ошибка: %1$s</string>
     <string name="provided_by">Предоставлено %1$s</string>
@@ -42,4 +42,11 @@
     <string name="settings_updates_check_all_title">Проверять обновления для всех не системных приложений</string>
     <string name="settings_updates_check_all_description">!!! RuStore получает полный список установленных приложений, не безопасно</string>
     <string name="settings_save_button">Сохранить</string>
+    <string name="updates_title">Обновления</string>
+    <string name="check_updates">Проверить обновления</string>
+    <string name="checking_updates">Проверка обновлений…</string>
+    <string name="all_apps_updated">Все приложения обновлены</string>
+    <string name="available_updates">Доступно обновлений: %1$d</string>
+    <string name="check_updates_hint">Нажмите для проверки обновлений</string>
+    <string name="exclude_google_play">Исключить Google Play</string>
 </resources>

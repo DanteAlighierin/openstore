@@ -91,6 +91,12 @@ fun SearchScreen(navController: NavController = rememberNavController()) {
                 IconButton({navController.navigate("settings")}) {
                     Icon(painterResource(R.drawable.ic_settings_24px), "settings")
                 }
+                IconButton(onClick = { navController.navigate("updates") }) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_update_24px),
+                        contentDescription = stringResource(R.string.updates_title)
+                    )
+                }
             }
         ) },
     ) { innerPadding ->

@@ -41,4 +41,11 @@
     <string name="settings_updates_check_all_title">Check for updates for all non-system applications</string>
     <string name="settings_updates_check_all_description">!!! RuStore gets the full list of installed applications, it is not safe</string>
     <string name="settings_save_button">Save</string>
+    <string name="updates_title">Updates</string>
+    <string name="check_updates">Check for updates</string>
+    <string name="checking_updates">Checking for updates…</string>
+    <string name="all_apps_updated">All apps are up to date</string>
+    <string name="available_updates">Available updates: %1$d</string>
+    <string name="check_updates_hint">Tap to check for updates</string>
+    <string name="exclude_google_play">Exclude Google Play</string>
 </resources>
