@@ -13,6 +13,7 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -57,7 +58,7 @@ class MainActivity : ComponentActivity() {
             .memoryCachePolicy(CachePolicy.ENABLED)
             .build()
         Coil.setImageLoader(imageLoader)
-
+        val startScreen = intent?.data?.host ?: "search"
         setContent {
             AppTheme {
                 Surface(
@@ -65,6 +66,14 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     val navController = rememberNavController()
+                    LaunchedEffect(startScreen) {
+                        if (startScreen != "search") {
+                            navController.navigate(startScreen) {
+                                popUpTo(0)
+                                launchSingleTop = true
+                            }
+                        }
+                    }
                     NavHost(
                         navController = navController,
                         startDestination = "search",
