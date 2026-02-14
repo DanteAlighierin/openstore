@@ -7,14 +7,11 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageInfo
-import android.content.pm.PackageInstaller
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.util.Log
 import android.widget.Toast
-import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -32,11 +29,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
 import androidx.core.net.toUri
-import java.io.BufferedOutputStream
-import java.io.FileInputStream
-import java.io.FileOutputStream
-import java.util.zip.ZipEntry
-import java.util.zip.ZipOutputStream
 
 data class DetailsState(
     val isLoading: Boolean = true,
@@ -153,99 +145,40 @@ class DetailsViewModel(private val appPlatform: String, private val apkInstaller
         cancelDownload = null
     }
 
-    fun buildSplitApk(apkFiles: List<File>, outputZip: File) {
-        ZipOutputStream(BufferedOutputStream(FileOutputStream(outputZip))).use { zos ->
-            apkFiles.forEach { file ->
-                FileInputStream(file).use { fis ->
-                    val entry = ZipEntry(file.name)
-                    zos.putNextEntry(entry)
-                    fis.copyTo(zos)
-                    zos.closeEntry()
-                }
-            }
-        }
-    }
-
     private fun installApp(context: Context, apkFiles: List<File>) {
-        viewModelScope.launch {
-            val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
-            val installerType = prefs.getString("installer_type", "session")
-            when(installerType) {
-                "session" ->
-                {
-                    _state.update { it.copy(installStatus = InstallStatus.Pending) }
-                    val installerCallback = object : PackageInstaller.SessionCallback() {
-                        override fun onCreated(sessionId: Int) {}
-                        override fun onBadgingChanged(sessionId: Int) {}
-                        override fun onActiveChanged(sessionId: Int, active: Boolean) {}
-                        override fun onProgressChanged(sessionId: Int, progress: Float) {}
-                        override fun onFinished(sessionId: Int, success: Boolean) {
-                            _state.update { it.copy(installStatus = InstallStatus.Success, isDownloading = false)}
-                            if (success) {
-                                _state.update { it.copy(isInstalled = true, isNeedUpgrade = false) }
-                                apkInstaller.cleanApkFiles(apkFiles.map {it.name})
-                            }
-                        }
-                    }
-                    apkInstaller.installSplitApk(
-                        context,
-                        apkFiles,
-                        installerCallback,
-                        onError = { error ->
-                            if (error.message?.contains("Failed to allocate") == true) {
-                                Toast.makeText(
-                                    context,
-                                    R.string.insufficient_memory,
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            } else {
-                                println("apk installer $error")
-                                Toast.makeText(context, R.string.installing_error, Toast.LENGTH_SHORT)
-                                    .show()
-                            }
-                            _state.update {
-                                it.copy(
-                                    installStatus = InstallStatus.Idle,
-                                    isDownloading = false
-                                )
-                            }
-                        })
+        val packageName = state.value.item?.packageName ?: "tmp"
+        _state.update { it.copy(installStatus = InstallStatus.Pending) }
+        
+        apkInstaller.installApp(
+            packageName = packageName,
+            apkFiles = apkFiles,
+            onSessionFinished = { success ->
+                _state.update { it.copy(installStatus = InstallStatus.Success, isDownloading = false)}
+                if (success) {
+                    _state.update { it.copy(isInstalled = true, isNeedUpgrade = false) }
+                    apkInstaller.cleanApkFiles(apkFiles.map {it.name})
                 }
-                "intent" -> {
-                    _state.update { it.copy(installStatus = InstallStatus.Idle, isDownloading = false) }
-                    val apkUri : Uri
-                    if (apkFiles.size == 1) {
-                        apkUri = FileProvider.getUriForFile(
-                            context,
-                            "${context.packageName}.provider",
-                            apkFiles[0]
-                        )
-                    } else {
-                        Toast.makeText(context, R.string.intent_installer_split_apk_build, Toast.LENGTH_SHORT)
-                            .show()
-                        val apksFile = File(context.externalCacheDir ?: context.cacheDir, "${state.value.item?.packageName ?: "tmp"}.apks")
-                        buildSplitApk(apkFiles, apksFile)
-                        apkUri = FileProvider.getUriForFile(
-                            context,
-                            "${context.packageName}.provider",
-                            apksFile
-                        )
-                    }
-                    Toast.makeText(context, R.string.intent_installer_warning, Toast.LENGTH_SHORT)
+            },
+            onError = { error ->
+                if (error.message?.contains("Failed to allocate") == true) {
+                    Toast.makeText(
+                        context,
+                        R.string.insufficient_memory,
+                        Toast.LENGTH_SHORT
+                    ).show()
+                } else {
+                    println("apk installer $error")
+                    Toast.makeText(context, R.string.installing_error, Toast.LENGTH_SHORT)
                         .show()
-
-                    val intent = Intent(Intent.ACTION_VIEW).apply {
-                        setDataAndType(
-                            apkUri,
-                            "application/vnd.android.package-archive"
-                        )
-                        flags =
-                            Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK
-                    }
-                    context.startActivity(intent)
+                }
+                _state.update {
+                    it.copy(
+                        installStatus = InstallStatus.Idle,
+                        isDownloading = false
+                    )
                 }
             }
-        }
+        )
     }
 
     private fun getPackageInfo(context: Context, packageName: String): PackageInfo? {

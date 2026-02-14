@@ -135,7 +135,7 @@ fun UpdatesScreen(navController: NavController) {
                     Icon(
                         painter = painterResource(R.drawable.ic_check_circle_24px),
                         contentDescription = null,
-                        modifier = Modifier.size(64.dp),
+                        modifier = Modifier.size(80.dp),
                         tint = MaterialTheme.colorScheme.primary
                     )
                     Spacer(modifier = Modifier.size(16.dp))
@@ -278,13 +278,13 @@ fun UpdateAppCard(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                Text(
-                    text = "from ${app.installSource}",
-                    fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.secondary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+//                Text(
+//                    text = "from ${app.installSource}",
+//                    fontSize = 12.sp,
+//                    color = MaterialTheme.colorScheme.secondary,
+//                    maxLines = 1,
+//                    overflow = TextOverflow.Ellipsis
+//                )
                 if (isDownloading) {
                     Spacer(modifier = Modifier.size(4.dp))
                     LinearProgressIndicator(

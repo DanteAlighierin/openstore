@@ -3,11 +3,12 @@ package dev.mi6e4ka.openstore.ui.screen.updates
 import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageInfo
-import android.content.pm.PackageInstaller
 import android.content.pm.PackageManager
 import android.os.Build
+import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dev.mi6e4ka.openstore.R
 import dev.mi6e4ka.openstore.data.model.AppUpdateRequestEntry
 import dev.mi6e4ka.openstore.di.AppModule
 import dev.mi6e4ka.openstore.internal.installer.ApkInstaller
@@ -172,13 +173,8 @@ class UpdatesViewModel(private val apkInstaller: ApkInstaller) : ViewModel() {
                     onSuccess = { apkFiles ->
                         installApp(context, app.packageName, apkFiles)
                     },
-                    onError = { _ ->
-                        _state.update { 
-                            it.copy(
-                                downloadingPackages = it.downloadingPackages - app.packageName,
-                                downloadProgress = it.downloadProgress - app.packageName
-                            )
-                        }
+                    onError = { error ->
+                        handleError(context, app.packageName, error)
                     },
                     onCancel = {
                         _state.update { 
@@ -190,47 +186,46 @@ class UpdatesViewModel(private val apkInstaller: ApkInstaller) : ViewModel() {
                     }
                 )
             } catch (e: Exception) {
-                _state.update { 
-                    it.copy(
-                        downloadingPackages = it.downloadingPackages - app.packageName,
-                        downloadProgress = it.downloadProgress - app.packageName
-                    )
-                }
+                handleError(context, app.packageName, e)
             }
         }
     }
 
     private fun installApp(context: Context, packageName: String, apkFiles: List<File>) {
-        viewModelScope.launch {
-            val installerCallback = object : PackageInstaller.SessionCallback() {
-                override fun onCreated(sessionId: Int) {}
-                override fun onBadgingChanged(sessionId: Int) {}
-                override fun onActiveChanged(sessionId: Int, active: Boolean) {}
-                override fun onProgressChanged(sessionId: Int, progress: Float) {}
-                override fun onFinished(sessionId: Int, success: Boolean) {
-                    _state.update { 
-                        it.copy(
-                            downloadingPackages = it.downloadingPackages - packageName,
-                            downloadProgress = it.downloadProgress - packageName,
-                            appsWithUpdates = if (success) {
-                                it.appsWithUpdates.filter { app -> app.packageName != packageName }
-                            } else it.appsWithUpdates
-                        )
-                    }
-                    if (success) {
-                        apkInstaller.cleanApkFiles(apkFiles.map { it.name })
-                    }
-                }
-            }
-            
-            apkInstaller.installSplitApk(context, apkFiles, installerCallback, onError = { _ ->
+        apkInstaller.installApp(
+            packageName = packageName,
+            apkFiles = apkFiles,
+            onSessionFinished = { success ->
                 _state.update { 
                     it.copy(
                         downloadingPackages = it.downloadingPackages - packageName,
-                        downloadProgress = it.downloadProgress - packageName
+                        downloadProgress = it.downloadProgress - packageName,
+                        appsWithUpdates = if (success) {
+                            it.appsWithUpdates.filter { app -> app.packageName != packageName }
+                        } else it.appsWithUpdates
                     )
                 }
-            })
+                if (success) {
+                    apkInstaller.cleanApkFiles(apkFiles.map { it.name })
+                }
+            },
+            onError = { error ->
+                handleError(context, packageName, error)
+            }
+        )
+    }
+
+    private fun handleError(context: Context, packageName: String, error: Throwable) {
+        if (error.message?.contains("Failed to allocate") == true) {
+            Toast.makeText(context, R.string.insufficient_memory, Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(context, R.string.loading_error, Toast.LENGTH_SHORT).show()
+        }
+        _state.update { 
+            it.copy(
+                downloadingPackages = it.downloadingPackages - packageName,
+                downloadProgress = it.downloadProgress - packageName
+            )
         }
     }
 

@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -96,7 +97,7 @@ fun SettingsScreen(
             select = listOf(
                 SettingsSectionSelect(
                     title = "OpenStore",
-                    value = "dev.mi6e4ka.dev"
+                    value = "dev.mi6e4ka.openstore"
                 ),
                 SettingsSectionSelect(
                     title = "RuStore",
@@ -162,7 +163,7 @@ fun SettingsCard(
         if (item.type == ParamType.SWITCH) prefs.getBoolean(item.id, false) else false
     )}
 
-    ElevatedCard (
+    Card (
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 4.dp),
