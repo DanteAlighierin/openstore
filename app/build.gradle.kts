@@ -1,3 +1,4 @@
+import java.io.ByteArrayOutputStream
 import java.util.Properties
 import java.io.FileInputStream
 plugins {
@@ -10,6 +11,19 @@ val keystoreProperties = Properties()
 val keystoreFileExists = rootProject.file("keystore.properties").exists();
 if (keystoreFileExists) {
     keystoreProperties.load(rootProject.file("keystore.properties").inputStream())
+}
+
+val gitCommitShort: String = run {
+    try {
+        val process = ProcessBuilder("git", "rev-parse", "--short", "HEAD")
+            .redirectErrorStream(true)
+            .start()
+        val output = process.inputStream.bufferedReader().use { it.readText() }.trim()
+        val exitCode = process.waitFor()
+        if (exitCode == 0 && output.isNotEmpty()) output else "unknown"
+    } catch (e: Exception) {
+        "unknown"
+    }
 }
 
 android {
@@ -25,7 +39,7 @@ android {
         minSdk = 21
         targetSdk = 36
         versionCode = (project.findProperty("versionCode") as String?)?.toInt() ?: 1
-        versionName = project.findProperty("versionName") as String? ?: "dev"
+        versionName = project.findProperty("versionName") as String? ?: ("git-" + gitCommitShort)
         //testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 

@@ -167,7 +167,7 @@ fun SearchScreen(navController: NavController = rememberNavController()) {
                     val intent = Intent(Intent.ACTION_VIEW, "https://codeberg.org/mi6e4ka/openstore".toUri())
                     context.startActivity(intent)
                 }))
-                Text("v${BuildConfig.VERSION_NAME}")
+                Text(BuildConfig.VERSION_NAME)
             }
         }
     }
