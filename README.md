@@ -16,7 +16,7 @@ Open client for popular russian app store (unofficial)
     <img src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png" alt="Get it on IzzyOnDroid" height="70"/>
 </a>
 <a href="https://codeberg.org/mi6e4ka/openstore/releases/latest">
-    <img alt="Get it on Codeberg" src="https://get-it-on.codeberg.org/get-it-on-white-on-black.png" height="60">
+    <img alt="Get it on Codeberg" src="https://codeberg.org/Codeberg/GetItOnCodeberg/raw/branch/main/get-it-on-white-on-black.png" height="60">
 </a>
 
 Verification info:
