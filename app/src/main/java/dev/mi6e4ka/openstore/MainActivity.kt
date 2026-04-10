@@ -59,7 +59,6 @@ class MainActivity : ComponentActivity() {
             .memoryCachePolicy(CachePolicy.ENABLED)
             .build()
         Coil.setImageLoader(imageLoader)
-        val startScreen = intent?.data?.host ?: "search"
         setContent {
             AppTheme {
                 Surface(
@@ -67,14 +66,6 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     val navController = rememberNavController()
-                    LaunchedEffect(startScreen) {
-                        if (startScreen != "search") {
-                            navController.navigate(startScreen) {
-                                popUpTo(0)
-                                launchSingleTop = true
-                            }
-                        }
-                    }
                     NavHost(
                         navController = navController,
                         startDestination = "search",
@@ -120,7 +111,9 @@ class MainActivity : ComponentActivity() {
                         composable("updates") {
                             UpdatesScreen(navController = navController)
                         }
-                        composable("settings") {
+                        composable("settings", deepLinks = listOf(
+                            navDeepLink { uriPattern = "openstore://settings" }
+                        )) {
                             SettingsScreen(navController = navController)
                         }
                     }

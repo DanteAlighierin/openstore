@@ -1,5 +1,7 @@
 package dev.mi6e4ka.openstore.ui.screen.settings
 
+import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -63,6 +65,7 @@ enum class ParamType {
     MULTI_SELECT
 }
 
+@SuppressLint("ContextCastToActivity")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
@@ -122,14 +125,20 @@ fun SettingsScreen(
             defaultVal = ""
         )
     )
-
+    val context = LocalContext.current as? Activity
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.settings_title)) },
                 navigationIcon = {
                     IconButton(
-                        {navController.popBackStack()}
+                        {
+                            val popped = navController.popBackStack()
+
+                            if (!popped) {
+                                context?.finish()
+                            }
+                        }
                     ) {
                         Icon(painterResource(R.drawable.ic_arrow_back_24px), "back")
                     }
