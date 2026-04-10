@@ -47,7 +47,7 @@ import androidx.core.content.edit
 data class SettingsSection(
     val id: String,
     val title: Int,
-    val description: Int,
+    val description: Int?,
     val icon: Int,
     val type: ParamType,
     val defaultVal: String,
@@ -123,6 +123,28 @@ fun SettingsScreen(
             icon = R.drawable.ic_arrow_circle_up_24px,
             type = ParamType.SWITCH,
             defaultVal = ""
+        ),
+        SettingsSection(
+            id = "app_theme",
+            title = R.string.settings_app_theme_title,
+            description = null,
+            icon = R.drawable.ic_brightness_6_24px,
+            type = ParamType.SELECT,
+            defaultVal = "auto",
+            select = listOf(
+                SettingsSectionSelect(
+                    title = "Auto",
+                    value = "auto"
+                ),
+                SettingsSectionSelect(
+                    title = "Dark",
+                    value = "dark"
+                ),
+                SettingsSectionSelect(
+                    title = "Light",
+                    value = "light"
+                ),
+            )
         )
     )
     val context = LocalContext.current as? Activity
@@ -168,9 +190,20 @@ fun SettingsCard(
     val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
     var showDialog by remember { mutableStateOf(false) }
 
-    var booleanSelect by remember { mutableStateOf(
-        if (item.type == ParamType.SWITCH) prefs.getBoolean(item.id, false) else false
-    )}
+    var currentValue by remember {
+        mutableStateOf<Any>(
+            if (item.type == ParamType.SWITCH) prefs.getBoolean(item.id, false)
+            else prefs.getString(item.id, item.defaultVal) ?: item.defaultVal
+        )
+    }
+
+    val description = if (item.description != null && item.description != 0) {
+        stringResource(item.description)
+    } else if (item.type != ParamType.SWITCH) {
+        val strVal = currentValue as? String ?: ""
+        val selectedValues = strVal.split(";").filter { it.isNotEmpty() }
+        item.select?.filter { it.value in selectedValues }?.joinToString(", ") { it.title } ?: ""
+    } else ""
 
     Card (
         modifier = Modifier
@@ -180,11 +213,12 @@ fun SettingsCard(
         Row(
             Modifier
                 .clickable{
-                    if (item.type != ParamType.SWITCH) {
-                        showDialog = true
+                    if (item.type == ParamType.SWITCH) {
+                        val newValue = !(currentValue as Boolean)
+                        prefs.edit { putBoolean(item.id, newValue) }
+                        currentValue = newValue
                     } else {
-                        prefs.edit { putBoolean(item.id, !booleanSelect) }
-                        booleanSelect = !booleanSelect
+                        showDialog = true
                     }
                 }
                 .padding(15.dp)
@@ -201,14 +235,16 @@ fun SettingsCard(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(stringResource(item.title), fontWeight = FontWeight.Medium)
-                Text(stringResource(item.description), color = Color.Gray, fontWeight = FontWeight.Normal)
+                if (description.isNotEmpty()) {
+                    Text(description, color = Color.Gray, fontWeight = FontWeight.Normal)
+                }
             }
             if (item.type == ParamType.SWITCH) {
-
                 Switch(
-                    booleanSelect,
-                    {
-                        v -> prefs.edit { putBoolean(item.id, v) }; booleanSelect = v
+                    currentValue as Boolean,
+                    { v ->
+                        prefs.edit { putBoolean(item.id, v) }
+                        currentValue = v
                     }
                 )
             }
@@ -216,13 +252,14 @@ fun SettingsCard(
         if (showDialog) {
             val selected = remember { mutableStateListOf<SettingsSectionSelect>() }
             if (item.type == ParamType.MULTI_SELECT) {
-                selected.apply { addAll(prefs.getString(item.id, item.defaultVal)!!.split(";").mapNotNull {
-                        v ->
-                    item.select?.firstOrNull { it.value == v }
-                })
+                selected.apply {
+                    val currentStr = currentValue as? String ?: ""
+                    addAll(currentStr.split(";").mapNotNull { v ->
+                        item.select?.firstOrNull { it.value == v }
+                    })
                 }
             }
-            var selectedVal by remember { mutableStateOf(prefs.getString(item.id, item.defaultVal)) }
+            var selectedVal by remember { mutableStateOf(currentValue as? String) }
             AlertDialog(
                 onDismissRequest = { showDialog = false },
 
@@ -276,12 +313,13 @@ fun SettingsCard(
 
                 confirmButton = {
                     TextButton(onClick = {
-                        if (item.type == ParamType.MULTI_SELECT) {
-                            prefs.edit { putString(item.id, selected.joinToString(";") { it.value }) }
-
+                        val newValue = if (item.type == ParamType.MULTI_SELECT) {
+                            selected.joinToString(";") { it.value }
                         } else {
-                            prefs.edit { putString(item.id, selectedVal) }
+                            selectedVal ?: item.defaultVal
                         }
+                        prefs.edit { putString(item.id, newValue) }
+                        currentValue = newValue
                         showDialog = false
                     }) {
                         Text(stringResource(R.string.settings_save_button))

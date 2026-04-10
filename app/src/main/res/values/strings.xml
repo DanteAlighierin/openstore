@@ -53,4 +53,5 @@
     <string name="updates_app_count">Проверяется приложений: %1$d</string>
     <string name="intent_installer_warning">Установка через intent, перезайдите на страницу после установки</string>
     <string name="intent_installer_split_apk_build">Выполняется сборка .apks файла, установка возможно только кастомным установщиком…</string>
+    <string name="settings_app_theme_title">Тема (необходим перезапуск)</string>
 </resources>
