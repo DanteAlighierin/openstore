@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -37,9 +38,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -105,6 +108,7 @@ fun DetailsScreen(
     val scope = rememberCoroutineScope()
 
     var showAppDescriptionSheet by remember { mutableStateOf(false) }
+    var showHashDetails by remember { mutableStateOf(false) }
 //    val appDescriptionSheetState = rememberModalBottomSheetState(
 //        skipPartiallyExpanded = true
 //    )
@@ -202,6 +206,36 @@ fun DetailsScreen(
                         Text(state.item?.fullDescription ?: "")
                     }
                 }
+            }
+            if (state.invalidDownloadedApkFiles != null) {
+                AlertDialog(
+                    onDismissRequest = { viewModel.clearInvalidDownloadState() },
+                    title = { Text(stringResource(R.string.invalid_download_hash_title)) },
+                    text = {
+                        Column {
+                            Text(stringResource(R.string.invalid_download_hash_message))
+                            Spacer(modifier = Modifier.size(12.dp))
+                            TextButton(onClick = { showHashDetails = !showHashDetails }) {
+                                Text(stringResource(R.string.show_hashes))
+                            }
+                            if (showHashDetails) {
+                                Spacer(modifier = Modifier.size(8.dp))
+                                Text(stringResource(R.string.expected_hash, state.invalidExpectedHash ?: ""))
+                                Text(stringResource(R.string.actual_hash, state.invalidActualHash ?: ""))
+                            }
+                        }
+                    },
+                    confirmButton = {
+                        TextButton(onClick = { viewModel.retryDownloadAfterInvalid(context) }) {
+                            Text(stringResource(R.string.download_again))
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { viewModel.installAsIsAfterInvalid(context) }) {
+                            Text(stringResource(R.string.install_as_is))
+                        }
+                    }
+                )
             }
             if (state.isLoading) {
                 LinearProgressIndicator(modifier = Modifier

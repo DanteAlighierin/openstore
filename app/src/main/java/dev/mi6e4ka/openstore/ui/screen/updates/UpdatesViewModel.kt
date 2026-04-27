@@ -41,6 +41,10 @@ data class UpdatesState(
     val error: String? = null,
     val downloadingPackages: Set<String> = emptySet(),
     val downloadProgress: Map<String, Int> = emptyMap(),
+    val invalidDownloadedApkFiles: List<File>? = null,
+    val invalidDownloadedAppPackage: String? = null,
+    val invalidExpectedHash: String? = null,
+    val invalidActualHash: String? = null,
     val excludeGooglePlay: Boolean = true
 )
 
@@ -183,6 +187,18 @@ class UpdatesViewModel(private val apkInstaller: ApkInstaller) : ViewModel() {
                                 downloadProgress = it.downloadProgress - app.packageName
                             )
                         }
+                    },
+                    onInvalidHash = { apkFiles, expectedHash, actualHash ->
+                        _state.update {
+                            it.copy(
+                                downloadingPackages = it.downloadingPackages - app.packageName,
+                                downloadProgress = it.downloadProgress - app.packageName,
+                                invalidDownloadedApkFiles = apkFiles,
+                                invalidDownloadedAppPackage = app.packageName,
+                                invalidExpectedHash = expectedHash,
+                                invalidActualHash = actualHash
+                            )
+                        }
                     }
                 )
             } catch (e: Exception) {
@@ -232,6 +248,45 @@ class UpdatesViewModel(private val apkInstaller: ApkInstaller) : ViewModel() {
     fun cancelDownload(packageName: String) {
         cancelDownloads[packageName]?.invoke()
         cancelDownloads.remove(packageName)
+    }
+
+    fun retryDownloadAfterInvalid(context: Context) {
+        val packageName = state.value.invalidDownloadedAppPackage ?: return
+        _state.update {
+            it.copy(
+                invalidDownloadedAppPackage = null,
+                invalidDownloadedApkFiles = null,
+                invalidExpectedHash = null,
+                invalidActualHash = null
+            )
+        }
+        val app = state.value.appsWithUpdates.find { it.packageName == packageName } ?: return
+        downloadAndUpdateApp(context, app)
+    }
+
+    fun installAsIsAfterInvalid(context: Context) {
+        val packageName = state.value.invalidDownloadedAppPackage ?: return
+        val apkFiles = state.value.invalidDownloadedApkFiles ?: return
+        _state.update {
+            it.copy(
+                invalidDownloadedAppPackage = null,
+                invalidDownloadedApkFiles = null,
+                invalidExpectedHash = null,
+                invalidActualHash = null
+            )
+        }
+        installApp(context, packageName, apkFiles)
+    }
+
+    fun clearInvalidDownloadState() {
+        _state.update {
+            it.copy(
+                invalidDownloadedAppPackage = null,
+                invalidDownloadedApkFiles = null,
+                invalidExpectedHash = null,
+                invalidActualHash = null
+            )
+        }
     }
 
     private fun getInstalledApps(context: Context): List<AppUpdateRequestEntry> {

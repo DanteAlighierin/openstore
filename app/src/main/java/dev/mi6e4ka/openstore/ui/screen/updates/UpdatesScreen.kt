@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -33,12 +34,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -65,6 +69,38 @@ fun UpdatesScreen(navController: NavController) {
         factory = UpdatesViewModelFactory(apkInstaller)
     )
     val state by viewModel.state.collectAsState()
+    var showHashDetails by remember { mutableStateOf(false) }
+
+    if (state.invalidDownloadedApkFiles != null && state.invalidDownloadedAppPackage != null) {
+        AlertDialog(
+            onDismissRequest = { viewModel.clearInvalidDownloadState() },
+            title = { Text(stringResource(R.string.invalid_download_hash_title)) },
+            text = {
+                Column {
+                    Text(stringResource(R.string.invalid_download_hash_message))
+                    Spacer(modifier = Modifier.size(12.dp))
+                    TextButton(onClick = { showHashDetails = !showHashDetails }) {
+                        Text(stringResource(R.string.show_hashes))
+                    }
+                    if (showHashDetails) {
+                        Spacer(modifier = Modifier.size(8.dp))
+                        Text(stringResource(R.string.expected_hash, state.invalidExpectedHash ?: ""))
+                        Text(stringResource(R.string.actual_hash, state.invalidActualHash ?: ""))
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { viewModel.retryDownloadAfterInvalid(context) }) {
+                    Text(stringResource(R.string.download_again))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.installAsIsAfterInvalid(context) }) {
+                    Text(stringResource(R.string.install_as_is))
+                }
+            }
+        )
+    }
 
     LaunchedEffect(Unit) {
         viewModel.initPreferences(context)

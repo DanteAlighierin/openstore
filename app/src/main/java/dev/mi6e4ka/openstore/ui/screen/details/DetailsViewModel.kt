@@ -46,6 +46,10 @@ data class DetailsState(
     val isInstalled: Boolean = false,
     val isNeedUpgrade: Boolean = false,
     val isSupported: Boolean = true,
+    val invalidDownloadedApkFiles: List<File>? = null,
+    val invalidDownloadMessage: String? = null,
+    val invalidExpectedHash: String? = null,
+    val invalidActualHash: String? = null
 )
 
 sealed class InstallStatus {
@@ -135,6 +139,17 @@ class DetailsViewModel(private val appPlatform: String, private val apkInstaller
                 },
                 onCancel = {
                     _state.update { it.copy(isDownloading = false) }
+                },
+                onInvalidHash = { apkFiles, expectedHash, actualHash ->
+                    _state.update {
+                        it.copy(
+                            isDownloading = false,
+                            invalidDownloadedApkFiles = apkFiles,
+                            invalidDownloadMessage = "Файл скачан некорректно.",
+                            invalidExpectedHash = expectedHash,
+                            invalidActualHash = actualHash
+                        )
+                    }
                 }
             )
         }
@@ -179,6 +194,42 @@ class DetailsViewModel(private val appPlatform: String, private val apkInstaller
                 }
             }
         )
+    }
+
+    fun retryDownloadAfterInvalid(context: Context) {
+        _state.update {
+            it.copy(
+                invalidDownloadedApkFiles = null,
+                invalidDownloadMessage = null,
+                invalidExpectedHash = null,
+                invalidActualHash = null
+            )
+        }
+        downloadAndInstallApp(context)
+    }
+
+    fun installAsIsAfterInvalid(context: Context) {
+        val apkFiles = state.value.invalidDownloadedApkFiles ?: return
+        _state.update {
+            it.copy(
+                invalidDownloadedApkFiles = null,
+                invalidDownloadMessage = null,
+                invalidExpectedHash = null,
+                invalidActualHash = null
+            )
+        }
+        installApp(context, apkFiles)
+    }
+
+    fun clearInvalidDownloadState() {
+        _state.update {
+            it.copy(
+                invalidDownloadedApkFiles = null,
+                invalidDownloadMessage = null,
+                invalidExpectedHash = null,
+                invalidActualHash = null
+            )
+        }
     }
 
     private fun getPackageInfo(context: Context, packageName: String): PackageInfo? {

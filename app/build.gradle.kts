@@ -105,5 +105,6 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.coil.compose)
+    implementation(libs.lz4.java)
     coreLibraryDesugaring(libs.desugar.jdk.libs)
 }

@@ -1,4 +1,5 @@
 <resources>
+    <string name="app_name">OpenStore</string>
     <string name="safety_card_text">About app safety</string>
     <string name="error_message">Error: %1$s</string>
     <string name="provided_by">Provided by %1$s</string>
@@ -32,6 +33,13 @@
     <string name="positive_first">Positive</string>
     <string name="negative_first">Negative</string>
     <string name="download_has_started">Download has started</string>
+    <string name="invalid_download_hash_title">File downloaded incorrectly</string>
+    <string name="invalid_download_hash_message">Checksum does not match. Retry download or install file as is.</string>
+    <string name="show_hashes">Show hashes</string>
+    <string name="expected_hash">Expected hash: %1$s</string>
+    <string name="actual_hash">Actual hash: %1$s</string>
+    <string name="download_again">Download again</string>
+    <string name="install_as_is">Install as is</string>
     <string name="not_found_error">Nothing found</string>
     <string name="settings_title">Settings</string>
     <string name="settings_installer_title">Installer</string>

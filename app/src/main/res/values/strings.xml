@@ -33,6 +33,13 @@
     <string name="positive_first">Позитивные</string>
     <string name="negative_first">Негативные</string>
     <string name="download_has_started">Загрузка началась</string>
+    <string name="invalid_download_hash_title">Файл скачан некорректно</string>
+    <string name="invalid_download_hash_message">Контрольная сумма не совпадает. Повторите загрузку или установите файл как есть.</string>
+    <string name="show_hashes">Показать хеши</string>
+    <string name="expected_hash">Ожидаемый хеш: %1$s</string>
+    <string name="actual_hash">Фактический хеш: %1$s</string>
+    <string name="download_again">Скачать по новой</string>
+    <string name="install_as_is">Установить как есть</string>
     <string name="not_found_error">Ничего не найдено</string>
     <string name="settings_title">Настройки</string>
     <string name="settings_installer_title">Установщик</string>
