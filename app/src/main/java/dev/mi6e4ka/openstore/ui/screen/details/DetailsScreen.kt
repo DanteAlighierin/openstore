@@ -344,6 +344,27 @@ fun DetailsScreen(
                                 Text(stringResource(R.string.device_unsupported), color = MaterialTheme.colorScheme.error)
                             }
                         }
+                        if (state.isInstalled && state.isNeedUpgrade && 
+                            state.installerPackageName != context.packageName && 
+                            state.installerPackageName != "ru.vk.store") {
+                            Card(
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Row(
+                                    Modifier.padding(12.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(painterResource(R.drawable.ic_warning_24px), null, tint = MaterialTheme.colorScheme.error)
+                                    Text(
+                                        stringResource(R.string.signature_mismatch_warning),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onErrorContainer
+                                    )
+                                }
+                            }
+                        }
                         Column {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),

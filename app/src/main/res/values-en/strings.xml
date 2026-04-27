@@ -44,10 +44,10 @@
     <string name="settings_title">Settings</string>
     <string name="settings_installer_title">Installer</string>
     <string name="settings_installer_description">If there are problems installing applications</string>
-    <string name="settings_updates_sources_title">Check for updates</string>
-    <string name="settings_updates_sources_description">Sources for which to check for app updates</string>
-    <string name="settings_updates_check_all_title">Check for updates for all non-system applications</string>
-    <string name="settings_updates_check_all_description">!!! RuStore gets the full list of installed applications, it is not safe</string>
+    <string name="settings_updates_sources_title">Source updates whitelist</string>
+    <string name="settings_updates_sources_description">Sources allowed to check for updates</string>
+    <string name="settings_updates_check_all_title">Check all installed applications</string>
+    <string name="settings_updates_check_all_description">Do not limit update checks to the whitelist. RuStore will get access to the entire list of installed applications.</string>
     <string name="settings_save_button">Save</string>
     <string name="updates_title">Updates</string>
     <string name="check_updates">Check for updates</string>
@@ -61,4 +61,10 @@
     <string name="intent_installer_warning">Installation via intent, go back to the page after installation</string>
     <string name="intent_installer_split_apk_build">The assembly is in progress .apks file, installation is possible only with a custom installer…</string>
     <string name="settings_app_theme_title">Color scheme (restart required)</string>
+    <string name="settings_source_aurora_store">Aurora Store</string>
+    <string name="settings_group_file_managers">File Managers</string>
+    <string name="settings_group_browsers">Browsers</string>
+    <string name="signature_mismatch_warning">Possible installation error due to different signatures</string>
+    <string name="settings_source_manual">Manual Installed</string>
+    <string name="settings_source_unknown">Unknown (ADB/Other)</string>
 </resources>

@@ -16,7 +16,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -56,7 +55,9 @@ data class SettingsSection(
 
 data class SettingsSectionSelect(
     val title: String,
-    val value: String
+    val value: String,
+    val isGroup: Boolean = false,
+    val groupPackages: List<String> = emptyList()
 )
 
 enum class ParamType {
@@ -96,23 +97,58 @@ fun SettingsScreen(
             description = R.string.settings_updates_sources_description,
             icon = R.drawable.ic_update_24px,
             type = ParamType.MULTI_SELECT,
-            defaultVal = "",
+            defaultVal = "dev.mi6e4ka.openstore;dev.mi6e4ka.openstore.nightly;dev.mi6e4ka.openstore.debug;ru.vk.store",
             select = listOf(
                 SettingsSectionSelect(
                     title = "OpenStore",
-                    value = "dev.mi6e4ka.openstore"
+                    value = "group_openstore",
+                    isGroup = true,
+                    groupPackages = listOf(
+                        "dev.mi6e4ka.openstore",
+                        "dev.mi6e4ka.openstore.nightly",
+                        "dev.mi6e4ka.openstore.debug"
+                    )
                 ),
                 SettingsSectionSelect(
                     title = "RuStore",
                     value = "ru.vk.store"
                 ),
                 SettingsSectionSelect(
+                    title = stringResource(R.string.settings_source_aurora_store),
+                    value = "com.aurora.store"
+                ),
+                SettingsSectionSelect(
                     title = "Google Play",
                     value = "com.android.vending"
                 ),
                 SettingsSectionSelect(
-                    title = "Manual Installed",
+                    title = stringResource(R.string.settings_group_file_managers),
+                    value = "group_filemanagers",
+                    isGroup = true,
+                    groupPackages = listOf(
+                        "com.hihonor.filemanager",
+                        "com.google.android.documentsui",
+                        "com.android.documentsui",
+                        "com.google.android.apps.nbu.files",
+                        "com.mi.android.globalFileexplorer"
+                    )
+                ),
+                SettingsSectionSelect(
+                    title = stringResource(R.string.settings_group_browsers),
+                    value = "group_browsers",
+                    isGroup = true,
+                    groupPackages = listOf(
+                        "com.android.chrome",
+                        "com.yandex.browser"
+                    )
+                ),
+                SettingsSectionSelect(
+                    title = stringResource(R.string.settings_source_manual),
                     value = "com.android.packageinstaller"
+                ),
+                SettingsSectionSelect(
+                    title = stringResource(R.string.settings_source_unknown),
+                    value = "null"
                 )
             )
         ),
@@ -201,8 +237,14 @@ fun SettingsCard(
         stringResource(item.description)
     } else if (item.type != ParamType.SWITCH) {
         val strVal = currentValue as? String ?: ""
-        val selectedValues = strVal.split(";").filter { it.isNotEmpty() }
-        item.select?.filter { it.value in selectedValues }?.joinToString(", ") { it.title } ?: ""
+        val selectedValues = strVal.split(";").filter { it.isNotEmpty() }.toSet()
+        item.select?.filter { entry ->
+            if (entry.isGroup) {
+                entry.groupPackages.any { it in selectedValues }
+            } else {
+                entry.value in selectedValues
+            }
+        }?.joinToString(", ") { it.title } ?: ""
     } else ""
 
     Card (
@@ -250,35 +292,46 @@ fun SettingsCard(
             }
         }
         if (showDialog) {
-            val selected = remember { mutableStateListOf<SettingsSectionSelect>() }
-            if (item.type == ParamType.MULTI_SELECT) {
-                selected.apply {
+            val selectedPackages = remember { 
+                mutableStateListOf<String>().apply {
                     val currentStr = currentValue as? String ?: ""
-                    addAll(currentStr.split(";").mapNotNull { v ->
-                        item.select?.firstOrNull { it.value == v }
-                    })
+                    addAll(currentStr.split(";").filter { it.isNotEmpty() })
                 }
             }
+            
             var selectedVal by remember { mutableStateOf(currentValue as? String) }
+            
             AlertDialog(
                 onDismissRequest = { showDialog = false },
-
-                title = {
-                    Text(stringResource(item.title))
-                },
-
+                title = { Text(stringResource(item.title)) },
                 text = {
                     LazyColumn {
-                        items(item.select?:listOf()) { entry ->
+                        items(item.select ?: listOf()) { entry ->
+                            val isChecked = if (entry.isGroup) {
+                                entry.groupPackages.all { it in selectedPackages }
+                            } else {
+                                entry.value in selectedPackages
+                            }
+                            
                             Row(
                                 Modifier
                                     .fillMaxWidth()
                                     .clickable {
                                         if (item.type == ParamType.MULTI_SELECT) {
-                                            if (entry in selected) {
-                                                selected.remove(entry)
+                                            if (entry.isGroup) {
+                                                if (isChecked) {
+                                                    selectedPackages.removeAll(entry.groupPackages)
+                                                } else {
+                                                    entry.groupPackages.forEach { 
+                                                        if (it !in selectedPackages) selectedPackages.add(it)
+                                                    }
+                                                }
                                             } else {
-                                                selected.add(entry)
+                                                if (isChecked) {
+                                                    selectedPackages.remove(entry.value)
+                                                } else {
+                                                    selectedPackages.add(entry.value)
+                                                }
                                             }
                                         } else {
                                             selectedVal = entry.value
@@ -294,11 +347,8 @@ fun SettingsCard(
                                     )
                                 } else {
                                     Checkbox(
-                                        checked = entry in selected,
-                                        onCheckedChange = {
-                                            if (it) selected.add(entry)
-                                            else selected.remove(entry)
-                                        }
+                                        checked = isChecked,
+                                        onCheckedChange = null // Click handled by Row
                                     )
                                 }
 
@@ -310,11 +360,10 @@ fun SettingsCard(
                         }
                     }
                 },
-
                 confirmButton = {
                     TextButton(onClick = {
                         val newValue = if (item.type == ParamType.MULTI_SELECT) {
-                            selected.joinToString(";") { it.value }
+                            selectedPackages.joinToString(";")
                         } else {
                             selectedVal ?: item.defaultVal
                         }
@@ -328,6 +377,4 @@ fun SettingsCard(
             )
         }
     }
-
-
 }

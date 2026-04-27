@@ -44,10 +44,10 @@
     <string name="settings_title">Настройки</string>
     <string name="settings_installer_title">Установщик</string>
     <string name="settings_installer_description">Если есть проблемы при установке приложений</string>
-    <string name="settings_updates_sources_title">Проверка обновлений</string>
-    <string name="settings_updates_sources_description">Источники, для который проверять обновления приложений</string>
-    <string name="settings_updates_check_all_title">Проверять обновления для всех не системных приложений</string>
-    <string name="settings_updates_check_all_description">!!! RuStore получает полный список установленных приложений, не безопасно</string>
+    <string name="settings_updates_sources_title">Белый список источников обновлений</string>
+    <string name="settings_updates_sources_description">Источники, для которых разрешена проверка обновлений</string>
+    <string name="settings_updates_check_all_title">Проверять все установленные приложения</string>
+    <string name="settings_updates_check_all_description">Не ограничивать проверку обновлений белым списком. RuStore получит доступ ко всему списку установленных приложений.</string>
     <string name="settings_save_button">Сохранить</string>
     <string name="updates_title">Обновления</string>
     <string name="check_updates">Проверить обновления</string>
@@ -61,4 +61,10 @@
     <string name="intent_installer_warning">Установка через intent, перезайдите на страницу после установки</string>
     <string name="intent_installer_split_apk_build">Выполняется сборка .apks файла, установка возможно только кастомным установщиком…</string>
     <string name="settings_app_theme_title">Тема (необходим перезапуск)</string>
+    <string name="settings_source_aurora_store">Aurora Store</string>
+    <string name="settings_group_file_managers">Файловые менеджеры</string>
+    <string name="settings_group_browsers">Браузеры</string>
+    <string name="signature_mismatch_warning">Возможна ошибка установки из-за отличия в подписях</string>
+    <string name="settings_source_manual">Установлено вручную</string>
+    <string name="settings_source_unknown">Неизвестно (ADB/Другое)</string>
 </resources>

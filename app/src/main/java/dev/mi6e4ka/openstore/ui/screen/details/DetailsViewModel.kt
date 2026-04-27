@@ -46,6 +46,7 @@ data class DetailsState(
     val isInstalled: Boolean = false,
     val isNeedUpgrade: Boolean = false,
     val isSupported: Boolean = true,
+    val installerPackageName: String? = null,
     val invalidDownloadedApkFiles: List<File>? = null,
     val invalidDownloadMessage: String? = null,
     val invalidExpectedHash: String? = null,
@@ -75,7 +76,14 @@ class DetailsViewModel(private val appPlatform: String, private val apkInstaller
                 item = AppModule.searchRepository.getItemDetails(itemId, appPlatform)
                 //
                 val packageInfo  = getPackageInfo(context, itemId)
-                _state.value = DetailsState(isLoading = true, isInstalled = packageInfo != null)
+                val installer = if (packageInfo != null) getInstallSource(context.packageManager, itemId) else null
+                
+                _state.value = DetailsState(
+                    isLoading = true, 
+                    isInstalled = packageInfo != null,
+                    installerPackageName = installer
+                )
+                
                 if (packageInfo != null) {
                     val installedVersionCode = (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                         packageInfo.longVersionCode
@@ -112,6 +120,19 @@ class DetailsViewModel(private val appPlatform: String, private val apkInstaller
             } catch (e: Exception) {}
 
             _state.update { it.copy(isLoading = false) }
+        }
+    }
+
+    private fun getInstallSource(pm: PackageManager, packageName: String): String? {
+        return try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                pm.getInstallSourceInfo(packageName).installingPackageName
+            } else {
+                @Suppress("DEPRECATION")
+                pm.getInstallerPackageName(packageName)
+            }
+        } catch (e: Exception) {
+            null
         }
     }
 
@@ -170,7 +191,7 @@ class DetailsViewModel(private val appPlatform: String, private val apkInstaller
             onSessionFinished = { success ->
                 _state.update { it.copy(installStatus = InstallStatus.Success, isDownloading = false)}
                 if (success) {
-                    _state.update { it.copy(isInstalled = true, isNeedUpgrade = false) }
+                    _state.update { it.copy(isInstalled = true, isNeedUpgrade = false, installerPackageName = context.packageName) }
                     apkInstaller.cleanApkFiles(apkFiles.map {it.name})
                 }
             },
@@ -267,7 +288,7 @@ class DetailsViewModel(private val appPlatform: String, private val apkInstaller
     }
 
     fun updateInstallStatus(isInstalled: Boolean) {
-        _state.update { it.copy(isInstalled = isInstalled) }
+        _state.update { it.copy(isInstalled = isInstalled, installerPackageName = if (isInstalled) it.installerPackageName else null) }
     }
 
     fun downloadFileToFolder(context: Context) {
