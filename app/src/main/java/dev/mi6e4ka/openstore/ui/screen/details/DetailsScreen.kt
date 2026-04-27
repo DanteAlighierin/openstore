@@ -44,6 +44,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.LocalMinimumInteractiveComponentEnforcement
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -52,6 +53,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -344,10 +346,11 @@ fun DetailsScreen(
                         }
                         Column {
                             Row(
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
                                 if (!state.isInstalled || state.isDownloading) {
-                                    //FilledTonalButton(onClick = {}, modifier = Modifier.weight(1f)) { Text("Copy apk link") }
                                     Button(onClick = {
                                         viewModel.downloadAndInstallApp(context)
                                     }, modifier = Modifier.weight(1f), enabled = !state.isDownloading && state.isSupported) {
@@ -367,10 +370,19 @@ fun DetailsScreen(
                                     FilledTonalButton(onClick = {
                                         viewModel.deleteApplication(context, itemId)
                                     }, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.uninstall)) }
+                                    
                                     if (state.isNeedUpgrade) {
                                         Button(onClick = {
                                             viewModel.downloadAndInstallApp(context)
                                         }, modifier = Modifier.weight(1f), enabled = state.isSupported) { Text(stringResource(R.string.update)) }
+                                        
+                                        CompositionLocalProvider(LocalMinimumInteractiveComponentEnforcement provides false) {
+                                            FilledTonalIconButton(onClick = {
+                                                viewModel.runApplication(context, itemId)
+                                            }, modifier = Modifier.size(40.dp)) {
+                                                Icon(painterResource(R.drawable.ic_open_in_browser_24px), contentDescription = stringResource(R.string.open))
+                                            }
+                                        }
                                     } else {
                                         Button(onClick = {
                                             viewModel.runApplication(context, itemId)
@@ -378,10 +390,12 @@ fun DetailsScreen(
                                     }
                                 }
                                 if (state.isDownloading) {
-                                    FilledTonalIconButton(onClick = {
-                                        viewModel.cancelDownload()
-                                    }, enabled = state.installStatus != InstallStatus.Pending) {
-                                        Icon(painterResource(R.drawable.ic_close_24px), null)
+                                    CompositionLocalProvider(LocalMinimumInteractiveComponentEnforcement provides false) {
+                                        FilledTonalIconButton(onClick = {
+                                            viewModel.cancelDownload()
+                                        }, enabled = state.installStatus != InstallStatus.Pending, modifier = Modifier.size(40.dp)) {
+                                            Icon(painterResource(R.drawable.ic_close_24px), null)
+                                        }
                                     }
                                 }
                             }
