@@ -44,8 +44,7 @@ data class UpdatesState(
     val invalidDownloadedApkFiles: List<File>? = null,
     val invalidDownloadedAppPackage: String? = null,
     val invalidExpectedHash: String? = null,
-    val invalidActualHash: String? = null,
-    val excludeGooglePlay: Boolean = true
+    val invalidActualHash: String? = null
 )
 
 class UpdatesViewModel(private val apkInstaller: ApkInstaller) : ViewModel() {
@@ -55,27 +54,7 @@ class UpdatesViewModel(private val apkInstaller: ApkInstaller) : ViewModel() {
     private val cancelDownloads = mutableMapOf<String, () -> Unit>()
     
     companion object {
-        private const val PREFS_NAME = "updates_prefs"
-        private const val KEY_EXCLUDE_GOOGLE_PLAY = "exclude_google_play"
-    }
-    
-    fun initPreferences(context: Context) {
-        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val excludeGooglePlay = prefs.getBoolean(KEY_EXCLUDE_GOOGLE_PLAY, true)
-        _state.update { it.copy(excludeGooglePlay = excludeGooglePlay) }
-    }
-
-    fun toggleExcludeGooglePlay(context: Context) {
-        val newValue = !_state.value.excludeGooglePlay
-        _state.update { it.copy(excludeGooglePlay = newValue) }
-        
-        // Сохраняем в SharedPreferences
-        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .edit()
-            .putBoolean(KEY_EXCLUDE_GOOGLE_PLAY, newValue)
-            .apply()
-
-        loadAndCheckUpdates(context)
+        private const val DEFAULT_SOURCES = "dev.mi6e4ka.openstore;dev.mi6e4ka.openstore.nightly;dev.mi6e4ka.openstore.debug;ru.vk.store"
     }
 
     fun loadAndCheckUpdates(context: Context) {
@@ -300,7 +279,7 @@ class UpdatesViewModel(private val apkInstaller: ApkInstaller) : ViewModel() {
 
         val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
 
-        val allowedSources = prefs.getString("updates_sources", "")?.split(";") ?: listOf()
+        val allowedSources = prefs.getString("updates_sources", DEFAULT_SOURCES)?.split(";") ?: listOf()
         val allowAllSources = prefs.getBoolean("updates_check_all", false)
 
         return packages

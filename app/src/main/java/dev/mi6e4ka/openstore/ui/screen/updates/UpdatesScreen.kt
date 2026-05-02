@@ -103,7 +103,6 @@ fun UpdatesScreen(navController: NavController) {
     }
 
     LaunchedEffect(Unit) {
-        viewModel.initPreferences(context)
         viewModel.loadAndCheckUpdates(context)
     }
 

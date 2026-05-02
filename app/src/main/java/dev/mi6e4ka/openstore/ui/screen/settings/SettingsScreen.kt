@@ -3,6 +3,8 @@ package dev.mi6e4ka.openstore.ui.screen.settings
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
+import android.os.Build
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -11,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
@@ -53,6 +56,7 @@ data class SettingsSection(
     val select: List<SettingsSectionSelect>? = null
 )
 
+@SuppressLint("ModifierParameter")
 data class SettingsSectionSelect(
     val title: String,
     val value: String,
@@ -72,6 +76,12 @@ enum class ParamType {
 fun SettingsScreen(
     navController: NavController
 ) {
+    val context = LocalContext.current
+    
+    val dynamicSources = remember {
+        getDynamicInstallerSources(context)
+    }
+
     val sections = listOf(
         SettingsSection(
             id = "installer_type",
@@ -98,59 +108,7 @@ fun SettingsScreen(
             icon = R.drawable.ic_update_24px,
             type = ParamType.MULTI_SELECT,
             defaultVal = "dev.mi6e4ka.openstore;dev.mi6e4ka.openstore.nightly;dev.mi6e4ka.openstore.debug;ru.vk.store",
-            select = listOf(
-                SettingsSectionSelect(
-                    title = "OpenStore",
-                    value = "group_openstore",
-                    isGroup = true,
-                    groupPackages = listOf(
-                        "dev.mi6e4ka.openstore",
-                        "dev.mi6e4ka.openstore.nightly",
-                        "dev.mi6e4ka.openstore.debug"
-                    )
-                ),
-                SettingsSectionSelect(
-                    title = "RuStore",
-                    value = "ru.vk.store"
-                ),
-                SettingsSectionSelect(
-                    title = stringResource(R.string.settings_source_aurora_store),
-                    value = "com.aurora.store"
-                ),
-                SettingsSectionSelect(
-                    title = "Google Play",
-                    value = "com.android.vending"
-                ),
-                SettingsSectionSelect(
-                    title = stringResource(R.string.settings_group_file_managers),
-                    value = "group_filemanagers",
-                    isGroup = true,
-                    groupPackages = listOf(
-                        "com.hihonor.filemanager",
-                        "com.google.android.documentsui",
-                        "com.android.documentsui",
-                        "com.google.android.apps.nbu.files",
-                        "com.mi.android.globalFileexplorer"
-                    )
-                ),
-                SettingsSectionSelect(
-                    title = stringResource(R.string.settings_group_browsers),
-                    value = "group_browsers",
-                    isGroup = true,
-                    groupPackages = listOf(
-                        "com.android.chrome",
-                        "com.yandex.browser"
-                    )
-                ),
-                SettingsSectionSelect(
-                    title = stringResource(R.string.settings_source_manual),
-                    value = "com.android.packageinstaller"
-                ),
-                SettingsSectionSelect(
-                    title = stringResource(R.string.settings_source_unknown),
-                    value = "null"
-                )
-            )
+            select = dynamicSources
         ),
         SettingsSection(
             id = "updates_check_all",
@@ -183,7 +141,8 @@ fun SettingsScreen(
             )
         )
     )
-    val context = LocalContext.current as? Activity
+
+    val activity = context as? Activity
     Scaffold(
         topBar = {
             TopAppBar(
@@ -192,9 +151,8 @@ fun SettingsScreen(
                     IconButton(
                         {
                             val popped = navController.popBackStack()
-
                             if (!popped) {
-                                context?.finish()
+                                activity?.finish()
                             }
                         }
                     ) {
@@ -215,6 +173,66 @@ fun SettingsScreen(
             }
         }
     }
+}
+
+private fun getDynamicInstallerSources(context: Context): List<SettingsSectionSelect> {
+    val pm = context.packageManager
+    val installedPackages = pm.getInstalledPackages(0)
+
+    val foundInstallers = installedPackages.map { pkg ->
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            try {
+                pm.getInstallSourceInfo(pkg.packageName).installingPackageName
+            } catch (e: Exception) { null }
+        } else {
+            @Suppress("DEPRECATION")
+            pm.getInstallerPackageName(pkg.packageName)
+        }
+    }.toSet()
+
+    val result = mutableListOf<SettingsSectionSelect>()
+
+    result.add(SettingsSectionSelect(
+        title = "RuStore/OpenStore",
+        value = "group_openstore",
+        isGroup = true,
+        groupPackages = listOf(
+            "dev.mi6e4ka.openstore",
+            "dev.mi6e4ka.openstore.nightly",
+            "dev.mi6e4ka.openstore.debug",
+            "ru.vk.store"
+        )
+    ))
+
+    result.add(SettingsSectionSelect(
+        title = context.getString(R.string.settings_source_manual),
+        value = "com.google.android.packageinstaller"
+    ))
+
+    result.add(SettingsSectionSelect(
+        title = context.getString(R.string.settings_source_unknown),
+        value = "null"
+    ))
+
+    val handledPackages = mutableSetOf<String?>()
+    handledPackages.add(null)
+    handledPackages.add("null")
+    handledPackages.add("com.google.android.packageinstaller")
+    handledPackages.add("ru.vk.store")
+    handledPackages.add(context.packageName)
+    handledPackages.addAll(listOf("dev.mi6e4ka.openstore", "dev.mi6e4ka.openstore.nightly", "dev.mi6e4ka.openstore.debug"))
+
+    foundInstallers.filter { it !in handledPackages && it != null }.forEach { pkg ->
+        val label = try {
+            val info = pm.getApplicationInfo(pkg!!, 0)
+            pm.getApplicationLabel(info).toString()
+        } catch (e: Exception) {
+            pkg
+        }
+        result.add(SettingsSectionSelect(title = label ?: pkg!!, value = pkg!!))
+    }
+    Log.i("OS", "Found installers: $result")
+    return result
 }
 
 @Composable
@@ -305,7 +323,7 @@ fun SettingsCard(
                 onDismissRequest = { showDialog = false },
                 title = { Text(stringResource(item.title)) },
                 text = {
-                    LazyColumn {
+                    LazyColumn(modifier = Modifier.heightIn(max = 380.dp)) {
                         items(item.select ?: listOf()) { entry ->
                             val isChecked = if (entry.isGroup) {
                                 entry.groupPackages.all { it in selectedPackages }
