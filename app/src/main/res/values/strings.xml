@@ -65,7 +65,7 @@
     <string name="settings_source_aurora_store">Aurora Store</string>
     <string name="settings_group_file_managers">Файловые менеджеры</string>
     <string name="settings_group_browsers">Браузеры</string>
-    <string name="signature_mismatch_warning">Возможна ошибка установки из-за отличия в подписях</string>
     <string name="settings_source_manual">Установлено вручную</string>
     <string name="settings_source_unknown">Неизвестно (ADB/Другое)</string>
+    <string name="signature_mismatch_warning">Установлено из другого источника</string>
 </resources>

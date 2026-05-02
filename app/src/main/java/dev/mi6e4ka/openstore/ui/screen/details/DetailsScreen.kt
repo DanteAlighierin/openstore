@@ -348,7 +348,7 @@ fun DetailsScreen(
                             state.installerPackageName != context.packageName && 
                             state.installerPackageName != "ru.vk.store") {
                             Card(
-                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
                                 modifier = Modifier.fillMaxWidth()
                             ) {
                                 Row(
@@ -356,11 +356,11 @@ fun DetailsScreen(
                                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Icon(painterResource(R.drawable.ic_warning_24px), null, tint = MaterialTheme.colorScheme.error)
+                                    Icon(painterResource(R.drawable.ic_warning_24px), null, tint = MaterialTheme.colorScheme.onPrimaryContainer)
                                     Text(
                                         stringResource(R.string.signature_mismatch_warning),
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onErrorContainer
+                                        fontSize = 16.sp
+                                        //color = MaterialTheme.colorScheme.onPrimaryContainer
                                     )
                                 }
                             }
