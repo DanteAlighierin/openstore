@@ -27,13 +27,12 @@ Verification info:
 - [x] Search apps
 - [x] View apps descriptions, rating and reviews
 - [x] Native app installing
-- [x] Updating apps (for now only manually)
 - [x] Android 5.0+ support!
 - [x] Search and view TV apps
+- [x] Check all apps for updates
 
 ## Roadmap
-- [ ] TV navigation support
-- [ ] Automatically check for updates
+- [ ] Better TV navigation support
 - [ ] ...maybe more?
 
 ## Screenshots
