@@ -2,7 +2,7 @@
     <string name="app_name">OpenStore</string>
     <string name="safety_card_text">About app safety</string>
     <string name="error_message">Error: %1$s</string>
-    <string name="provided_by">Provided by %1$s</string>
+    <string name="provided_by_third_party">App from %1$s</string>
     <string name="device_unsupported">Not compatible with your device</string>
     <string name="installing">Installing…</string>
     <string name="downloading">Downloading…%1$s</string>
@@ -67,4 +67,5 @@
     <string name="signature_mismatch_warning">Possible installation error due to different signatures</string>
     <string name="settings_source_manual">Manual Installed</string>
     <string name="settings_source_unknown">Unknown (ADB/Other)</string>
+    <string name="provided_by_developer">Provided by developer</string>
 </resources>

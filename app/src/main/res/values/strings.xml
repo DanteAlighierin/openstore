@@ -2,7 +2,8 @@
     <string name="app_name">OpenStore</string>
     <string name="safety_card_text">О безопасности приложений</string>
     <string name="error_message">Ошибка: %1$s</string>
-    <string name="provided_by">Предоставлено %1$s</string>
+    <string name="provided_by_developer">Предоставлено разработчиком</string>
+    <string name="provided_by_third_party">Приложение из %1$s</string>
     <string name="device_unsupported">Не поддерживается на этом устройстве</string>
     <string name="installing">Установка…</string>
     <string name="downloading">Загрузка…%1$s</string>

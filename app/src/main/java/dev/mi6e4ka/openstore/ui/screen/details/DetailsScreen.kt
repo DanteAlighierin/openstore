@@ -282,9 +282,9 @@ fun DetailsScreen(
                                     modifier = Modifier.size(28.dp)
                                 )
                                 if (item.aggregatorInfo != null) {
-                                    Text(stringResource(R.string.provided_by, item.aggregatorInfo.source))
+                                    Text(stringResource(R.string.provided_by_third_party, item.aggregatorInfo.source))
                                 } else {
-                                    Text(stringResource(R.string.provided_by, "RuStore"))
+                                    Text(stringResource(R.string.provided_by_developer))
                                 }
                             }
                         }
