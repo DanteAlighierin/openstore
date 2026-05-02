@@ -54,8 +54,8 @@ jobs:
         if: steps.get_release.outputs.prerelease == 'true'
         run: |
           ./gradlew assembleNightly --stacktrace \
-            # -PversionName=${{ steps.get_release.outputs.tag_name }} \
             -PversionCode=$(date +%s)
+            # -PversionName=${{ steps.get_release.outputs.tag_name }}
 
       - name: Build unsigned release APK
         if: steps.get_release.outputs.prerelease != 'true'
