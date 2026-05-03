@@ -36,11 +36,12 @@ Verification info:
 - [ ] ...maybe more?
 
 ## Screenshots
-[<img src="https://codeberg.org/mi6e4ka/openstore/raw/main/fastlane/metadata/android/en-US/images/phoneScreenshots/1.png" width=250>](https://codeberg.org/mi6e4ka/openstore/raw/main/fastlane/metadata/android/en-US/images/phoneScreenshots/1.png)
-[<img src="https://codeberg.org/mi6e4ka/openstore/raw/main/fastlane/metadata/android/en-US/images/phoneScreenshots/2.png" width=250>](https://codeberg.org/mi6e4ka/openstore/raw/main/fastlane/metadata/android/en-US/images/phoneScreenshots/2.png)
-[<img src="https://codeberg.org/mi6e4ka/openstore/raw/main/fastlane/metadata/android/en-US/images/phoneScreenshots/3.png" width=250>](https://codeberg.org/mi6e4ka/openstore/raw/main/fastlane/metadata/android/en-US/images/phoneScreenshots/3.png)
-[<img src="https://codeberg.org/mi6e4ka/openstore/raw/main/fastlane/metadata/android/en-US/images/phoneScreenshots/4.png" width=250>](https://codeberg.org/mi6e4ka/openstore/raw/main/fastlane/metadata/android/en-US/images/phoneScreenshots/4.png)
-[<img src="https://codeberg.org/mi6e4ka/openstore/raw/main/fastlane/metadata/android/en-US/images/phoneScreenshots/5.png" width=250>](https://codeberg.org/mi6e4ka/openstore/raw/main/fastlane/metadata/android/en-US/images/phoneScreenshots/5.png)
+<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/01_main_screen.png" width=250>
+<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/02_search_screen.png" width=250>
+<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/03_details_screen.png" width=250>
+<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/04_review_screen.png" width=250>
+<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/05_updates_screen.png" width=250> 
+<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/06_settings_screen.png" width=250>
 
 ## Building the app
 See [here](https://codeberg.org/mi6e4ka/openstore/src/branch/main/BUILDING.md)
