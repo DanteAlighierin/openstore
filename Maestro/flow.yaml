@@ -1,0 +1,37 @@
+appId: dev.mi6e4ka.openstore
+---
+- launchApp:
+    clearState: true
+
+- assertVisible: "OpenStore"
+- takeScreenshot: "01_main_screen"
+
+- tapOn: "Search"
+- inputText: "Mir Pay"
+- pressKey: Enter
+- assertVisible: "Mir Pay"
+- takeScreenshot: "02_search_screen"
+
+- tapOn: "Mir Pay"
+- assertVisible: "Mir Pay"
+- takeScreenshot: "03_details_screen"
+
+- scrollUntilVisible: 
+    element: "Rating and reviews"
+    direction: DOWN
+- tapOn: "Rating and reviews"
+- assertVisible: "Reviews"
+- takeScreenshot: "04_review_screen"
+
+- back
+- back
+- back
+- assertVisible: "OpenStore"
+- tapOn: "updates|обновления"
+- assertVisible: "Updates"
+- takeScreenshot: "05_updates_screen"
+
+- back
+- tapOn: "settings|настройки"
+- assertVisible: "Settings|Настройки"
+- takeScreenshot: "06_settings_screen"
