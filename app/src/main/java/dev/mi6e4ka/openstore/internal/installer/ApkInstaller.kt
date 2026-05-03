@@ -24,6 +24,7 @@ import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -63,6 +64,8 @@ class ApkInstaller(private val context: Context) {
             val totalBytesToDownload = files.sumOf { it.size }
             val totalBytesDownloaded = AtomicLong(0)
             val downloadedFiles = Collections.synchronizedList(mutableListOf<File>())
+            var lastUpdateMillis = 0L
+
             try {
                 val resultingFiles = coroutineScope {
                     files.map { file ->
@@ -70,11 +73,12 @@ class ApkInstaller(private val context: Context) {
                             val fileName = file.url.split("/").last()
                             val apkFile = getApkFile(fileName)
                             if (!downloadedFiles.contains(apkFile)) {
-                                downloadedPackages.add(apkFile)
+                                downloadedFiles.add(apkFile)
                             }
 
                             if (apkFile.exists() && apkFile.length() == file.size) {
                                 if (verifyFileHash(apkFile, file.hash)) {
+                                    totalBytesDownloaded.addAndFetch(file.size)
                                     return@async apkFile
                                 }
                                 apkFile.delete()
@@ -83,42 +87,38 @@ class ApkInstaller(private val context: Context) {
                             val request = Request.Builder().url(file.url).build()
                             val call = okHttpClient.newCall(request)
                             
-                            // Связываем отмену корутины с отменой сетевого вызова
-                            val job = coroutineContext[Job]
-                            val cancellationDisposable = job?.invokeOnCompletion {
-                                if (job.isCancelled) call.cancel()
-                            }
+                            // Связываем отмену корутины с OkHttp
+                            val job = coroutineContext[Job]!!
+                            val cancelHandler = job.invokeOnCompletion { call.cancel() }
 
                             try {
                                 call.execute().use { response ->
                                     if (!response.isSuccessful) throw IOException("Ошибка загрузки: ${response.code}")
 
-                                    val responseBody =
-                                        response.body ?: throw IOException("Пустой ответ от сервера")
+                                    val responseBody = response.body ?: throw IOException("Пустой ответ")
                                     
                                     responseBody.byteStream().use { inputStream ->
                                         FileOutputStream(apkFile).use { outputStream ->
-                                            val buffer = ByteArray(8192)
+                                            val buffer = ByteArray(16384) // Увеличил буфер для скорости
                                             var bytesRead: Int
 
                                             while (inputStream.read(buffer).also { bytesRead = it } != -1) {
-                                                // Проверяем статус отмены на каждой итерации
-                                                if (call.isCanceled()) {
-                                                    throw IOException("Canceled")
-                                                }
-
+                                                job.ensureActive()
                                                 outputStream.write(buffer, 0, bytesRead)
 
-                                                val newTotalDownloaded =
-                                                    totalBytesDownloaded.addAndFetch(bytesRead.toLong())
-                                                val percent = if (totalBytesToDownload > 0) {
-                                                    (newTotalDownloaded * 100 / totalBytesToDownload).toInt()
-                                                } else {
-                                                    0
-                                                }
-
-                                                withContext(Dispatchers.Main) {
-                                                    onProgress(percent, newTotalDownloaded, totalBytesToDownload)
+                                                val currentTotal = totalBytesDownloaded.addAndFetch(bytesRead.toLong())
+                                                
+                                                // Троттлинг обновлений UI (не чаще 10 раз в секунду)
+                                                val now = System.currentTimeMillis()
+                                                if (now - lastUpdateMillis > 100) {
+                                                    lastUpdateMillis = now
+                                                    val percent = if (totalBytesToDownload > 0) {
+                                                        (currentTotal * 100 / totalBytesToDownload).toInt()
+                                                    } else 0
+                                                    
+                                                    withContext(Dispatchers.Main) {
+                                                        onProgress(percent, currentTotal, totalBytesToDownload)
+                                                    }
                                                 }
                                             }
                                             outputStream.flush()
@@ -128,11 +128,10 @@ class ApkInstaller(private val context: Context) {
                                     if (!verifyFileHash(apkFile, file.hash)) {
                                         throw HashMismatchException(apkFile, file.hash)
                                     }
-
                                     apkFile
                                 }
                             } finally {
-                                cancellationDisposable?.dispose()
+                                cancelHandler.dispose()
                             }
                         }
                     }.awaitAll()
@@ -142,7 +141,6 @@ class ApkInstaller(private val context: Context) {
                     onSuccess(resultingFiles)
                 }
             } catch (e: Exception) {
-                // Выполняем очистку и уведомление в NonCancellable, чтобы код не пролетел мимо
                 withContext(NonCancellable) {
                     if (e is HashMismatchException) {
                         val expectedHash = formatHashForDisplay(e.expectedHash)
@@ -152,14 +150,11 @@ class ApkInstaller(private val context: Context) {
                             onInvalidHash(filesCopy, expectedHash, actualHash)
                         }
                     } else {
-                        downloadedFiles.forEach { file ->
-                            if (file.exists()) {
-                                file.delete()
-                            }
-                        }
+                        // Удаляем недокачанные файлы при любой другой ошибке или отмене
+                        downloadedFiles.forEach { if (it.exists()) it.delete() }
                         
                         withContext(Dispatchers.Main) {
-                            if (e is CancellationException || (e is IOException && e.message == "Canceled")) {
+                            if (e is CancellationException || (e is IOException && callIsCanceled(e))) {
                                 onCancel()
                             } else {
                                 onError(e)
@@ -170,13 +165,13 @@ class ApkInstaller(private val context: Context) {
             }
         }
 
-        return {
-            downloadRunner.cancel()
-        }
+        return { downloadRunner.cancel() }
     }
-    
-    // Вспомогательный список для очистки (дублирует логику для надежности)
-    private val downloadedPackages = Collections.synchronizedList(mutableListOf<File>())
+
+    private fun callIsCanceled(e: IOException): Boolean {
+        return e.message?.contains("Canceled", ignoreCase = true) == true || 
+               e.message?.contains("Socket closed", ignoreCase = true) == true
+    }
 
     private class HashMismatchException(val file: File, val expectedHash: String) : IOException("Hash mismatch")
 
@@ -199,8 +194,6 @@ class ApkInstaller(private val context: Context) {
     private fun verifyFileHash(file: File, expectedHash: String): Boolean {
         val normalizedHash = expectedHash.trim().ifEmpty { return true }
         val expectedBytes = decodeHashValue(normalizedHash) ?: return true
-        
-        // Only XXH64 is supported now (8 bytes)
         if (expectedBytes.size != 8) return true
         
         val actualBytes = digestFileXXH64(file) ?: return false
