@@ -8,6 +8,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.fillMaxSize
@@ -66,20 +67,34 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     val navController = rememberNavController()
+                    val duration = 300
+                    val easing = FastOutSlowInEasing
                     NavHost(
                         navController = navController,
                         startDestination = "search",
                         enterTransition = {
-                            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(300))
+                            slideInHorizontally(
+                                initialOffsetX = { (it * 0.1f).toInt() },
+                                animationSpec = tween(duration, easing = easing)
+                            ) + fadeIn(animationSpec = tween(duration))
                         },
                         exitTransition = {
-                            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(300))
+                            slideOutHorizontally(
+                                targetOffsetX = { -(it * 0.1f).toInt() },
+                                animationSpec = tween(duration, easing = easing)
+                            ) + fadeOut(animationSpec = tween(duration))
                         },
                         popEnterTransition = {
-                            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Right, animationSpec = tween(300))
+                            slideInHorizontally(
+                                initialOffsetX = { -(it * 0.1f).toInt() },
+                                animationSpec = tween(duration, easing = easing)
+                            ) + fadeIn(animationSpec = tween(duration))
                         },
                         popExitTransition = {
-                            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right, animationSpec = tween(300))
+                            slideOutHorizontally(
+                                targetOffsetX = { (it * 0.1f).toInt() },
+                                animationSpec = tween(duration, easing = easing)
+                            ) + fadeOut(animationSpec = tween(duration))
                         }
                     ) {
                         composable("search") {
