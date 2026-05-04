@@ -44,10 +44,10 @@
     <string name="settings_title">Settings</string>
     <string name="settings_installer_title">Installer</string>
     <string name="settings_installer_description">If there are problems installing applications</string>
-    <string name="settings_updates_sources_title">Source updates whitelist</string>
-    <string name="settings_updates_sources_description">Sources allowed to check for updates</string>
-    <string name="settings_updates_check_all_title">Check all installed applications</string>
-    <string name="settings_updates_check_all_description">Do not limit update checks to the whitelist. RuStore will get access to the entire list of installed applications.</string>
+    <string name="settings_updates_sources_title">Tracked sources</string>
+    <string name="settings_updates_sources_description">Updates will be checked for applications from selected sources</string>
+    <string name="settings_updates_check_all_title">Check all applications</string>
+    <string name="settings_updates_check_all_description">Do not limit the update check to selected sources. RuStore will get access to the entire list of applications on device</string>
     <string name="settings_save_button">Save</string>
     <string name="updates_title">Updates</string>
     <string name="check_updates">Check for updates</string>
@@ -68,4 +68,9 @@
     <string name="settings_source_manual">Manual Installed</string>
     <string name="settings_source_unknown">Unknown (ADB/Other)</string>
     <string name="provided_by_developer">Provided by developer</string>
+    <string name="mobile_label">Mobile</string>
+    <string name="tv_label">TV</string>
+    <string name="theme_auto_label">Auto</string>
+    <string name="theme_dark_label">Dark</string>
+    <string name="theme_light_label">Light</string>
 </resources>

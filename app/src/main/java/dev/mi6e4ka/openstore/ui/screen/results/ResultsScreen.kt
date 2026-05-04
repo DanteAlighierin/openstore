@@ -75,15 +75,15 @@ fun ResultsScreen(
             actions = {
                 val platforms = remember {
                     listOf(
-                        Platform("Mobile", "mobile", R.drawable.ic_mobile_24px),
-                        Platform("TV", "tv", R.drawable.ic_tv_gen_24px)
+                        Platform(R.string.mobile_label, "mobile", R.drawable.ic_mobile_24px),
+                        Platform(R.string.tv_label, "tv", R.drawable.ic_tv_gen_24px)
                     )
                 }
 
                 TextButton({platformSelectorExpanded = true}) {
                     Icon(painterResource(state.selectedPlatform.icon), null)
                     Spacer(Modifier.size(8.dp))
-                    Text(state.selectedPlatform.label)
+                    Text(stringResource(state.selectedPlatform.label))
                 }
                 DropdownMenu(
                     expanded = platformSelectorExpanded,
@@ -92,7 +92,7 @@ fun ResultsScreen(
                     platforms.forEach {
                         DropdownMenuItem(
                             leadingIcon = {Icon(painterResource(it.icon), null)},
-                            text = { Text(it.label) },
+                            text = { Text(stringResource(it.label)) },
                             onClick = { viewModel.selectPlatform(it); platformSelectorExpanded=false }
                         )
                     }

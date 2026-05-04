@@ -127,15 +127,15 @@ fun SettingsScreen(
             defaultVal = "auto",
             select = listOf(
                 SettingsSectionSelect(
-                    title = "Auto",
+                    title = context.getString(R.string.theme_auto_label),
                     value = "auto"
                 ),
                 SettingsSectionSelect(
-                    title = "Dark",
+                    title = context.getString(R.string.theme_dark_label),
                     value = "dark"
                 ),
                 SettingsSectionSelect(
-                    title = "Light",
+                    title = context.getString(R.string.theme_light_label),
                     value = "light"
                 ),
             )

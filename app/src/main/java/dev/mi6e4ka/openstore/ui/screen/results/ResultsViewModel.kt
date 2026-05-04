@@ -17,12 +17,12 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.update
 
 data class Platform(
-    val label: String,
+    val label: Int,
     val value: String,
     val icon: Int
 )
 data class ResultsState(
-    val selectedPlatform: Platform = Platform("Mobile", "mobile", R.drawable.ic_mobile_24px),
+    val selectedPlatform: Platform = Platform(R.string.mobile_label, "mobile", R.drawable.ic_mobile_24px),
 )
 
 class ResultsViewModel(private val query: String) : ViewModel() {

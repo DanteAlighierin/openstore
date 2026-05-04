@@ -45,10 +45,9 @@
     <string name="settings_title">Настройки</string>
     <string name="settings_installer_title">Установщик</string>
     <string name="settings_installer_description">Если есть проблемы при установке приложений</string>
-    <string name="settings_updates_sources_title">Белый список источников обновлений</string>
-    <string name="settings_updates_sources_description">Источники, для которых разрешена проверка обновлений</string>
-    <string name="settings_updates_check_all_title">Проверять все установленные приложения</string>
-    <string name="settings_updates_check_all_description">Не ограничивать проверку обновлений белым списком. RuStore получит доступ ко всему списку установленных приложений.</string>
+    <string name="settings_updates_sources_title">Отслеживаемые источники</string>
+    <string name="settings_updates_check_all_title">Проверять все приложения</string>
+    <string name="settings_updates_check_all_description">Не ограничивать проверку обновлений выбранными источниками. RuStore получит доступ ко всему списку приложений на устройстве</string>
     <string name="settings_save_button">Сохранить</string>
     <string name="updates_title">Обновления</string>
     <string name="check_updates">Проверить обновления</string>
@@ -68,4 +67,10 @@
     <string name="settings_source_manual">Установлено вручную</string>
     <string name="settings_source_unknown">Неизвестно (ADB/Другое)</string>
     <string name="signature_mismatch_warning">Установлено из другого источника</string>
+    <string name="mobile_label">Телефон</string>
+    <string name="tv_label">ТВ</string>
+    <string name="theme_auto_label">Системная</string>
+    <string name="theme_dark_label">Тёмная</string>
+    <string name="theme_light_label">Светлая</string>
+    <string name="settings_updates_sources_description">Обновления будут проверяться для приложений из выбранных источников</string>
 </resources>
