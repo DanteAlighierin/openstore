@@ -105,7 +105,7 @@ fun SettingsScreen(
             id = "updates_sources",
             title = R.string.settings_updates_sources_title,
             description = R.string.settings_updates_sources_description,
-            icon = R.drawable.ic_update_24px,
+            icon = R.drawable.ic_checklist_24px,
             type = ParamType.MULTI_SELECT,
             defaultVal = "dev.mi6e4ka.openstore;dev.mi6e4ka.openstore.nightly;dev.mi6e4ka.openstore.debug;ru.vk.store",
             select = dynamicSources
@@ -114,7 +114,7 @@ fun SettingsScreen(
             id = "updates_check_all",
             title = R.string.settings_updates_check_all_title,
             description = R.string.settings_updates_check_all_description,
-            icon = R.drawable.ic_arrow_circle_up_24px,
+            icon = R.drawable.ic_arrow_shape_up_stack_2_24px,
             type = ParamType.SWITCH,
             defaultVal = ""
         ),
