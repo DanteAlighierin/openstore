@@ -206,7 +206,12 @@ private fun getDynamicInstallerSources(context: Context): List<SettingsSectionSe
 
     result.add(SettingsSectionSelect(
         title = context.getString(R.string.settings_source_manual),
-        value = "com.google.android.packageinstaller"
+        value = "group_installers",
+        isGroup = true,
+        groupPackages = listOf(
+            "com.google.android.packageinstaller",
+            "com.android.packageinstaller"
+        )
     ))
 
     result.add(SettingsSectionSelect(
@@ -218,6 +223,7 @@ private fun getDynamicInstallerSources(context: Context): List<SettingsSectionSe
     handledPackages.add(null)
     handledPackages.add("null")
     handledPackages.add("com.google.android.packageinstaller")
+    handledPackages.add("com.android.packageinstaller")
     handledPackages.add("ru.vk.store")
     handledPackages.add(context.packageName)
     handledPackages.addAll(listOf("dev.mi6e4ka.openstore", "dev.mi6e4ka.openstore.nightly", "dev.mi6e4ka.openstore.debug"))
