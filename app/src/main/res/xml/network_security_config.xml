@@ -4,6 +4,9 @@
         <domain includeSubdomains="true">rustore.ru</domain>
         <pin-set expiration="2028-11-21">
             <pin digest="SHA-256">hETpgVvaLC0bvcGG3t0cuqiHvr4XyP2MTwCiqhgRWwU=</pin>
+            <!-- global sing new root ca (R46/E46) -->
+            <pin digest="SHA-256">rn+WLLnmp9v3uDP7GPqbcaiRdd+UnCMrap73yz3yu/w=</pin>
+            <pin digest="SHA-256">4EoCLOMvTM8sf2BGKHuCijKpCfXnUUR/g/0scfb9gXM=</pin>
         </pin-set>
     </domain-config>
 </network-security-config>
