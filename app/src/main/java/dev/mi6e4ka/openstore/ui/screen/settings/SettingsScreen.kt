@@ -156,7 +156,10 @@ fun SettingsScreen(
                             }
                         }
                     ) {
-                        Icon(painterResource(R.drawable.ic_arrow_back_24px), "back")
+                        Icon(
+                            painterResource(R.drawable.ic_arrow_back_24px),
+                            stringResource(R.string.back_button_desc)
+                        )
                     }
                 }
             )

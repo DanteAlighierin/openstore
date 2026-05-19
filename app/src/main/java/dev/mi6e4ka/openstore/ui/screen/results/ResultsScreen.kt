@@ -35,6 +35,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.hideFromAccessibility
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -68,7 +70,7 @@ fun ResultsScreen(
                 IconButton(onClick = { navController.popBackStack() }) {
                     Icon(
                         painterResource(R.drawable.ic_arrow_back_24px),
-                        contentDescription = "Back"
+                        contentDescription = stringResource(R.string.back_button_desc)
                     )
                 }
             },
@@ -81,7 +83,10 @@ fun ResultsScreen(
                 }
 
                 TextButton({platformSelectorExpanded = true}) {
-                    Icon(painterResource(state.selectedPlatform.icon), null)
+                    Icon(
+                        painterResource(state.selectedPlatform.icon),
+                        contentDescription = stringResource(R.string.tts_current_platform)
+                    )
                     Spacer(Modifier.size(8.dp))
                     Text(stringResource(state.selectedPlatform.label))
                 }
@@ -125,7 +130,16 @@ fun ResultsScreen(
                                 modifier = Modifier.weight(1f).padding(start = 16.dp,end = 4.dp)
                             ) {
                                 Text(text = app.appName, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                                Text(text = app.packageName, fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, color = MaterialTheme.colorScheme.secondary)
+                                Text(
+                                    text = app.packageName,
+                                    fontSize = 14.sp,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    color = MaterialTheme.colorScheme.secondary,
+                                    modifier = Modifier.semantics{
+                                        hideFromAccessibility()
+                                    }
+                                )
                             }
                         }
                     }

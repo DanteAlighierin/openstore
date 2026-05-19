@@ -98,7 +98,10 @@ fun SearchScreen(navController: NavController = rememberNavController()) {
                     )
                 }
                 IconButton({navController.navigate("settings")}) {
-                    Icon(painterResource(R.drawable.ic_settings_24px), "settings")
+                    Icon(
+                        painterResource(R.drawable.ic_settings_24px),
+                        contentDescription = stringResource(R.string.settings_title)
+                    )
                 }
             }
         ) },
@@ -151,7 +154,7 @@ fun SearchScreen(navController: NavController = rememberNavController()) {
                 onValueChange = {s -> search=s},
                 leadingIcon = { Icon(painterResource(R.drawable.ic_search_24px), contentDescription = null) },
                 modifier = Modifier.fillMaxWidth().semantics{
-                    contentDescription = "Search"
+                    contentDescription = context.getString(R.string.search_title)
                 },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(

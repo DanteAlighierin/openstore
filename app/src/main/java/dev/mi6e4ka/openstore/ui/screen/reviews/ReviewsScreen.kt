@@ -35,8 +35,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -95,7 +99,7 @@ fun ReviewsScreen(packageName: String, navController: NavController = rememberNa
                 IconButton(onClick = { navController.popBackStack() }) {
                     Icon(
                         painterResource(R.drawable.ic_arrow_back_24px),
-                        contentDescription = "Back"
+                        contentDescription = stringResource(R.string.back_button_desc)
                     )
                 }
             },
@@ -135,11 +139,12 @@ fun ReviewsScreen(packageName: String, navController: NavController = rememberNa
                 }
                 items(reviews ?: listOf()) { review ->
                     Card(
-                        Modifier.fillMaxWidth()
+                        Modifier.fillMaxWidth().semantics(mergeDescendants = true){}
                     ) {
                         Column(
                             Modifier.padding(16.dp)
                         ) {
+                            val context = LocalContext.current
                             Row(
                                 Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -155,7 +160,10 @@ fun ReviewsScreen(packageName: String, navController: NavController = rememberNa
                             }
                             Spacer(Modifier.height(8.dp))
                             Row(
-                                verticalAlignment = Alignment.CenterVertically
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.clearAndSetSemantics{
+                                    contentDescription = context.getString(R.string.review_rating_desc, review.appRating)
+                                }
                             ) {
                                 repeat(review.appRating) {
                                     Icon(painterResource(R.drawable.ic_star_filled_24px), null, Modifier.size(16.dp), tint = MaterialTheme.colorScheme.primary)
@@ -171,12 +179,12 @@ fun ReviewsScreen(packageName: String, navController: NavController = rememberNa
                                 horizontalArrangement = Arrangement.spacedBy(16.dp)
                             ) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(painterResource(R.drawable.ic_thumb_up_24px), contentDescription = null, Modifier.size(20.dp), tint = MaterialTheme.colorScheme.secondary)
+                                    Icon(painterResource(R.drawable.ic_thumb_up_24px), contentDescription = stringResource(R.string.likes_desc), Modifier.size(20.dp), tint = MaterialTheme.colorScheme.secondary)
                                     Spacer(Modifier.width(4.dp))
                                     Text("${review.likeCounter}")
                                 }
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(painterResource(R.drawable.ic_thumb_down_24px), contentDescription = null, Modifier.size(20.dp), tint = MaterialTheme.colorScheme.secondary)
+                                    Icon(painterResource(R.drawable.ic_thumb_down_24px), contentDescription = stringResource(R.string.dislikes_desc), Modifier.size(20.dp), tint = MaterialTheme.colorScheme.secondary)
                                     Spacer(Modifier.width(6.dp))
                                     Text("${review.dislikeCounter}")
                                 }

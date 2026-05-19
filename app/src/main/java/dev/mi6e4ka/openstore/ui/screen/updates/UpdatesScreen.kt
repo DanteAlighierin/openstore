@@ -114,7 +114,7 @@ fun UpdatesScreen(navController: NavController) {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
                             painter = painterResource(R.drawable.ic_arrow_back_24px),
-                            contentDescription = "Back"
+                            contentDescription = stringResource(R.string.back_button_desc)
                         )
                     }
                 },

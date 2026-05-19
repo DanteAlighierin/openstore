@@ -73,4 +73,6 @@
     <string name="theme_auto_label">Auto</string>
     <string name="theme_dark_label">Dark</string>
     <string name="theme_light_label">Light</string>
+    <string name="back_button_desc">Back</string>
+    <string name="tts_current_platform">Apps for platfom</string>
 </resources>

@@ -86,6 +86,9 @@ import kotlinx.datetime.toLocalDateTime
 import android.Manifest
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
@@ -141,7 +144,7 @@ fun DetailsScreen(
                 IconButton(onClick = { navController.popBackStack() }) {
                     Icon(
                         painter = painterResource(R.drawable.ic_arrow_back_24px),
-                        contentDescription = "Back"
+                        contentDescription = stringResource(R.string.back_button_desc)
                     )
                 }
             },
@@ -153,7 +156,10 @@ fun DetailsScreen(
                         }
                     }
                 ){
-                    Icon(painterResource(R.drawable.ic_link_24px), null)
+                    Icon(
+                        painterResource(R.drawable.ic_link_24px),
+                        stringResource(R.string.copy_link_desc)
+                    )
                 }
                 IconButton(
                     {
@@ -175,7 +181,10 @@ fun DetailsScreen(
                         }
                     }
                 ){
-                    Icon(painterResource(R.drawable.apk_install_24px), null)
+                    Icon(
+                        painterResource(R.drawable.apk_install_24px),
+                        stringResource(R.string.download_apk_desc)
+                    )
                 }
                 IconButton(onClick = {
                     val intent = Intent(Intent.ACTION_VIEW, "https://www.rustore.ru/catalog/app/${state.item?.packageName ?: ""}".toUri()).apply {
@@ -184,7 +193,10 @@ fun DetailsScreen(
                     }
                     context.startActivity(intent)
                 }, enabled = state.item != null) {
-                    Icon(painterResource(R.drawable.ic_captive_portal_24px), null)
+                    Icon(
+                        painterResource(R.drawable.ic_captive_portal_24px),
+                        stringResource(R.string.open_in_browser_desc)
+                    )
                 }
             }
         ) }
@@ -332,7 +344,7 @@ fun DetailsScreen(
                                 verticalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
                                 Text(item.appName, fontSize = 24.sp, fontWeight = FontWeight.Bold, maxLines = 2, overflow = TextOverflow.Ellipsis)
-                                Text(item.aggregatorInfo?.companyName ?: item.companyName, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                                Text(item.aggregatorInfo?.companyName ?: item.companyName, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.clearAndSetSemantics(){contentDescription = "Разработчик: ${item.aggregatorInfo?.companyName ?: item.companyName}"})
                             }
                         }
                         if (!state.isSupported) {
@@ -433,18 +445,30 @@ fun DetailsScreen(
                                             (state.appFiles?.sumOf { it.size } ?: 0L) / 1024.0 / 1024.0)
                                         )
                                     },
-                                    leadingIcon = {Icon(painterResource(R.drawable.ic_upload_file_24px), contentDescription = null)},
+                                    leadingIcon = {
+                                        Icon(
+                                            painterResource(R.drawable.ic_upload_file_24px),
+                                            stringResource(R.string.app_size_desc)
+                                        )},
                                     onClick = {},
                                 )
                                 AssistChip(
                                     onClick = {},
                                     label = {Text(item.versionName)},
-                                    leadingIcon = {Icon(painterResource(R.drawable.ic_arrow_circle_up_24px), contentDescription = null)}
+                                    leadingIcon = {
+                                        Icon(
+                                            painterResource(R.drawable.ic_arrow_circle_up_24px),
+                                            stringResource(R.string.latest_version_desc)
+                                        )}
                                 )
                                 AssistChip(
                                     onClick = {},
                                     label = {FormattedDateText(item.appVerUpdatedAt)},
-                                    leadingIcon = {Icon(painterResource(R.drawable.ic_update_24px), contentDescription = null)}
+                                    leadingIcon = {
+                                        Icon(
+                                            painterResource(R.drawable.ic_update_24px),
+                                            stringResource(R.string.last_update_desc)
+                                        )}
                                 )
                                 var detailedApiVersion by remember { mutableStateOf(false) }
                                 AssistChip(
@@ -458,22 +482,38 @@ fun DetailsScreen(
                                             Text("API ${item.minSdkVersion} +")
                                         }
                                             },
-                                    leadingIcon = {Icon(painterResource(R.drawable.ic_android_24px), contentDescription = null)}
+                                    leadingIcon = {
+                                        Icon(
+                                            painterResource(R.drawable.ic_android_24px),
+                                            stringResource(R.string.min_api_desc)
+                                        )}
                                 )
                                 AssistChip(
                                     onClick = {},
                                     label = {Text(if ((state.appFiles?.size ?: 1) > 1) "${state.appFiles?.size} Split APKs" else  "APK")},
-                                    leadingIcon = {Icon(painterResource(R.drawable.ic_adb_24px), contentDescription = null)}
+                                    leadingIcon = {
+                                        Icon(
+                                            painterResource(R.drawable.ic_adb_24px),
+                                            stringResource(R.string.installer_type_desc)
+                                        )}
                                 )
                                 AssistChip(
                                     onClick = {},
                                     label = {Text(item.roundedDownloadsText)},
-                                    leadingIcon = {Icon(painterResource(R.drawable.ic_download_24px), contentDescription = null)}
+                                    leadingIcon = {
+                                        Icon(
+                                            painterResource(R.drawable.ic_download_24px),
+                                            stringResource(R.string.downloads_desc)
+                                        )}
                                 )
                                 AssistChip(
                                     onClick = {},
                                     label = {Text(item.ageLegal)},
-                                    leadingIcon = {Icon(painterResource(R.drawable.ic_supervised_user_circle_24px), contentDescription = null)}
+                                    leadingIcon = {
+                                        Icon(
+                                            painterResource(R.drawable.ic_supervised_user_circle_24px),
+                                            stringResource(R.string.age_legal_desc)
+                                        )}
                                 )
                             }
                             GalleryWithPager(item.fileUrls)
@@ -539,6 +579,13 @@ fun DetailsScreen(
                                         restoreState = true
                                     }
                                 })
+                                .clearAndSetSemantics {
+                                    contentDescription = context.getString(
+                                        R.string.reviews_desc,
+                                        state.rating?.averageUserRating ?: 0,
+                                        state.rating?.totalRatings ?: 0
+                                    )
+                                }
                         ) {
                             Row(
                                 Modifier
