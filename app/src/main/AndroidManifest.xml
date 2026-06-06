@@ -35,11 +35,12 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="http" />
-                <data android:host="rustore.ru" />
-                <data android:host="www.rustore.ru" />
-                <data android:host="apps.rustore.ru" />
-                <data android:scheme="https" />
+                <data android:scheme="https" android:host="www.rustore.ru" android:pathPrefix="/catalog/app/" />
+                <data android:scheme="https" android:host="apps.rustore.ru" android:pathPrefix="/app/" />
+                <data android:scheme="https" android:host="www.rustore.ru" android:pathPrefix="/instruction" />
+                <data android:scheme="http" android:host="www.rustore.ru" android:pathPrefix="/catalog/app/" />
+                <data android:scheme="http" android:host="apps.rustore.ru" android:pathPrefix="/app/" />
+                <data android:scheme="http" android:host="www.rustore.ru" android:pathPrefix="/instruction" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
