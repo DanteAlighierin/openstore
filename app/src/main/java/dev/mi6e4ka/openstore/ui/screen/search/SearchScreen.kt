@@ -1,5 +1,6 @@
 package dev.mi6e4ka.openstore.ui.screen.search
 
+import android.app.NotificationManager
 import android.content.Intent
 import android.content.pm.verify.domain.DomainVerificationManager
 import android.net.Uri
@@ -70,6 +71,7 @@ import java.net.URLEncoder
 fun SearchScreen(navController: NavController = rememberNavController()) {
     var search by remember { mutableStateOf("") }
     var isDomainsVerified by remember { mutableStateOf(true) }
+    var areNotificationsEnabled by remember { mutableStateOf(true) }
     val context = LocalContext.current
 
     OnResumeEffect {
@@ -84,6 +86,10 @@ fun SearchScreen(navController: NavController = rememberNavController()) {
                 }
             }
         }
+        areNotificationsEnabled = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val nm = context.getSystemService(NotificationManager::class.java)
+            nm.areNotificationsEnabled()
+        } else true
     }
 
     Scaffold(
@@ -116,6 +122,38 @@ fun SearchScreen(navController: NavController = rememberNavController()) {
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Column {
+                if (!areNotificationsEnabled) {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 8.dp)
+                            .height(50.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .clickable(onClick = {
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                    val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                                        .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+                                    context.startActivity(intent)
+                                }
+                            }),
+                        colors = CardDefaults.cardColors(containerColor = Color(109, 255, 30, 40))
+                    ) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .padding(horizontal = 10.dp)
+                        ) {
+                            Icon(
+                                painterResource(R.drawable.ic_notifications_unread_24px),
+                                contentDescription = null,
+                                modifier = Modifier.size(32.dp),
+                            )
+                            Text(stringResource(R.string.notifications_disabled), fontSize = 18.sp)
+                        }
+                    }
+                }
                 if (!isDomainsVerified) {
                     Card(
                         modifier = Modifier

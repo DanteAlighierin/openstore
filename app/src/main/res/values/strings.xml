@@ -105,4 +105,5 @@
     <string name="notification_speed">Скорость: %1$s</string>
     <string name="notification_eta">Осталось: %1$s</string>
     <string name="seconds_short">сек</string>
+    <string name="notifications_disabled">Включите уведомления для отслеживания загрузок</string>
 </resources>
