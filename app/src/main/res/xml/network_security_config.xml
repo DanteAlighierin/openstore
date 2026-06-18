@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<network-security-config>
-    <domain-config cleartextTrafficPermitted="false">
-        <domain includeSubdomains="true">rustore.ru</domain>
-        <pin-set expiration="2028-11-21">
-            <pin digest="SHA-256">hETpgVvaLC0bvcGG3t0cuqiHvr4XyP2MTwCiqhgRWwU=</pin>
-        </pin-set>
-    </domain-config>
-</network-security-config>
