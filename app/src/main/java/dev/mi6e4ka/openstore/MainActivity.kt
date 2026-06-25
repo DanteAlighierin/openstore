@@ -3,6 +3,7 @@ package dev.mi6e4ka.openstore
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
@@ -35,6 +36,7 @@ import dev.mi6e4ka.openstore.ui.theme.AppTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         val cacheDir = externalCacheDir ?: cacheDir
         cacheDir.listFiles()?.forEach { file ->
