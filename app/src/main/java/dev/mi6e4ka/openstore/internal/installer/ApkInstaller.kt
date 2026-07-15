@@ -35,6 +35,7 @@ import net.jpountz.xxhash.XXHashFactory
 import java.util.Collections
 import java.util.concurrent.TimeUnit
 import java.util.zip.ZipEntry
+import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
 import kotlin.concurrent.atomics.AtomicLong
 import kotlin.concurrent.atomics.ExperimentalAtomicApi
@@ -186,6 +187,12 @@ class ApkInstaller(private val context: Context) {
                 apkFile.delete()
             }
         }
+        // Clean up extracted files
+        context.externalCacheDir?.listFiles()?.forEach { file ->
+            if (file.name.startsWith("extracted_")) {
+                file.delete()
+            }
+        }
     }
     private val installer = context.packageManager.packageInstaller
     private val flags = PendingIntent.FLAG_MUTABLE
@@ -311,11 +318,26 @@ class ApkInstaller(private val context: Context) {
             val session = installer.openSession(sessionId)
             session.use { activeSession ->
                 apkFiles.forEach { file ->
-                    val sizeBytes = file.length()
-                    file.inputStream().use { fileStream ->
-                        activeSession.openWrite(file.name, 0, sizeBytes).use { outputStream ->
-                            fileStream.copyTo(outputStream)
-                            activeSession.fsync(outputStream)
+                    if (file.name.endsWith(".zip", ignoreCase = true)) {
+                        ZipInputStream(file.inputStream()).use { zis ->
+                            var entry = zis.nextEntry
+                            while (entry != null) {
+                                if (!entry.isDirectory && entry.name.endsWith(".apk", ignoreCase = true)) {
+                                    activeSession.openWrite(entry.name, 0, 0).use { outputStream ->
+                                        zis.copyTo(outputStream)
+                                        activeSession.fsync(outputStream)
+                                    }
+                                }
+                                entry = zis.nextEntry
+                            }
+                        }
+                    } else {
+                        val sizeBytes = file.length()
+                        file.inputStream().use { fileStream ->
+                            activeSession.openWrite(file.name, 0, sizeBytes).use { outputStream ->
+                                fileStream.copyTo(outputStream)
+                                activeSession.fsync(outputStream)
+                            }
                         }
                     }
                 }
@@ -334,18 +356,39 @@ class ApkInstaller(private val context: Context) {
         onError: (Exception) -> Unit
     ) {
         try {
+            val processedFiles = mutableListOf<File>()
+            apkFiles.forEach { file ->
+                if (file.name.endsWith(".zip", ignoreCase = true)) {
+                    ZipInputStream(file.inputStream()).use { zis ->
+                        var entry = zis.nextEntry
+                        while (entry != null) {
+                            if (!entry.isDirectory && entry.name.endsWith(".apk", ignoreCase = true)) {
+                                val extractedFile = File(file.parentFile, "extracted_${file.name}_${entry.name}")
+                                extractedFile.outputStream().use { fos ->
+                                    zis.copyTo(fos)
+                                }
+                                processedFiles.add(extractedFile)
+                            }
+                            entry = zis.nextEntry
+                        }
+                    }
+                } else {
+                    processedFiles.add(file)
+                }
+            }
+
             val apkUri: Uri
-            if (apkFiles.size == 1) {
+            if (processedFiles.size == 1) {
                 apkUri = FileProvider.getUriForFile(
                     context,
                     "${context.packageName}.provider",
-                    apkFiles[0]
+                    processedFiles[0]
                 )
             } else {
                 Toast.makeText(context, R.string.intent_installer_split_apk_build, Toast.LENGTH_SHORT)
                     .show()
                 val apksFile = File(context.externalCacheDir ?: context.cacheDir, "$packageName.apks")
-                buildSplitApk(apkFiles, apksFile)
+                buildSplitApk(processedFiles, apksFile)
                 apkUri = FileProvider.getUriForFile(
                     context,
                     "${context.packageName}.provider",
