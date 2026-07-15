@@ -140,6 +140,11 @@ class DetailsViewModel(private val appPlatform: String, private val apkInstaller
         viewModelScope.launch {
             _state.update { it.copy(isDownloading = true, downloadProgress = 0, downloadTotalBytes = 0, downloadCurrentBytes = 0) }
             Log.d(null, "download apk " + state.value.appFiles)
+            if (state.value.appFiles == null) {
+                Toast.makeText(context, R.string.loading_error, Toast.LENGTH_SHORT).show()
+                _state.update { it.copy(isDownloading = false) }
+                return@launch
+            }
             cancelDownload = apkInstaller.downloadFilesWithProgress(
                 state.value.appFiles!!,
                 onProgress = { percent, downloaded, total ->

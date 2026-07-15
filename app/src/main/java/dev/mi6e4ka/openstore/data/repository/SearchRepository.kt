@@ -44,7 +44,7 @@ class SearchRepository {
             withoutSplits = withoutSplits,
             supportedAbis = supportedAbis
         )
-        return  apiService.getAppDownloadLink(deviceType, req).body.downloadUrls
+        return  apiService.getAppDownloadLink(deviceType, req).downloadUrls
     }
 
     suspend fun getAppRating(packageName: String): AppRatingResponseBody {

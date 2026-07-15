@@ -31,9 +31,10 @@ interface ApiService {
     suspend fun getItemDetails(
         @Header("deviceType") deviceType : String,
         @Path("packageName") packageName: String
+
     ): ItemDetailsResponse
 
-    @POST("applicationData/v2/download-link")
+    @POST("v3/showcase/apps/download-link")
     suspend fun getAppDownloadLink(
         @Header("deviceType") deviceType : String,
         @Body request: DownloadLinkRequest

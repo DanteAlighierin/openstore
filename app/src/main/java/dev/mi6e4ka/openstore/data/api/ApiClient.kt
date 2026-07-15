@@ -15,6 +15,13 @@ object ApiClient {
 
     private val okHttpClient = OkHttpClient.Builder()
 //        .addInterceptor(loggingInterceptor)
+        .addInterceptor { chain ->
+            val originalRequest = chain.request()
+            val newRequest = originalRequest.newBuilder()
+                .header("ruStoreVerCode", "1105002")
+                .build()
+            chain.proceed(newRequest)
+        }
         .connectTimeout(30, TimeUnit.SECONDS)
         .readTimeout(30, TimeUnit.SECONDS)
         .build()

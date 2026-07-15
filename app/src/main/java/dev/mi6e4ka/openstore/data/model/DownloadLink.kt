@@ -12,11 +12,7 @@ data class DownloadLinkRequest(
 )
 
 data class DownloadLinkResponse(
-    @SerializedName("body") val body: DownloadLinkResponseBody,
-)
-
-data class DownloadLinkResponseBody(
-    @SerializedName("downloadUrls") val downloadUrls: List<DownloadLinkResponseItem>,
+    @SerializedName("downloadUrls") val downloadUrls: List<DownloadLinkResponseItem>
 )
 
 data class DownloadLinkResponseItem(
