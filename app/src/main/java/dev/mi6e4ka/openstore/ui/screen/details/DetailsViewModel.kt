@@ -297,11 +297,16 @@ class DetailsViewModel(private val appPlatform: String, private val apkInstaller
     }
 
     fun downloadFileToFolder(context: Context) {
-        val fileName = "${state.value.item?.packageName}-${state.value.item?.versionName}.apk"
-        val request = DownloadManager.Request(state.value.plainApkUrl?.toUri())
+        val url = state.value.plainApkUrl ?: return
+        val isZip = url.contains(".zip", ignoreCase = true)
+        val extension = if (isZip) ".zip" else ".apk"
+        val mimeType = if (isZip) "application/zip" else "application/vnd.android.package-archive"
+
+        val fileName = "${state.value.item?.packageName}-${state.value.item?.versionName}$extension"
+        val request = DownloadManager.Request(url.toUri())
             .setTitle(fileName)
             .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-            .setMimeType("application/vnd.android.package-archive")
+            .setMimeType(mimeType)
             .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
 
         val downloadManager = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
