@@ -154,7 +154,8 @@ fun DetailsScreen(
                         scope.launch {
                             viewModel.copyTextToCB(context, state.plainApkUrl ?: "")
                         }
-                    }
+                    },
+                    enabled = state.plainApkUrl != null
                 ){
                     Icon(
                         painterResource(R.drawable.ic_link_24px),
@@ -179,7 +180,8 @@ fun DetailsScreen(
                                 }
                             }
                         }
-                    }
+                    },
+                    enabled = state.plainApkUrl != null
                 ){
                     Icon(
                         painterResource(R.drawable.apk_install_24px),
