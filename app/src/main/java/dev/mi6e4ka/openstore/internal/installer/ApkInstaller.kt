@@ -14,6 +14,7 @@ import android.widget.Toast
 import androidx.core.content.FileProvider
 import dev.mi6e4ka.openstore.R
 import dev.mi6e4ka.openstore.data.model.DownloadLinkResponseItem
+import dev.mi6e4ka.openstore.di.AppModule
 import kotlinx.coroutines.CoroutineScope
 import java.io.File
 import java.io.FileInputStream
@@ -44,15 +45,11 @@ import kotlin.coroutines.coroutineContext
 
 class ApkInstaller(private val context: Context) {
 
-    companion object {
-        private val okHttpClient = OkHttpClient.Builder()
-            .connectTimeout(60, TimeUnit.SECONDS)
-            .readTimeout(120, TimeUnit.SECONDS)
-            .writeTimeout(120, TimeUnit.SECONDS)
-            .build()
-    }
+    private val okHttpClient: OkHttpClient
+        get() = AppModule.okHttpClient
 
     @OptIn(ExperimentalAtomicApi::class)
+// ... (skipping unchanged code for targetContent matching)
     fun downloadFilesWithProgress(
         files: List<DownloadLinkResponseItem>,
         onProgress: (percent: Int, downloaded: Long, total: Long) -> Unit,

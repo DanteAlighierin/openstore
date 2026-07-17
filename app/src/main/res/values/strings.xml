@@ -61,6 +61,11 @@
     <string name="intent_installer_warning">Установка через intent, перезайдите на страницу после установки</string>
     <string name="intent_installer_split_apk_build">Выполняется сборка .apks файла, установка возможно только кастомным установщиком…</string>
     <string name="settings_app_theme_title">Тема (необходим перезапуск)</string>
+    <string name="settings_ssl_pinning_title">SSL Pinning</string>
+    <string name="settings_ssl_pinning_description">Защита от подмены сертификатов (требуется перезапуск)</string>
+    <string name="ssl_pinning_enabled">Включено</string>
+    <string name="ssl_pinning_custom">Включено + Минцифры</string>
+    <string name="ssl_pinning_disabled">Отключено</string>
     <string name="settings_source_aurora_store">Aurora Store</string>
     <string name="settings_group_file_managers">Файловые менеджеры</string>
     <string name="settings_group_browsers">Браузеры</string>

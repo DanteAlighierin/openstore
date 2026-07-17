@@ -139,6 +139,28 @@ fun SettingsScreen(
                     value = "light"
                 ),
             )
+        ),
+        SettingsSection(
+            id = "ssl_pinning_mode",
+            title = R.string.settings_ssl_pinning_title,
+            description = R.string.settings_ssl_pinning_description,
+            icon = R.drawable.ic_security_24px,
+            type = ParamType.SELECT,
+            defaultVal = "disabled",
+            select = listOf(
+                SettingsSectionSelect(
+                    title = context.getString(R.string.ssl_pinning_disabled),
+                    value = "disabled"
+                ),
+                SettingsSectionSelect(
+                    title = context.getString(R.string.ssl_pinning_enabled),
+                    value = "enabled"
+                ),
+                SettingsSectionSelect(
+                    title = context.getString(R.string.ssl_pinning_custom),
+                    value = "custom"
+                )
+            )
         )
     )
 

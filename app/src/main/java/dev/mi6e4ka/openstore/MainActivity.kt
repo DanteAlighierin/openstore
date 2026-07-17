@@ -33,6 +33,7 @@ import dev.mi6e4ka.openstore.ui.screen.search.SearchScreen
 import dev.mi6e4ka.openstore.ui.screen.settings.SettingsScreen
 import dev.mi6e4ka.openstore.ui.screen.updates.UpdatesScreen
 import dev.mi6e4ka.openstore.ui.theme.AppTheme
+import dev.mi6e4ka.openstore.di.AppModule
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -46,6 +47,7 @@ class MainActivity : ComponentActivity() {
             }
         }
         val imageLoader = ImageLoader.Builder(this)
+            .okHttpClient { AppModule.okHttpClient }
             .diskCache {
                 DiskCache.Builder()
                     .directory(cacheDir.resolve("image_cache"))

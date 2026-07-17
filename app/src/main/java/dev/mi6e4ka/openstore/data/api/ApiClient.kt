@@ -1,6 +1,6 @@
 package dev.mi6e4ka.openstore.data.api
 
-import okhttp3.OkHttpClient
+import dev.mi6e4ka.openstore.di.AppModule
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
@@ -13,24 +13,13 @@ object ApiClient {
 //        level = HttpLoggingInterceptor.Level.NONE
 //    }
 
-    private val okHttpClient = OkHttpClient.Builder()
-//        .addInterceptor(loggingInterceptor)
-        .addInterceptor { chain ->
-            val originalRequest = chain.request()
-            val newRequest = originalRequest.newBuilder()
-                .header("ruStoreVerCode", "1105002")
-                .build()
-            chain.proceed(newRequest)
-        }
-        .connectTimeout(30, TimeUnit.SECONDS)
-        .readTimeout(30, TimeUnit.SECONDS)
-        .build()
+    private val retrofit by lazy {
+        Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .client(AppModule.okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
 
-    private val retrofit = Retrofit.Builder()
-        .baseUrl(BASE_URL)
-        .client(okHttpClient)
-        .addConverterFactory(GsonConverterFactory.create())
-        .build()
-
-    val service: ApiService = retrofit.create(ApiService::class.java)
+    val service: ApiService by lazy { retrofit.create(ApiService::class.java) }
 }

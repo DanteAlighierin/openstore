@@ -61,6 +61,11 @@
     <string name="intent_installer_warning">Installation via intent, go back to the page after installation</string>
     <string name="intent_installer_split_apk_build">The assembly is in progress .apks file, installation is possible only with a custom installer…</string>
     <string name="settings_app_theme_title">Color scheme (restart required)</string>
+    <string name="settings_ssl_pinning_title">SSL Pinning</string>
+    <string name="settings_ssl_pinning_description">Certificate spoofing protection (restart required)</string>
+    <string name="ssl_pinning_enabled">Enabled</string>
+    <string name="ssl_pinning_custom">Enabled + Mintsifry</string>
+    <string name="ssl_pinning_disabled">Disabled</string>
     <string name="settings_source_aurora_store">Aurora Store</string>
     <string name="settings_group_file_managers">File Managers</string>
     <string name="settings_group_browsers">Browsers</string>
