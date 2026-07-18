@@ -1,9 +1,7 @@
-import java.io.ByteArrayOutputStream
 import java.util.Properties
-import java.io.FileInputStream
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
 }
 
@@ -28,7 +26,8 @@ val gitCommitShort: String = run {
 
 android {
     namespace = "dev.mi6e4ka.openstore"
-    compileSdk = 36
+    compileSdk = 37
+    ndkVersion = "27.3.13750724"
 
     androidResources {
         localeFilters.addAll(arrayOf("ru", "en"))
@@ -37,7 +36,7 @@ android {
     defaultConfig {
         applicationId = "dev.mi6e4ka.openstore"
         minSdk = 21
-        targetSdk = 36
+        targetSdk = 37
         versionCode = (project.findProperty("versionCode") as String?)?.toInt() ?: 1
         versionName = project.findProperty("versionName") as String? ?: ("git-" + gitCommitShort)
         //testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -69,25 +68,30 @@ android {
             versionNameSuffix = "-nightly"
             applicationIdSuffix = ".nightly"
             signingConfig = signingConfigs.getByName("debug")
-            resValue("string", "app_name", "OpenStore Nightly")
+            manifestPlaceholders["appName"] = "OpenStore Nightly"
         }
         debug {
             versionNameSuffix = "-debug"
             applicationIdSuffix = ".debug"
-            resValue("string", "app_name", "OpenStore Debug")
+            manifestPlaceholders["appName"] = "OpenStore Debug"
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
         isCoreLibraryDesugaringEnabled = true
-    }
-    kotlinOptions {
-        jvmTarget = "11"
     }
     buildFeatures {
         compose = true
         buildConfig = true
+    }
+    compileSdkMinor = 0
+    buildToolsVersion = "37.0.0"
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_21)
     }
 }
 
@@ -96,6 +100,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.at.lz4.java)
     implementation(libs.material3)
     implementation(libs.androidx.paging.compose)
     implementation(libs.kotlinx.datetime)
@@ -105,6 +110,5 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.coil.compose)
-    implementation(libs.lz4.java)
     coreLibraryDesugaring(libs.desugar.jdk.libs)
 }
