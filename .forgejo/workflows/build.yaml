@@ -10,7 +10,7 @@ jobs:
   build:
     runs-on: docker
     container:
-      image: codeberg.org/mi6e4ka/android-build-ct:latest
+      image: git.mi6e4ka.dev/mi6e4ka/android-build-ct:37.1
     defaults:
       run:
         shell: bash
@@ -19,7 +19,18 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
-          fetch-depth: 0
+          fetch-depth: 1
+
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            ~/.gradle/build-cache
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
 
       - name: Get Release Info
         id: get_release
@@ -53,14 +64,14 @@ jobs:
       - name: Build unsigned nightly APK
         if: steps.get_release.outputs.prerelease == 'true'
         run: |
-          ./gradlew assembleNightly --stacktrace \
+          ./gradlew assembleNightly --build-cache --stacktrace \
             -PversionCode=$(date +%s)
             # -PversionName=${{ steps.get_release.outputs.tag_name }}
 
       - name: Build unsigned release APK
         if: steps.get_release.outputs.prerelease != 'true'
         run: |
-          ./gradlew assembleRelease --stacktrace \
+          ./gradlew assembleRelease --build-cache --stacktrace \
             -PversionName=${{ steps.get_release.outputs.tag_name }} \
             -PversionCode=${{ steps.get_release.outputs.release_id }}
 

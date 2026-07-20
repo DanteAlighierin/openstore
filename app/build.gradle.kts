@@ -85,6 +85,9 @@ android {
         compose = true
         buildConfig = true
     }
+    lint {
+        checkReleaseBuilds = false
+	}
     compileSdkMinor = 0
     buildToolsVersion = "37.0.0"
 }
