@@ -80,6 +80,12 @@
     <string name="settings_updates_sources_description">Обновления будут проверяться для приложений из выбранных источников</string>
     <string name="back_button_desc">Назад</string>
     <string name="tts_current_platform">Приложения для платформы</string>
+    <string name="settings_check_openstore_updates_title">Проверять обновления OpenStore</string>
+    <string name="settings_check_openstore_updates_description">Автоматически проверять новые версии OpenStore</string>
+    <string name="update_available_title">Доступно обновление OpenStore</string>
+    <string name="update_available_message">Версия %1$s доступна (текущая: %2$s)</string>
+    <string name="update_download">Скачать</string>
+    <string name="update_later">Позже</string>
     <string name="copy_link_desc">Скопировать ссылку на apk</string>
     <string name="download_apk_desc">Скачать apk без установки</string>
     <string name="open_in_browser_desc">Открыть страницу приложения в браузере</string>

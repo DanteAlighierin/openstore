@@ -1,5 +1,8 @@
 package dev.mi6e4ka.openstore
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -13,10 +16,20 @@ import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.core.content.edit
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -26,6 +39,8 @@ import coil.ImageLoader
 import coil.disk.DiskCache
 import coil.memory.MemoryCache
 import coil.request.CachePolicy
+import dev.mi6e4ka.openstore.R
+import dev.mi6e4ka.openstore.data.updater.AppUpdater
 import dev.mi6e4ka.openstore.ui.screen.details.DetailsScreen
 import dev.mi6e4ka.openstore.ui.screen.results.ResultsScreen
 import dev.mi6e4ka.openstore.ui.screen.reviews.ReviewsScreen
@@ -73,6 +88,54 @@ class MainActivity : ComponentActivity() {
                     val navController = rememberNavController()
                     val duration = 300
                     val easing = FastOutSlowInEasing
+
+                    val context = LocalContext.current
+                    var showUpdateDialog by remember { mutableStateOf(false) }
+                    var updateInfo by remember { mutableStateOf<dev.mi6e4ka.openstore.data.updater.AppUpdateInfo?>(null) }
+
+                    LaunchedEffect(Unit) {
+                        val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+                        val checkUpdates = prefs.getBoolean("check_openstore_updates", true)
+                        if (checkUpdates) {
+                            val result = AppUpdater.checkForUpdate()
+                            if (result.hasUpdate) {
+                                updateInfo = result.info
+                                showUpdateDialog = true
+                            }
+                        }
+                    }
+
+                    if (showUpdateDialog && updateInfo != null) {
+                        AlertDialog(
+                            onDismissRequest = { showUpdateDialog = false },
+                            title = { Text(stringResource(R.string.update_available_title)) },
+                            text = {
+                                Text(
+                                    stringResource(
+                                        R.string.update_available_message,
+                                        updateInfo!!.latestVersion,
+                                        BuildConfig.VERSION_NAME
+                                    )
+                                )
+                            },
+                            confirmButton = {
+                                TextButton(onClick = {
+                                    val url = updateInfo!!.downloadUrl ?: updateInfo!!.releaseUrl
+                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                                    context.startActivity(intent)
+                                    showUpdateDialog = false
+                                }) {
+                                    Text(stringResource(R.string.update_download))
+                                }
+                            },
+                            dismissButton = {
+                                TextButton(onClick = { showUpdateDialog = false }) {
+                                    Text(stringResource(R.string.update_later))
+                                }
+                            }
+                        )
+                    }
+
                     NavHost(
                         navController = navController,
                         startDestination = "search",

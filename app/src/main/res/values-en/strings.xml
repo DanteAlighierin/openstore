@@ -80,4 +80,10 @@
     <string name="theme_light_label">Light</string>
     <string name="back_button_desc">Back</string>
     <string name="tts_current_platform">Apps for platfom</string>
+    <string name="settings_check_openstore_updates_title">Check for OpenStore updates</string>
+    <string name="settings_check_openstore_updates_description">Automatically check for new OpenStore releases</string>
+    <string name="update_available_title">OpenStore update available</string>
+    <string name="update_available_message">Version %1$s is now available (current: %2$s)</string>
+    <string name="update_download">Download</string>
+    <string name="update_later">Later</string>
 </resources>

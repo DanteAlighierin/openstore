@@ -141,6 +141,14 @@ fun SettingsScreen(
             )
         ),
         SettingsSection(
+            id = "check_openstore_updates",
+            title = R.string.settings_check_openstore_updates_title,
+            description = R.string.settings_check_openstore_updates_description,
+            icon = R.drawable.ic_update_24px,
+            type = ParamType.SWITCH,
+            defaultVal = "true"
+        ),
+        SettingsSection(
             id = "ssl_pinning_mode",
             title = R.string.settings_ssl_pinning_title,
             description = R.string.settings_ssl_pinning_description,
@@ -277,7 +285,7 @@ fun SettingsCard(
 
     var currentValue by remember {
         mutableStateOf<Any>(
-            if (item.type == ParamType.SWITCH) prefs.getBoolean(item.id, false)
+            if (item.type == ParamType.SWITCH) prefs.getBoolean(item.id, item.defaultVal == "true")
             else prefs.getString(item.id, item.defaultVal) ?: item.defaultVal
         )
     }
