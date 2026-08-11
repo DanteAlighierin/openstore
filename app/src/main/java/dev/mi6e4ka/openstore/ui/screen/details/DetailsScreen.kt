@@ -181,12 +181,20 @@ fun DetailsScreen(
                             }
                         }
                     },
-                    enabled = state.plainApkUrl != null
+                    enabled = state.plainApkUrl != null && !state.isFolderDownloading
                 ){
-                    Icon(
-                        painterResource(R.drawable.apk_install_24px),
-                        stringResource(R.string.download_apk_desc)
-                    )
+                    if (state.isFolderDownloading) {
+                        CircularProgressIndicator(
+                            progress = { state.folderDownloadProgress / 100f },
+                            modifier = Modifier.size(24.dp),
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Icon(
+                            painterResource(R.drawable.apk_install_24px),
+                            stringResource(R.string.download_apk_desc)
+                        )
+                    }
                 }
                 IconButton(onClick = {
                     val intent = Intent(Intent.ACTION_VIEW, "https://www.rustore.ru/catalog/app/${state.item?.packageName ?: ""}".toUri()).apply {

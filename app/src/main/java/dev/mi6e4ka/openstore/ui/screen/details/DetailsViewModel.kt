@@ -1,17 +1,20 @@
 package dev.mi6e4ka.openstore.ui.screen.details
 
-import android.app.DownloadManager
 import android.app.PendingIntent
 import android.content.ClipData
 import android.content.ClipboardManager
+import android.content.ContentResolver
+import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Environment
+import android.provider.MediaStore
 import android.util.Log
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -26,9 +29,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
-import androidx.core.net.toUri
+import java.io.OutputStream
+import java.util.zip.ZipInputStream
 
 data class DetailsState(
     val isLoading: Boolean = true,
@@ -37,12 +43,15 @@ data class DetailsState(
     val error: String? = null,
     val appFiles: List<DownloadLinkResponseItem>? = null,
     val plainApkUrl: String? = null,
+    val plainApk: DownloadLinkResponseItem? = null,
     val splitOnly: Boolean? = null,
     val installStatus: InstallStatus = InstallStatus.Idle,
     val isDownloading: Boolean = false,
     val downloadProgress: Int = 0,
     val downloadCurrentBytes: Long = 0,
     val downloadTotalBytes: Long = 0,
+    val isFolderDownloading: Boolean = false,
+    val folderDownloadProgress: Int = 0,
     val isInstalled: Boolean = false,
     val isNeedUpgrade: Boolean = false,
     val isSupported: Boolean = true,
@@ -63,6 +72,7 @@ class DetailsViewModel(private val appPlatform: String, private val apkInstaller
     private val _state = MutableStateFlow(DetailsState())
     val state: StateFlow<DetailsState> = _state.asStateFlow()
     private var cancelDownload: (() -> Unit)? = null
+    private var cancelFolderDownload: (() -> Unit)? = null
 
     fun loadDetails(context: Context, itemId: String) {
         if (_state.value.item != null) {
@@ -110,8 +120,8 @@ class DetailsViewModel(private val appPlatform: String, private val apkInstaller
             // пробуем получить файлы приложения указав что нам не нужны split apk
             try {
                 if (item == null) return@launch
-                val singleApkUrl = AppModule.searchRepository.getAppFiles(item.appId, firstInstall = true, supportedAbis = Build.SUPPORTED_ABIS.toList(), withoutSplits = true, deviceType = appPlatform).firstOrNull()?.url
-                _state.update{ it.copy(plainApkUrl = singleApkUrl, splitOnly = singleApkUrl == null) }
+                val singleApk = AppModule.searchRepository.getAppFiles(item.appId, firstInstall = true, supportedAbis = Build.SUPPORTED_ABIS.toList(), withoutSplits = true, deviceType = appPlatform).firstOrNull()
+                _state.update{ it.copy(plainApk = singleApk, plainApkUrl = singleApk?.url, splitOnly = singleApk == null) }
             } catch (e: Exception) {}
             // рейтинг
             try {
@@ -297,26 +307,178 @@ class DetailsViewModel(private val appPlatform: String, private val apkInstaller
     }
 
     fun downloadFileToFolder(context: Context) {
-        val url = state.value.plainApkUrl ?: return
-        val isZip = url.contains(".zip", ignoreCase = true)
-        val extension = if (isZip) ".zip" else ".apk"
-        val mimeType = if (isZip) "application/zip" else "application/vnd.android.package-archive"
-
-        val fileName = "${state.value.item?.packageName}-${state.value.item?.versionName}$extension"
-        val request = DownloadManager.Request(url.toUri())
-            .setTitle(fileName)
-            .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-            .setMimeType(mimeType)
-            .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
-
-        val downloadManager = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            context.getSystemService(DownloadManager::class.java)
-        } else {
-            @Suppress("DEPRECATION")
-            context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+        val apk = state.value.plainApk ?: return
+        if (state.value.isFolderDownloading) return
+        viewModelScope.launch {
+            _state.update { it.copy(isFolderDownloading = true, folderDownloadProgress = 0) }
+            cancelFolderDownload = apkInstaller.downloadFilesWithProgress(
+                files = listOf(apk),
+                onProgress = { percent, _, _ ->
+                    _state.update { it.copy(folderDownloadProgress = percent) }
+                },
+                onSuccess = { apkFiles ->
+                    copyApkToDownloads(context, apkFiles)
+                    _state.update { it.copy(isFolderDownloading = false, folderDownloadProgress = 0) }
+                },
+                onError = { _ ->
+                    Toast.makeText(context, R.string.loading_error, Toast.LENGTH_SHORT).show()
+                    _state.update { it.copy(isFolderDownloading = false, folderDownloadProgress = 0) }
+                },
+                onCancel = {
+                    _state.update { it.copy(isFolderDownloading = false, folderDownloadProgress = 0) }
+                },
+                onInvalidHash = { files, _, _ ->
+                    files.forEach { if (it.exists()) it.delete() }
+                    Toast.makeText(context, R.string.loading_error, Toast.LENGTH_SHORT).show()
+                    _state.update { it.copy(isFolderDownloading = false, folderDownloadProgress = 0) }
+                }
+            )
         }
-        downloadManager.enqueue(request)
-        Toast.makeText(context, R.string.download_has_started, Toast.LENGTH_SHORT).show()
+    }
+
+    fun cancelFolderDownload() {
+        cancelFolderDownload?.invoke()
+        cancelFolderDownload = null
+    }
+
+    private fun copyApkToDownloads(context: Context, apkFiles: List<File>) {
+        viewModelScope.launch {
+            val success = withContext(Dispatchers.IO) {
+                val copied = apkFiles.map { copyFileToDownloads(context, it) }.all { it }
+                apkFiles.forEach { if (it.exists()) it.delete() }
+                copied
+            }
+            Toast.makeText(
+                context,
+                if (success) R.string.download_complete else R.string.loading_error,
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
+    private fun copyFileToDownloads(context: Context, source: File): Boolean {
+        val isZip = source.name.endsWith(".zip", ignoreCase = true) ||
+            state.value.plainApk?.url?.contains(".zip", ignoreCase = true) == true
+        return try {
+            if (isZip) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    extractZipToMediaStore(context, source)
+                } else {
+                    extractZipLegacy(source)
+                }
+            } else {
+                val fileName = "${state.value.item?.packageName}-${state.value.item?.versionName}.apk"
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    saveViaMediaStore(context, source, fileName, "application/vnd.android.package-archive")
+                } else {
+                    saveToLegacyDownloads(source, fileName)
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("DetailsViewModel", "Failed to save file to Downloads", e)
+            false
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private fun extractZipToMediaStore(context: Context, source: File): Boolean {
+        var success = false
+        ZipInputStream(source.inputStream()).use { zis ->
+            var entry = zis.nextEntry
+            while (entry != null) {
+                if (!entry.isDirectory && entry.name.endsWith(".apk", ignoreCase = true)) {
+                    val apkName = entry.name.substringAfterLast('/')
+                    if (writeToMediaStore(context, apkName, "application/vnd.android.package-archive") { out ->
+                            zis.copyTo(out)
+                        }) {
+                        success = true
+                    }
+                }
+                entry = zis.nextEntry
+            }
+        }
+        return success
+    }
+
+    private fun extractZipLegacy(source: File): Boolean {
+        var success = false
+        ZipInputStream(source.inputStream()).use { zis ->
+            var entry = zis.nextEntry
+            while (entry != null) {
+                if (!entry.isDirectory && entry.name.endsWith(".apk", ignoreCase = true)) {
+                    val apkName = entry.name.substringAfterLast('/')
+                    val dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                    if (!dir.exists()) dir.mkdirs()
+                    File(dir, getUniqueLegacyName(dir, apkName)).outputStream().use { out ->
+                        zis.copyTo(out)
+                    }
+                    success = true
+                }
+                entry = zis.nextEntry
+            }
+        }
+        return success
+    }
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private fun saveViaMediaStore(context: Context, source: File, fileName: String, mimeType: String): Boolean {
+        return writeToMediaStore(context, fileName, mimeType) { out ->
+            source.inputStream().use { input -> input.copyTo(out) }
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private fun writeToMediaStore(context: Context, fileName: String, mimeType: String, writer: (OutputStream) -> Unit): Boolean {
+        val resolver = context.contentResolver
+        val uniqueName = getUniqueMediaStoreName(resolver, fileName)
+        val values = ContentValues().apply {
+            put(MediaStore.Downloads.DISPLAY_NAME, uniqueName)
+            put(MediaStore.Downloads.MIME_TYPE, mimeType)
+            put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
+        }
+        val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values) ?: return false
+        val outputStream = resolver.openOutputStream(uri) ?: return false
+        outputStream.use { writer(it) }
+        return true
+    }
+
+    @Suppress("DEPRECATION")
+    private fun saveToLegacyDownloads(source: File, fileName: String): Boolean {
+        val dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+        if (!dir.exists()) dir.mkdirs()
+        source.copyTo(File(dir, getUniqueLegacyName(dir, fileName)))
+        return true
+    }
+
+    private fun getUniqueMediaStoreName(resolver: ContentResolver, fileName: String): String {
+        val existing = mutableSetOf<String>()
+        resolver.query(
+            MediaStore.Downloads.EXTERNAL_CONTENT_URI,
+            arrayOf(MediaStore.Downloads.DISPLAY_NAME),
+            null, null, null
+        )?.use { cursor ->
+            val nameCol = cursor.getColumnIndexOrThrow(MediaStore.Downloads.DISPLAY_NAME)
+            while (cursor.moveToNext()) {
+                cursor.getString(nameCol)?.let { existing.add(it) }
+            }
+        }
+        if (fileName !in existing) return fileName
+        val dot = fileName.lastIndexOf('.')
+        val base = if (dot > 0) fileName.substring(0, dot) else fileName
+        val ext = if (dot > 0) fileName.substring(dot) else ""
+        var i = 1
+        while ("$base ($i)$ext" in existing) i++
+        return "$base ($i)$ext"
+    }
+
+    private fun getUniqueLegacyName(dir: File, fileName: String): String {
+        if (!File(dir, fileName).exists()) return fileName
+        val dot = fileName.lastIndexOf('.')
+        val base = if (dot > 0) fileName.substring(0, dot) else fileName
+        val ext = if (dot > 0) fileName.substring(dot) else ""
+        var i = 1
+        while (File(dir, "$base ($i)$ext").exists()) i++
+        return "$base ($i)$ext"
     }
 
     fun copyTextToCB(context: Context, text: String) {
