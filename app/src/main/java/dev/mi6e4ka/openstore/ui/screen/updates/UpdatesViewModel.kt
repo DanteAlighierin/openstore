@@ -283,7 +283,7 @@ class UpdatesViewModel(private val apkInstaller: ApkInstaller) : ViewModel() {
         val allowAllSources = prefs.getBoolean("updates_check_all", false)
 
         return packages
-            .filter { !isSystemApp(it) && (allowAllSources || allowedSources.contains(getInstallSource(pm, it.packageName))) }
+            .filter { !isSystemApp(it) && !isAppFrozen(context, it.packageName) && (allowAllSources || allowedSources.contains(getInstallSource(pm, it.packageName))) }
             .map { packageInfo ->
                 val versionCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                     packageInfo.longVersionCode
@@ -304,6 +304,36 @@ class UpdatesViewModel(private val apkInstaller: ApkInstaller) : ViewModel() {
 
     private fun isSystemApp(packageInfo: PackageInfo): Boolean {
         return (packageInfo.applicationInfo?.flags?.and(ApplicationInfo.FLAG_SYSTEM) ?: 0) != 0
+    }
+
+    private fun isAppFrozen(context: Context, packageName: String): Boolean {
+        return try {
+            val pm = context.packageManager
+            val enabledSetting = pm.getApplicationEnabledSetting(packageName)
+
+            when (enabledSetting) {
+                PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                PackageManager.COMPONENT_ENABLED_STATE_DISABLED_USER,
+                PackageManager.COMPONENT_ENABLED_STATE_DISABLED_UNTIL_USED -> true
+
+                PackageManager.COMPONENT_ENABLED_STATE_DEFAULT -> {
+                    val appInfo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        pm.getApplicationInfo(
+                            packageName,
+                            PackageManager.ApplicationInfoFlags.of(PackageManager.MATCH_DISABLED_COMPONENTS.toLong())
+                        )
+                    } else {
+                        @Suppress("DEPRECATION")
+                        pm.getApplicationInfo(packageName, PackageManager.MATCH_DISABLED_COMPONENTS)
+                    }
+                    !appInfo.enabled
+                }
+
+                else -> false
+            }
+        } catch (e: PackageManager.NameNotFoundException) {
+            false
+        }
     }
     
     private fun getInstallSource(pm: PackageManager, packageName: String): String {
