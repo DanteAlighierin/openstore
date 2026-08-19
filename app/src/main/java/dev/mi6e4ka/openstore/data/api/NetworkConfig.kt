@@ -38,8 +38,7 @@ object NetworkConfig {
 
     fun provideOkHttpClient(context: Context): OkHttpClient {
         val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
-        val mode = prefs.getString("ssl_pinning_mode", "disabled") ?: "disabled"
-        val deviceId = DeviceIdManager.getOrCreateDeviceId(context)
+        val mode = prefs.getString("ssl_pinning_mode", "custom") ?: "custom"
         val userAgent = "RuStore/${BuildConfig.RUSTORE_VER_NAME} (Android ${BuildConfig.CLIENT_ANDROID_VERSION}; SDK ${BuildConfig.CLIENT_SDK_VERSION}; arm64-v8a; ${BuildConfig.DEVICE_MANUFACTURER} ${BuildConfig.DEVICE_MODEL}; ru)"
 
         val builder = OkHttpClient.Builder()
