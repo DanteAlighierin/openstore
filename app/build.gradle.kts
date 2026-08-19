@@ -39,7 +39,14 @@ android {
         targetSdk = 37
         versionCode = (project.findProperty("versionCode") as String?)?.toInt() ?: 1
         versionName = project.findProperty("versionName") as String? ?: ("git-" + gitCommitShort)
-        //testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        
+        buildConfigField("int", "RUSTORE_VER_CODE", "1105003")
+        buildConfigField("String", "RUSTORE_VER_NAME", "\"1.107.0.3\"")
+        buildConfigField("String", "DEVICE_MANUFACTURER", "\"Google\"")
+        buildConfigField("String", "DEVICE_MODEL", "\"Pixel 8 Pro\"")
+        buildConfigField("String", "DEVICE_HARDWARE", "\"husky\"")
+        buildConfigField("int", "CLIENT_SDK_VERSION", "37")
+        buildConfigField("int", "CLIENT_ANDROID_VERSION", "17")
     }
 
     signingConfigs {

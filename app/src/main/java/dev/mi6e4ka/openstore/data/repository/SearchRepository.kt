@@ -2,6 +2,7 @@ package dev.mi6e4ka.openstore.data.repository
 
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
+import dev.mi6e4ka.openstore.BuildConfig
 import dev.mi6e4ka.openstore.data.api.ApiClient
 import dev.mi6e4ka.openstore.data.model.AppCommentsComments
 import dev.mi6e4ka.openstore.data.model.AppRatingResponseBody
@@ -40,7 +41,7 @@ class SearchRepository {
             appId = id,
             firstInstall = firstInstall,
             screenDensity = 420,
-            sdkVersion = 36,
+            sdkVersion = BuildConfig.CLIENT_SDK_VERSION,
             withoutSplits = withoutSplits,
             supportedAbis = supportedAbis
         )
