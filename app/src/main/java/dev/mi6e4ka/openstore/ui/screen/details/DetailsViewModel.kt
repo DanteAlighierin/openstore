@@ -15,6 +15,8 @@ import android.provider.MediaStore
 import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -24,6 +26,8 @@ import dev.mi6e4ka.openstore.data.model.DownloadLinkResponseItem
 import dev.mi6e4ka.openstore.data.model.ItemDetails
 import dev.mi6e4ka.openstore.di.AppModule
 import dev.mi6e4ka.openstore.internal.installer.ApkInstaller
+import dev.mi6e4ka.openstore.internal.installer.DownloadEvent
+import dev.mi6e4ka.openstore.internal.installer.DownloadService
 import dev.mi6e4ka.openstore.internal.installer.PackageInstallerStatusReceiver
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -74,6 +78,65 @@ class DetailsViewModel(private val appPlatform: String, private val apkInstaller
     private var cancelDownload: (() -> Unit)? = null
     private var cancelFolderDownload: (() -> Unit)? = null
 
+    init {
+        viewModelScope.launch {
+            AppModule.downloadEventFlow.events.collect { event ->
+                val packageName = _state.value.item?.packageName ?: return@collect
+                val requestId = "install_$packageName"
+                if (event.requestId != requestId) return@collect
+
+                when (event) {
+                    is DownloadEvent.Progress -> {
+                        _state.update {
+                            it.copy(
+                                isDownloading = true,
+                                downloadProgress = event.percent,
+                                downloadCurrentBytes = event.downloadedBytes,
+                                downloadTotalBytes = event.totalBytes
+                            )
+                        }
+                    }
+                    is DownloadEvent.Success -> {
+                        _state.update {
+                            it.copy(
+                                isDownloading = false,
+                                installStatus = InstallStatus.Success,
+                                isInstalled = true,
+                                isNeedUpgrade = false,
+                                installerPackageName = it.installerPackageName
+                            )
+                        }
+                    }
+                    is DownloadEvent.Error -> {
+                        _state.update { it.copy(isDownloading = false) }
+                        val msg = event.throwable?.message ?: ""
+                        if (msg.contains("timeout")) {
+                            Toast.makeText(apkInstaller.context, R.string.timeout, Toast.LENGTH_SHORT).show()
+                        } else if (msg.contains("Failed to allocate")) {
+                            Toast.makeText(apkInstaller.context, R.string.insufficient_memory, Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(apkInstaller.context, R.string.loading_error, Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                    is DownloadEvent.Canceled -> {
+                        _state.update { it.copy(isDownloading = false) }
+                    }
+                    is DownloadEvent.HashMismatch -> {
+                        _state.update {
+                            it.copy(
+                                isDownloading = false,
+                                invalidDownloadedApkFiles = event.files,
+                                invalidDownloadMessage = "Файл скачан некорректно.",
+                                invalidExpectedHash = event.expectedHash,
+                                invalidActualHash = event.actualHash
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     fun loadDetails(context: Context, itemId: String) {
         if (_state.value.item != null) {
             return
@@ -81,52 +144,46 @@ class DetailsViewModel(private val appPlatform: String, private val apkInstaller
         Log.d(null, "Initial loading")
         viewModelScope.launch {
             var item: ItemDetails? = null
-            // основная информация о приложении
             try {
                 item = AppModule.searchRepository.getItemDetails(itemId, appPlatform)
-                //
-                val packageInfo  = getPackageInfo(context, itemId)
+                val packageInfo = getPackageInfo(context, itemId)
                 val installer = if (packageInfo != null) getInstallSource(context.packageManager, itemId) else null
-                
+
                 _state.value = DetailsState(
-                    isLoading = true, 
+                    isLoading = true,
                     isInstalled = packageInfo != null,
                     installerPackageName = installer
                 )
-                
+
                 if (packageInfo != null) {
-                    val installedVersionCode = (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    val installedVersionCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                         packageInfo.longVersionCode
                     } else {
                         @Suppress("DEPRECATION")
                         packageInfo.versionCode.toLong()
-                    })
+                    }
                     if (installedVersionCode < item.versionCode) {
                         _state.update { it.copy(isNeedUpgrade = true) }
                     }
                 }
-                //
                 _state.update { it.copy(isSupported = Build.VERSION.SDK_INT >= item.minSdkVersion) }
-                _state.update{ it.copy(item = item) }
+                _state.update { it.copy(item = item) }
             } catch (e: Exception) {
                 _state.update { it.copy(error = e.message, isLoading = false) }
             }
-            // пробуем получить все файлы приложения (включая split)
             try {
                 if (item == null) return@launch
                 val appFiles = AppModule.searchRepository.getAppFiles(item.appId, firstInstall = true, supportedAbis = Build.SUPPORTED_ABIS.toList(), withoutSplits = false, deviceType = appPlatform)
-                _state.update{ it.copy(appFiles = appFiles) }
+                _state.update { it.copy(appFiles = appFiles) }
             } catch (e: Exception) {}
-            // пробуем получить файлы приложения указав что нам не нужны split apk
             try {
                 if (item == null) return@launch
                 val singleApk = AppModule.searchRepository.getAppFiles(item.appId, firstInstall = true, supportedAbis = Build.SUPPORTED_ABIS.toList(), withoutSplits = true, deviceType = appPlatform).firstOrNull()
-                _state.update{ it.copy(plainApk = singleApk, plainApkUrl = singleApk?.url, splitOnly = singleApk == null) }
+                _state.update { it.copy(plainApk = singleApk, plainApkUrl = singleApk?.url, splitOnly = singleApk == null) }
             } catch (e: Exception) {}
-            // рейтинг
             try {
                 val rating = AppModule.searchRepository.getAppRating(itemId)
-                _state.update{ it.copy(rating = rating) }
+                _state.update { it.copy(rating = rating) }
             } catch (e: Exception) {}
 
             _state.update { it.copy(isLoading = false) }
@@ -147,87 +204,66 @@ class DetailsViewModel(private val appPlatform: String, private val apkInstaller
     }
 
     fun downloadAndInstallApp(context: Context) {
-        viewModelScope.launch {
-            _state.update { it.copy(isDownloading = true, downloadProgress = 0, downloadTotalBytes = 0, downloadCurrentBytes = 0) }
-            Log.d(null, "download apk " + state.value.appFiles)
-            if (state.value.appFiles == null) {
-                Toast.makeText(context, R.string.loading_error, Toast.LENGTH_SHORT).show()
-                _state.update { it.copy(isDownloading = false) }
-                return@launch
-            }
-            cancelDownload = apkInstaller.downloadFilesWithProgress(
-                state.value.appFiles!!,
-                onProgress = { percent, downloaded, total ->
-                    _state.update { it.copy(downloadProgress = percent, downloadCurrentBytes = downloaded, downloadTotalBytes = total) }
-                },
-                onSuccess = { apkFiles ->
-                    installApp(context, apkFiles)
-                },
-                onError = { error ->
-                    if (error.message?.contains("timeout") == true) {
-                        Toast.makeText(context, R.string.timeout, Toast.LENGTH_SHORT).show()
-                    } else if (error.message?.contains("Failed to allocate") == true) {
-                        Toast.makeText(context, R.string.insufficient_memory, Toast.LENGTH_SHORT).show()
-                    } else {
-                        Toast.makeText(context, R.string.loading_error, Toast.LENGTH_SHORT).show()
-                    }
-                    _state.update { it.copy(isDownloading = false) }
-                },
-                onCancel = {
-                    _state.update { it.copy(isDownloading = false) }
-                },
-                onInvalidHash = { apkFiles, expectedHash, actualHash ->
-                    _state.update {
-                        it.copy(
-                            isDownloading = false,
-                            invalidDownloadedApkFiles = apkFiles,
-                            invalidDownloadMessage = "Файл скачан некорректно.",
-                            invalidExpectedHash = expectedHash,
-                            invalidActualHash = actualHash
-                        )
-                    }
-                }
-            )
+        val packageName = _state.value.item?.packageName ?: return
+        val appName = _state.value.item?.appName ?: "App"
+        val files = _state.value.appFiles
+
+        Log.d(null, "download apk $files")
+
+        if (files == null) {
+            Toast.makeText(context, R.string.loading_error, Toast.LENGTH_SHORT).show()
+            return
         }
+
+        val requestId = "install_$packageName"
+
+        _state.update { it.copy(isDownloading = true, downloadProgress = 0, downloadTotalBytes = 0, downloadCurrentBytes = 0) }
+
+        val intent = Intent(context, DownloadService::class.java).apply {
+            action = DownloadService.ACTION_START_DOWNLOAD
+            putExtra(DownloadService.EXTRA_REQUEST_ID, requestId)
+            putExtra(DownloadService.EXTRA_APP_NAME, appName)
+            putExtra(DownloadService.EXTRA_PACKAGE_NAME, packageName)
+            putExtra(DownloadService.EXTRA_URLS, files.map { it.url }.toTypedArray())
+            putExtra(DownloadService.EXTRA_SIZES, files.map { it.size }.toLongArray())
+            putExtra(DownloadService.EXTRA_HASHES, files.map { it.hash }.toTypedArray())
+            putExtra(DownloadService.EXTRA_AUTO_INSTALL, true)
+        }
+        ContextCompat.startForegroundService(context, intent)
     }
 
     fun cancelDownload() {
-        cancelDownload?.invoke()
-        cancelDownload = null
+        val packageName = _state.value.item?.packageName ?: return
+        val requestId = "install_$packageName"
+        val intent = Intent(apkInstaller.context, DownloadService::class.java).apply {
+            action = DownloadService.ACTION_CANCEL_DOWNLOAD
+            putExtra(DownloadService.EXTRA_REQUEST_ID, requestId)
+        }
+        apkInstaller.context.startService(intent)
     }
 
     private fun installApp(context: Context, apkFiles: List<File>) {
         val packageName = state.value.item?.packageName ?: "tmp"
         _state.update { it.copy(installStatus = InstallStatus.Pending) }
-        
+
         apkInstaller.installApp(
             packageName = packageName,
             apkFiles = apkFiles,
             onSessionFinished = { success ->
-                _state.update { it.copy(installStatus = InstallStatus.Success, isDownloading = false)}
+                _state.update { it.copy(installStatus = InstallStatus.Success, isDownloading = false) }
                 if (success) {
                     _state.update { it.copy(isInstalled = true, isNeedUpgrade = false, installerPackageName = context.packageName) }
-                    apkInstaller.cleanApkFiles(apkFiles.map {it.name})
+                    apkInstaller.cleanApkFiles(apkFiles.map { it.name })
                 }
             },
             onError = { error ->
                 if (error.message?.contains("Failed to allocate") == true) {
-                    Toast.makeText(
-                        context,
-                        R.string.insufficient_memory,
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    Toast.makeText(context, R.string.insufficient_memory, Toast.LENGTH_SHORT).show()
                 } else {
                     println("apk installer $error")
-                    Toast.makeText(context, R.string.installing_error, Toast.LENGTH_SHORT)
-                        .show()
+                    Toast.makeText(context, R.string.installing_error, Toast.LENGTH_SHORT).show()
                 }
-                _state.update {
-                    it.copy(
-                        installStatus = InstallStatus.Idle,
-                        isDownloading = false
-                    )
-                }
+                _state.update { it.copy(installStatus = InstallStatus.Idle, isDownloading = false) }
             }
         )
     }
@@ -271,7 +307,7 @@ class DetailsViewModel(private val appPlatform: String, private val apkInstaller
     private fun getPackageInfo(context: Context, packageName: String): PackageInfo? {
         Log.d(null, "try to check package $packageName")
         return try {
-            val packageInfo : PackageInfo
+            val packageInfo: PackageInfo
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 packageInfo = context.packageManager.getPackageInfo(packageName, PackageManager.PackageInfoFlags.of(0))
             } else {
@@ -287,6 +323,7 @@ class DetailsViewModel(private val appPlatform: String, private val apkInstaller
             null
         }
     }
+
     fun runApplication(context: Context, packageName: String) {
         val launchIntent = context.packageManager.getLaunchIntentForPackage(packageName)
         if (launchIntent != null) {
@@ -295,6 +332,7 @@ class DetailsViewModel(private val appPlatform: String, private val apkInstaller
             Toast.makeText(context, R.string.failed_to_open_app, Toast.LENGTH_SHORT).show()
         }
     }
+
     fun deleteApplication(context: Context, packageName: String) {
         val intent = Intent(context, PackageInstallerStatusReceiver::class.java)
         intent.putExtra(PackageInstallerStatusReceiver.ACTION_UNINSTALL, true)

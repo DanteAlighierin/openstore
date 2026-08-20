@@ -1,17 +1,22 @@
 package dev.mi6e4ka.openstore.ui.screen.updates
 
 import android.content.Context
+import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.os.Build
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import dev.mi6e4ka.openstore.R
 import dev.mi6e4ka.openstore.data.model.AppUpdateRequestEntry
 import dev.mi6e4ka.openstore.di.AppModule
 import dev.mi6e4ka.openstore.internal.installer.ApkInstaller
+import dev.mi6e4ka.openstore.internal.installer.DownloadEvent
+import dev.mi6e4ka.openstore.internal.installer.DownloadService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -50,16 +55,84 @@ data class UpdatesState(
 class UpdatesViewModel(private val apkInstaller: ApkInstaller) : ViewModel() {
     private val _state = MutableStateFlow(UpdatesState())
     val state: StateFlow<UpdatesState> = _state.asStateFlow()
-    
-    private val cancelDownloads = mutableMapOf<String, () -> Unit>()
-    
+
+    private val downloadQueue = mutableListOf<AppWithUpdates>()
+    private var currentRequestId: String? = null
+
     companion object {
         private const val DEFAULT_SOURCES = "dev.mi6e4ka.openstore;dev.mi6e4ka.openstore.nightly;dev.mi6e4ka.openstore.debug;ru.vk.store"
     }
 
+    init {
+        viewModelScope.launch {
+            AppModule.downloadEventFlow.events.collect { event ->
+                if (currentRequestId == null || event.requestId != currentRequestId) return@collect
+
+                when (event) {
+                    is DownloadEvent.Progress -> {
+                        val pkg = event.requestId.removePrefix("update_")
+                        _state.update {
+                            it.copy(
+                                downloadProgress = it.downloadProgress + (pkg to event.percent)
+                            )
+                        }
+                    }
+                    is DownloadEvent.Success -> {
+                        val pkg = event.requestId.removePrefix("update_")
+                        _state.update {
+                            it.copy(
+                                downloadingPackages = it.downloadingPackages - pkg,
+                                downloadProgress = it.downloadProgress - pkg,
+                                appsWithUpdates = it.appsWithUpdates.filter { app -> app.packageName != pkg }
+                            )
+                        }
+                        currentRequestId = null
+                        processQueue(apkInstaller.context)
+                    }
+                    is DownloadEvent.Error -> {
+                        val pkg = event.requestId.removePrefix("update_")
+                        _state.update {
+                            it.copy(
+                                downloadingPackages = it.downloadingPackages - pkg,
+                                downloadProgress = it.downloadProgress - pkg
+                            )
+                        }
+                        currentRequestId = null
+                        processQueue(apkInstaller.context)
+                    }
+                    is DownloadEvent.Canceled -> {
+                        val pkg = event.requestId.removePrefix("update_")
+                        _state.update {
+                            it.copy(
+                                downloadingPackages = it.downloadingPackages - pkg,
+                                downloadProgress = it.downloadProgress - pkg
+                            )
+                        }
+                        currentRequestId = null
+                        processQueue(apkInstaller.context)
+                    }
+                    is DownloadEvent.HashMismatch -> {
+                        val pkg = event.requestId.removePrefix("update_")
+                        _state.update {
+                            it.copy(
+                                downloadingPackages = it.downloadingPackages - pkg,
+                                downloadProgress = it.downloadProgress - pkg,
+                                invalidDownloadedApkFiles = event.files,
+                                invalidDownloadedAppPackage = pkg,
+                                invalidExpectedHash = event.expectedHash,
+                                invalidActualHash = event.actualHash
+                            )
+                        }
+                        currentRequestId = null
+                        processQueue(apkInstaller.context)
+                    }
+                }
+            }
+        }
+    }
+
     fun loadAndCheckUpdates(context: Context) {
         viewModelScope.launch {
-            // Загружаем список приложений
             _state.update { it.copy(isLoading = true, error = null) }
             val installedApps = try {
                 withContext(Dispatchers.IO) {
@@ -70,8 +143,7 @@ class UpdatesViewModel(private val apkInstaller: ApkInstaller) : ViewModel() {
                 return@launch
             }
             _state.update { it.copy(installedApps = installedApps, isLoading = false) }
-            
-            // Сразу запускаем проверку
+
             checkForUpdatesInternal(installedApps)
         }
     }
@@ -79,7 +151,7 @@ class UpdatesViewModel(private val apkInstaller: ApkInstaller) : ViewModel() {
     fun checkForUpdates(context: Context) {
         loadAndCheckUpdates(context)
     }
-    
+
     private suspend fun checkForUpdatesInternal(installedApps: List<AppUpdateRequestEntry>) {
         _state.update { it.copy(isCheckingUpdates = true, appsWithUpdates = emptyList()) }
 
@@ -95,10 +167,10 @@ class UpdatesViewModel(private val apkInstaller: ApkInstaller) : ViewModel() {
             return
         }
 
-        val detailsUpdates = AppModule.searchRepository.getBatchItemDetails(rawUpdates.map {it.packageName} )
+        val detailsUpdates = AppModule.searchRepository.getBatchItemDetails(rawUpdates.map { it.packageName })
 
-        val detailsByPackageName = detailsUpdates.associateBy {it.packageName}
-        val installedAppsByPackageName = installedApps.associateBy {it.packageName}
+        val detailsByPackageName = detailsUpdates.associateBy { it.packageName }
+        val installedAppsByPackageName = installedApps.associateBy { it.packageName }
 
         val appsWithUpdates = rawUpdates.mapNotNull {
             val details = detailsByPackageName[it.packageName] ?: return@mapNotNull null
@@ -116,25 +188,38 @@ class UpdatesViewModel(private val apkInstaller: ApkInstaller) : ViewModel() {
             )
         }
 
-        _state.update { 
+        _state.update {
             it.copy(
-                isCheckingUpdates = false, 
+                isCheckingUpdates = false,
                 appsWithUpdates = appsWithUpdates
-            ) 
+            )
         }
     }
 
     fun downloadAndUpdateApp(context: Context, app: AppWithUpdates) {
-        if (app.appId == null) return
-        
+        downloadQueue.add(app)
+        processQueue(context)
+    }
+
+    private fun processQueue(context: Context) {
+        if (currentRequestId != null || downloadQueue.isEmpty()) return
+
+        val app = downloadQueue.removeFirst()
+        if (app.appId == null) {
+            processQueue(context)
+            return
+        }
+
+        val requestId = "update_${app.packageName}"
+
         viewModelScope.launch {
-            _state.update { 
+            _state.update {
                 it.copy(
                     downloadingPackages = it.downloadingPackages + app.packageName,
                     downloadProgress = it.downloadProgress + (app.packageName to 0)
-                ) 
+                )
             }
-            
+
             try {
                 val appFiles = withContext(Dispatchers.IO) {
                     AppModule.searchRepository.getAppFiles(
@@ -145,88 +230,42 @@ class UpdatesViewModel(private val apkInstaller: ApkInstaller) : ViewModel() {
                         deviceType = "mobile"
                     )
                 }
-                
-                cancelDownloads[app.packageName] = apkInstaller.downloadFilesWithProgress(
-                    appFiles,
-                    onProgress = { percent, _, _ ->
-                        _state.update { 
-                            it.copy(downloadProgress = it.downloadProgress + (app.packageName to percent))
-                        }
-                    },
-                    onSuccess = { apkFiles ->
-                        installApp(context, app.packageName, apkFiles)
-                    },
-                    onError = { error ->
-                        handleError(context, app.packageName, error)
-                    },
-                    onCancel = {
-                        _state.update { 
-                            it.copy(
-                                downloadingPackages = it.downloadingPackages - app.packageName,
-                                downloadProgress = it.downloadProgress - app.packageName
-                            )
-                        }
-                    },
-                    onInvalidHash = { apkFiles, expectedHash, actualHash ->
-                        _state.update {
-                            it.copy(
-                                downloadingPackages = it.downloadingPackages - app.packageName,
-                                downloadProgress = it.downloadProgress - app.packageName,
-                                invalidDownloadedApkFiles = apkFiles,
-                                invalidDownloadedAppPackage = app.packageName,
-                                invalidExpectedHash = expectedHash,
-                                invalidActualHash = actualHash
-                            )
-                        }
-                    }
-                )
-            } catch (e: Exception) {
-                handleError(context, app.packageName, e)
-            }
-        }
-    }
 
-    private fun installApp(context: Context, packageName: String, apkFiles: List<File>) {
-        apkInstaller.installApp(
-            packageName = packageName,
-            apkFiles = apkFiles,
-            onSessionFinished = { success ->
-                _state.update { 
+                currentRequestId = requestId
+
+                val intent = Intent(context, DownloadService::class.java).apply {
+                    action = DownloadService.ACTION_START_DOWNLOAD
+                    putExtra(DownloadService.EXTRA_REQUEST_ID, requestId)
+                    putExtra(DownloadService.EXTRA_APP_NAME, app.appName)
+                    putExtra(DownloadService.EXTRA_PACKAGE_NAME, app.packageName)
+                    putExtra(DownloadService.EXTRA_URLS, appFiles.map { it.url }.toTypedArray())
+                    putExtra(DownloadService.EXTRA_SIZES, appFiles.map { it.size }.toLongArray())
+                    putExtra(DownloadService.EXTRA_HASHES, appFiles.map { it.hash }.toTypedArray())
+                    putExtra(DownloadService.EXTRA_AUTO_INSTALL, true)
+                }
+                ContextCompat.startForegroundService(context, intent)
+            } catch (e: Exception) {
+                currentRequestId = null
+                _state.update {
                     it.copy(
-                        downloadingPackages = it.downloadingPackages - packageName,
-                        downloadProgress = it.downloadProgress - packageName,
-                        appsWithUpdates = if (success) {
-                            it.appsWithUpdates.filter { app -> app.packageName != packageName }
-                        } else it.appsWithUpdates
+                        downloadingPackages = it.downloadingPackages - app.packageName,
+                        downloadProgress = it.downloadProgress - app.packageName
                     )
                 }
-                if (success) {
-                    apkInstaller.cleanApkFiles(apkFiles.map { it.name })
-                }
-            },
-            onError = { error ->
-                handleError(context, packageName, error)
+                processQueue(context)
             }
-        )
-    }
-
-    private fun handleError(context: Context, packageName: String, error: Throwable) {
-        if (error.message?.contains("Failed to allocate") == true) {
-            Toast.makeText(context, R.string.insufficient_memory, Toast.LENGTH_SHORT).show()
-        } else {
-            Toast.makeText(context, R.string.loading_error, Toast.LENGTH_SHORT).show()
-        }
-        _state.update { 
-            it.copy(
-                downloadingPackages = it.downloadingPackages - packageName,
-                downloadProgress = it.downloadProgress - packageName
-            )
         }
     }
 
     fun cancelDownload(packageName: String) {
-        cancelDownloads[packageName]?.invoke()
-        cancelDownloads.remove(packageName)
+        if (currentRequestId == "update_$packageName") {
+            val intent = Intent(apkInstaller.context, DownloadService::class.java).apply {
+                action = DownloadService.ACTION_CANCEL_DOWNLOAD
+                putExtra(DownloadService.EXTRA_REQUEST_ID, currentRequestId)
+            }
+            apkInstaller.context.startService(intent)
+        }
+        downloadQueue.removeAll { it.packageName == packageName }
     }
 
     fun retryDownloadAfterInvalid(context: Context) {
@@ -268,6 +307,44 @@ class UpdatesViewModel(private val apkInstaller: ApkInstaller) : ViewModel() {
         }
     }
 
+    private fun installApp(context: Context, packageName: String, apkFiles: List<File>) {
+        apkInstaller.installApp(
+            packageName = packageName,
+            apkFiles = apkFiles,
+            onSessionFinished = { success ->
+                _state.update {
+                    it.copy(
+                        downloadingPackages = it.downloadingPackages - packageName,
+                        downloadProgress = it.downloadProgress - packageName,
+                        appsWithUpdates = if (success) {
+                            it.appsWithUpdates.filter { app -> app.packageName != packageName }
+                        } else it.appsWithUpdates
+                    )
+                }
+                if (success) {
+                    apkInstaller.cleanApkFiles(apkFiles.map { it.name })
+                }
+            },
+            onError = { error ->
+                handleError(context, packageName, error)
+            }
+        )
+    }
+
+    private fun handleError(context: Context, packageName: String, error: Throwable) {
+        if (error.message?.contains("Failed to allocate") == true) {
+            Toast.makeText(context, R.string.insufficient_memory, Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(context, R.string.loading_error, Toast.LENGTH_SHORT).show()
+        }
+        _state.update {
+            it.copy(
+                downloadingPackages = it.downloadingPackages - packageName,
+                downloadProgress = it.downloadProgress - packageName
+            )
+        }
+    }
+
     private fun getInstalledApps(context: Context): List<AppUpdateRequestEntry> {
         val pm = context.packageManager
         val packages = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -291,7 +368,7 @@ class UpdatesViewModel(private val apkInstaller: ApkInstaller) : ViewModel() {
                     @Suppress("DEPRECATION")
                     packageInfo.versionCode.toLong()
                 }
-                println("package "+packageInfo.packageName+" from "+getInstallSource(pm, packageInfo.packageName))
+                println("package " + packageInfo.packageName + " from " + getInstallSource(pm, packageInfo.packageName))
                 AppUpdateRequestEntry(
                     packageName = packageInfo.packageName,
                     appName = pm.getApplicationLabel(packageInfo.applicationInfo!!).toString(),
@@ -305,7 +382,7 @@ class UpdatesViewModel(private val apkInstaller: ApkInstaller) : ViewModel() {
     private fun isSystemApp(packageInfo: PackageInfo): Boolean {
         return (packageInfo.applicationInfo?.flags?.and(ApplicationInfo.FLAG_SYSTEM) ?: 0) != 0
     }
-    
+
     private fun getInstallSource(pm: PackageManager, packageName: String): String {
         val installer = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             try {

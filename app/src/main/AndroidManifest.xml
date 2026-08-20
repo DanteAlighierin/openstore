@@ -13,6 +13,10 @@
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
     <application
         android:name=".OpenStoreApplication"
         android:allowBackup="true"
@@ -77,5 +81,9 @@
         <receiver
             android:name=".internal.installer.PackageInstallerStatusReceiver"
             android:exported="false" />
+        <service
+            android:name=".internal.installer.DownloadService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
     </application>
 </manifest>

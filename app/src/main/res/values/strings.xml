@@ -95,4 +95,14 @@
     <string name="review_rating_desc">оценка: %1$d</string>
     <string name="likes_desc">Лайки</string>
     <string name="dislikes_desc">Дизлайки</string>
+    <string name="notification_channel_name">Загрузки OpenStore</string>
+    <string name="notification_channel_description">Уведомления о загрузке приложений</string>
+    <string name="notification_download_complete">Загрузка завершена</string>
+    <string name="notification_download_failed">Ошибка загрузки</string>
+    <string name="cancel">Отмена</string>
+    <string name="error_empty_response">Пустой ответ сервера</string>
+    <string name="notification_app">Приложение: %1$s</string>
+    <string name="notification_speed">Скорость: %1$s</string>
+    <string name="notification_eta">Осталось: %1$s</string>
+    <string name="seconds_short">сек</string>
 </resources>

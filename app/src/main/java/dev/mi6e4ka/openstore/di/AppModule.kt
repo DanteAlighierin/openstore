@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import dev.mi6e4ka.openstore.data.api.NetworkConfig
 import dev.mi6e4ka.openstore.data.repository.SearchRepository
+import dev.mi6e4ka.openstore.internal.installer.DownloadEventFlow
 import dev.mi6e4ka.openstore.internal.installer.UninstallerEventFlow
 import okhttp3.OkHttpClient
 
@@ -27,5 +28,9 @@ object AppModule {
 
     val uninstallerEventFlow: UninstallerEventFlow by lazy {
         UninstallerEventFlow()
+    }
+
+    val downloadEventFlow: DownloadEventFlow by lazy {
+        DownloadEventFlow()
     }
 }

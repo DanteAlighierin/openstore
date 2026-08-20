@@ -43,7 +43,7 @@ import kotlin.concurrent.atomics.ExperimentalAtomicApi
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.coroutines.coroutineContext
 
-class ApkInstaller(private val context: Context) {
+class ApkInstaller(val context: Context) {
 
     private val okHttpClient: OkHttpClient
         get() = AppModule.okHttpClient
@@ -171,8 +171,6 @@ class ApkInstaller(private val context: Context) {
                e.message?.contains("Socket closed", ignoreCase = true) == true
     }
 
-    private class HashMismatchException(val file: File, val expectedHash: String) : IOException("Hash mismatch")
-
     fun getApkFile(fileName: String): File {
         return File(context.externalCacheDir ?: context.cacheDir, fileName)
     }
@@ -195,7 +193,7 @@ class ApkInstaller(private val context: Context) {
     private val flags = PendingIntent.FLAG_MUTABLE
     private val intent = Intent(context, PackageInstallerStatusReceiver::class.java)
 
-    private fun verifyFileHash(file: File, expectedHash: String): Boolean {
+    fun verifyFileHash(file: File, expectedHash: String): Boolean {
         val normalizedHash = expectedHash.trim().ifEmpty { return true }
         val expectedBytes = decodeHashValue(normalizedHash) ?: return true
         if (expectedBytes.size != 8) return true
@@ -204,7 +202,7 @@ class ApkInstaller(private val context: Context) {
         return actualBytes.contentEquals(expectedBytes)
     }
 
-    private fun decodeHashValue(hash: String): ByteArray? {
+    fun decodeHashValue(hash: String): ByteArray? {
         return try {
             if (hash.matches(Regex("^[0-9A-Fa-f]+$"))) {
                 hash.chunked(2).map { it.toInt(16).toByte() }.toByteArray()
@@ -216,7 +214,7 @@ class ApkInstaller(private val context: Context) {
         }
     }
 
-    private fun formatHashForDisplay(hash: String): String {
+    fun formatHashForDisplay(hash: String): String {
         return if (hash.matches(Regex("^[0-9A-Fa-f]+$"))) {
             hash.lowercase()
         } else {
@@ -224,12 +222,12 @@ class ApkInstaller(private val context: Context) {
         }
     }
 
-    private fun computeExistingHash(file: File): String {
+    fun computeExistingHash(file: File): String {
         val actualBytes = digestFileXXH64(file) ?: return ""
         return actualBytes.toHexString()
     }
 
-    private fun digestFileXXH64(file: File): ByteArray? {
+    fun digestFileXXH64(file: File): ByteArray? {
         return try {
             val factory = XXHashFactory.fastestInstance()
             val hash64 = factory.newStreamingHash64(0L)
@@ -256,7 +254,7 @@ class ApkInstaller(private val context: Context) {
         }
     }
 
-    private fun ByteArray.toHexString(): String {
+    fun ByteArray.toHexString(): String {
         val sb = StringBuilder(size * 2)
         for (b in this) {
             sb.append(String.format("%02x", b))
