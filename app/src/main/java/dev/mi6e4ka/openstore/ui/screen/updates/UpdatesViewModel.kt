@@ -73,7 +73,7 @@ class UpdatesViewModel(private val apkInstaller: ApkInstaller) : ViewModel() {
                         val pkg = event.requestId.removePrefix("update_")
                         _state.update {
                             it.copy(
-                                downloadProgress = it.downloadProgress + (pkg to event.percent)
+                                downloadProgress = it.downloadProgress + (pkg to if (event.percent == 100) 101 else event.percent)
                             )
                         }
                     }
@@ -204,7 +204,7 @@ class UpdatesViewModel(private val apkInstaller: ApkInstaller) : ViewModel() {
     private fun processQueue(context: Context) {
         if (currentRequestId != null || downloadQueue.isEmpty()) return
 
-        val app = downloadQueue.removeFirst()
+        val app = downloadQueue.removeAt(0)
         if (app.appId == null) {
             processQueue(context)
             return

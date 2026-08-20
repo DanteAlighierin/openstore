@@ -322,15 +322,19 @@ fun UpdateAppCard(
 //                )
                 if (isDownloading) {
                     Spacer(modifier = Modifier.size(4.dp))
-                    LinearProgressIndicator(
-                        progress = { downloadProgress / 100f },
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                    if (downloadProgress > 100) {
+                        Text(stringResource(R.string.installing), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    } else {
+                        LinearProgressIndicator(
+                            progress = { downloadProgress / 100f },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
                 }
             }
             
             if (isDownloading) {
-                FilledTonalIconButton(onClick = onCancelClick) {
+                FilledTonalIconButton(onClick = onCancelClick, enabled = downloadProgress <= 100) {
                     Icon(
                         painter = painterResource(R.drawable.ic_close_24px),
                         contentDescription = null

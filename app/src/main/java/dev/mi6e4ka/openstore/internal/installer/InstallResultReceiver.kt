@@ -36,7 +36,9 @@ class PackageInstallerStatusReceiver : BroadcastReceiver() {
             else -> {
                 val errorMessage = intent.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE)
 
-                if (errorMessage?.contains("INSUFFICIENT_STORAGE", ignoreCase = true) == true) {
+                if (status == PackageInstaller.STATUS_FAILURE_ABORTED) {
+                    // User canceled the installation, do nothing
+                } else if (errorMessage?.contains("INSUFFICIENT_STORAGE", ignoreCase = true) == true) {
                     Toast.makeText(context, R.string.insufficient_memory, Toast.LENGTH_SHORT).show()
                 } else {
                     Toast.makeText(context, if (isUninstall) R.string.failed_uninstall else R.string.failed_install, Toast.LENGTH_SHORT).show()

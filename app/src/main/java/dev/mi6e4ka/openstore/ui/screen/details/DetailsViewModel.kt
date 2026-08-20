@@ -91,7 +91,8 @@ class DetailsViewModel(private val appPlatform: String, private val apkInstaller
                                 isDownloading = true,
                                 downloadProgress = event.percent,
                                 downloadCurrentBytes = event.downloadedBytes,
-                                downloadTotalBytes = event.totalBytes
+                                downloadTotalBytes = event.totalBytes,
+                                installStatus = if (event.percent == 100) InstallStatus.Pending else it.installStatus
                             )
                         }
                     }
@@ -107,7 +108,7 @@ class DetailsViewModel(private val appPlatform: String, private val apkInstaller
                         }
                     }
                     is DownloadEvent.Error -> {
-                        _state.update { it.copy(isDownloading = false) }
+                        _state.update { it.copy(isDownloading = false, installStatus = InstallStatus.Idle) }
                         val msg = event.throwable?.message ?: ""
                         if (msg.contains("timeout")) {
                             Toast.makeText(apkInstaller.context, R.string.timeout, Toast.LENGTH_SHORT).show()
@@ -118,7 +119,7 @@ class DetailsViewModel(private val appPlatform: String, private val apkInstaller
                         }
                     }
                     is DownloadEvent.Canceled -> {
-                        _state.update { it.copy(isDownloading = false) }
+                        _state.update { it.copy(isDownloading = false, installStatus = InstallStatus.Idle) }
                     }
                     is DownloadEvent.HashMismatch -> {
                         _state.update {

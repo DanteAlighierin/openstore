@@ -248,10 +248,14 @@ class DownloadService : Service() {
                 onSessionFinished = { success ->
                     if (success) {
                         apkInstaller.cleanApkFiles(resultingFiles.map { it.name })
+                        AppModule.downloadEventFlow.tryEmit(
+                            DownloadEvent.Success(requestId = requestId, packageName = packageName, files = resultingFiles)
+                        )
+                    } else {
+                        AppModule.downloadEventFlow.tryEmit(
+                            DownloadEvent.Canceled(requestId = requestId)
+                        )
                     }
-                    AppModule.downloadEventFlow.tryEmit(
-                        DownloadEvent.Success(requestId = requestId, packageName = packageName, files = resultingFiles)
-                    )
                     showFinalNotification(appName, success)
                     currentRequestId = null
                     currentAppName = null
