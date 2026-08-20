@@ -6,10 +6,12 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import androidx.documentfile.provider.DocumentFile
 import dev.mi6e4ka.openstore.MainActivity
 import dev.mi6e4ka.openstore.R
 import dev.mi6e4ka.openstore.di.AppModule
@@ -28,8 +30,10 @@ import okhttp3.Request
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.io.OutputStream
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicLong
+import java.util.zip.ZipInputStream
 import kotlin.coroutines.cancellation.CancellationException
 
 class DownloadService : Service() {
@@ -50,6 +54,7 @@ class DownloadService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             ACTION_START_DOWNLOAD -> handleStartDownload(intent)
+            ACTION_DOWNLOAD_TO_FOLDER -> handleStartDownload(intent)
             ACTION_CANCEL_DOWNLOAD -> handleCancelDownload(intent)
         }
         return START_REDELIVER_INTENT
@@ -71,6 +76,8 @@ class DownloadService : Service() {
         val sizes = intent.getLongArrayExtra(EXTRA_SIZES) ?: return
         val hashes = intent.getStringArrayExtra(EXTRA_HASHES) ?: return
         val autoInstall = intent.getBooleanExtra(EXTRA_AUTO_INSTALL, true)
+        val destinationUri = intent.getStringExtra(EXTRA_DESTINATION_URI)?.let { Uri.parse(it) }
+        val versionName = intent.getStringExtra(EXTRA_VERSION_NAME) ?: "unknown"
 
         downloadJob?.cancel()
         currentRequestId = requestId
@@ -93,7 +100,9 @@ class DownloadService : Service() {
                     appName = appName,
                     packageName = packageName,
                     items = items,
-                    autoInstall = autoInstall
+                    autoInstall = autoInstall,
+                    destinationUri = destinationUri,
+                    versionName = versionName
                 )
             } catch (e: CancellationException) {
                 currentRequestId = null
@@ -119,7 +128,9 @@ class DownloadService : Service() {
         appName: String,
         packageName: String,
         items: List<DownloadItem>,
-        autoInstall: Boolean
+        autoInstall: Boolean,
+        destinationUri: Uri? = null,
+        versionName: String? = null
     ) {
         val totalBytes = items.sumOf { it.size }
         val totalBytesDownloaded = AtomicLong(0)
@@ -233,6 +244,20 @@ class DownloadService : Service() {
             DownloadEvent.Progress(requestId, 100, totalBytes, totalBytes)
         )
 
+        if (destinationUri != null) {
+            val success = saveToFolder(destinationUri, resultingFiles, packageName, versionName ?: "unknown")
+            apkInstaller.cleanApkFiles(resultingFiles.map { it.name })
+            AppModule.downloadEventFlow.tryEmit(
+                DownloadEvent.FileSaved(requestId = requestId, success = success)
+            )
+            showFinalNotification(appName, success)
+            currentRequestId = null
+            currentAppName = null
+            stopForegroundCompat(true)
+            stopSelf()
+            return
+        }
+
         if (autoInstall) {
             val installNotif = NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle(appName)
@@ -282,6 +307,72 @@ class DownloadService : Service() {
             currentAppName = null
             stopForegroundCompat(true)
             stopSelf()
+        }
+    }
+
+    private fun saveToFolder(destinationUri: Uri, files: List<File>, packageName: String, versionName: String): Boolean {
+        Log.d(TAG, "saveToFolder: pkg=$packageName, ver=$versionName, filesCount=${files.size}")
+        val root = DocumentFile.fromTreeUri(this, destinationUri) ?: return false
+        var success = true
+        for (file in files) {
+            val isZip = file.name.endsWith(".zip", ignoreCase = true)
+            if (isZip) {
+                if (!extractZipToDocument(file, root, packageName, versionName)) success = false
+            } else {
+                val displayName = "$packageName-$versionName.apk"
+                if (!copyFileToDocument(file, root, displayName)) success = false
+            }
+        }
+        return success
+    }
+
+    private fun extractZipToDocument(zipFile: File, root: DocumentFile, packageName: String, versionName: String): Boolean {
+        var success = false
+        try {
+            ZipInputStream(zipFile.inputStream()).use { zis ->
+                var entry = zis.nextEntry
+                var entryIndex = 0
+                while (entry != null) {
+                    if (!entry.isDirectory && entry.name.endsWith(".apk", ignoreCase = true)) {
+                        val apkName = if (entryIndex == 0) {
+                            "$packageName-$versionName.apk"
+                        } else {
+                            "$packageName-$versionName-$entryIndex.apk"
+                        }
+                        val docFile = root.createFile("application/vnd.android.package-archive", apkName)
+                        if (docFile != null) {
+                            contentResolver.openOutputStream(docFile.uri)?.use { out ->
+                                zis.copyTo(out)
+                                success = true
+                            }
+                        }
+                        entryIndex++
+                    }
+                    entry = zis.nextEntry
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to extract ZIP", e)
+            success = false
+        }
+        return success
+    }
+
+    private fun copyFileToDocument(sourceFile: File, root: DocumentFile, displayName: String? = null): Boolean {
+        return try {
+            val name = displayName ?: sourceFile.name
+            val docFile = root.createFile("application/vnd.android.package-archive", name)
+            if (docFile != null) {
+                contentResolver.openOutputStream(docFile.uri)?.use { out ->
+                    sourceFile.inputStream().use { input ->
+                        input.copyTo(out)
+                    }
+                }
+                true
+            } else false
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to copy file", e)
+            false
         }
     }
 
@@ -427,6 +518,7 @@ class DownloadService : Service() {
 
     companion object {
         const val ACTION_START_DOWNLOAD = "dev.mi6e4ka.openstore.action.START_DOWNLOAD"
+        const val ACTION_DOWNLOAD_TO_FOLDER = "dev.mi6e4ka.openstore.action.DOWNLOAD_TO_FOLDER"
         const val ACTION_CANCEL_DOWNLOAD = "dev.mi6e4ka.openstore.action.CANCEL_DOWNLOAD"
         const val EXTRA_REQUEST_ID = "request_id"
         const val EXTRA_APP_NAME = "app_name"
@@ -435,6 +527,8 @@ class DownloadService : Service() {
         const val EXTRA_SIZES = "sizes"
         const val EXTRA_HASHES = "hashes"
         const val EXTRA_AUTO_INSTALL = "auto_install"
+        const val EXTRA_DESTINATION_URI = "destination_uri"
+        const val EXTRA_VERSION_NAME = "version_name"
         const val NOTIFICATION_ID = 1001
         const val CHANNEL_ID = "openstore_download_channel"
         private const val TAG = "DownloadService"

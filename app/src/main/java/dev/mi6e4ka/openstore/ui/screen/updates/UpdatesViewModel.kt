@@ -126,6 +126,9 @@ class UpdatesViewModel(private val apkInstaller: ApkInstaller) : ViewModel() {
                         currentRequestId = null
                         processQueue(apkInstaller.context)
                     }
+                    is DownloadEvent.FileSaved -> {
+                        // Not relevant for updates yet, but need to be exhaustive
+                    }
                 }
             }
         }

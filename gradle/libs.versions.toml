@@ -14,6 +14,7 @@ navigationCompose = "2.9.4"
 retrofit = "3.0.0"
 kotlinxDatetime = "0.8.0"
 lz4JavaVersion = "1.11.1"
+documentfile = "1.0.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -31,6 +32,7 @@ material3 = { group = "androidx.compose.material3", name = "material3", version 
 androidx-paging-compose = { group = "androidx.paging", name = "paging-compose", version = "3.3.6" }
 kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version.ref = "kotlinxDatetime" }
 at-lz4-java = { group = "at.yawk.lz4", name = "lz4-java", version.ref = "lz4JavaVersion" }
+androidx-documentfile = { group = "androidx.documentfile", name = "documentfile", version.ref = "documentfile" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

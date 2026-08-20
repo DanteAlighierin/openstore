@@ -36,6 +36,11 @@ sealed interface DownloadEvent {
         val expectedHash: String?,
         val actualHash: String?
     ) : DownloadEvent
+
+    data class FileSaved(
+        override val requestId: String,
+        val success: Boolean
+    ) : DownloadEvent
 }
 
 class DownloadEventFlow {

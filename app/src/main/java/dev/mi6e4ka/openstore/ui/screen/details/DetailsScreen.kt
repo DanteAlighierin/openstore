@@ -118,11 +118,16 @@ fun DetailsScreen(
 //        skipPartiallyExpanded = true
 //    )
 
-    val permissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission(),
-        onResult = { isGranted ->
-            if (isGranted) {
-                viewModel.downloadFileToFolder(context)
+    val folderPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocumentTree(),
+        onResult = { uri ->
+            uri?.let {
+                // Persist permissions for the selected folder
+                context.contentResolver.takePersistableUriPermission(
+                    it,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                )
+                viewModel.startFolderDownload(context, it)
             }
         }
     )
@@ -165,20 +170,7 @@ fun DetailsScreen(
                 IconButton(
                     {
                         scope.launch {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                                viewModel.downloadFileToFolder(context)
-                            } else {
-                                val permissionStatus = ContextCompat.checkSelfPermission(
-                                    context,
-                                    Manifest.permission.WRITE_EXTERNAL_STORAGE
-                                )
-
-                                if (permissionStatus == PackageManager.PERMISSION_GRANTED) {
-                                    viewModel.downloadFileToFolder(context)
-                                } else {
-                                    permissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                                }
-                            }
+                            folderPickerLauncher.launch(null)
                         }
                     },
                     enabled = state.plainApkUrl != null && !state.isFolderDownloading
