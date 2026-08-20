@@ -17,6 +17,7 @@ import java.util.concurrent.TimeUnit
 import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManagerFactory
 import javax.net.ssl.X509TrustManager
+import dev.mi6e4ka.openstore.BuildConfig
 
 object NetworkConfig {
 
@@ -37,7 +38,8 @@ object NetworkConfig {
 
     fun provideOkHttpClient(context: Context): OkHttpClient {
         val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
-        val mode = prefs.getString("ssl_pinning_mode", "disabled") ?: "disabled"
+        val mode = prefs.getString("ssl_pinning_mode", "custom") ?: "custom"
+        val userAgent = "RuStore/${BuildConfig.RUSTORE_VER_NAME} (Android ${BuildConfig.CLIENT_ANDROID_VERSION}; SDK ${BuildConfig.CLIENT_SDK_VERSION}; arm64-v8a; ${BuildConfig.DEVICE_MANUFACTURER} ${BuildConfig.DEVICE_MODEL}; ru)"
 
         val builder = OkHttpClient.Builder()
             .connectTimeout(60, TimeUnit.SECONDS)
@@ -46,10 +48,14 @@ object NetworkConfig {
             .addInterceptor { chain ->
                 val originalRequest = chain.request()
                 val newRequest = originalRequest.newBuilder()
-                    .header("ruStoreVerCode", "1105002")
+                    .header("ruStoreVerCode", BuildConfig.RUSTORE_VER_CODE.toString())
+                    .header("ruStoreVerName", BuildConfig.RUSTORE_VER_NAME)
+                    .header("User-Agent", userAgent)
+                    .header("androidSdkVer", BuildConfig.CLIENT_SDK_VERSION.toString())
                     .build()
                 chain.proceed(newRequest)
             }
+            .addInterceptor(SignatureInterceptor(context))
 
         when (mode) {
             "enabled" -> {

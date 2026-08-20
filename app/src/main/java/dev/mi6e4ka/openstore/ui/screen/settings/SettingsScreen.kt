@@ -146,7 +146,7 @@ fun SettingsScreen(
             description = R.string.settings_ssl_pinning_description,
             icon = R.drawable.ic_security_24px,
             type = ParamType.SELECT,
-            defaultVal = "disabled",
+            defaultVal = "custom",
             select = listOf(
                 SettingsSectionSelect(
                     title = context.getString(R.string.ssl_pinning_disabled),
