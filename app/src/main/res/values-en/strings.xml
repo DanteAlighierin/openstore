@@ -33,6 +33,7 @@
     <string name="positive_first">Positive</string>
     <string name="negative_first">Negative</string>
     <string name="download_has_started">Download has started</string>
+    <string name="download_complete">Download complete</string>
     <string name="invalid_download_hash_title">File downloaded incorrectly</string>
     <string name="invalid_download_hash_message">Checksum does not match. Retry download or install file as is.</string>
     <string name="show_hashes">Show hashes</string>
