@@ -1,6 +1,6 @@
 # OpenStore
 
-[![API](https://img.shields.io/badge/API-21%2B-flat.svg?style=flat)](https://apilevels.com)
+[![API](https://img.shields.io/badge/API-23%2B-flat.svg?style=flat)](https://apilevels.com)
 [![IzzyOnDroid](https://img.shields.io/endpoint?url=https://apt.izzysoft.de/fdroid/api/v1/shield/dev.mi6e4ka.openstore&label=IzzyOnDroid&cacheSeconds=86400)](https://apt.izzysoft.de/fdroid/index/apk/dev.mi6e4ka.openstore)
 ![Latest Release](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fcodeberg.org%2Fapi%2Fv1%2Frepos%2Fmi6e4ka%2Fopenstore%2Ftags&query=%24.%5B0%5D.name&label=latest%20release)
 
@@ -27,7 +27,7 @@ Verification info:
 - [x] Search apps
 - [x] View apps descriptions, rating and reviews
 - [x] Native app installing
-- [x] Android 5.0+ support!
+- [x] Android 6.0+ support!
 - [x] Search and view TV apps
 - [x] Check all apps for updates
 

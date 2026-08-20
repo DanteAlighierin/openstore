@@ -35,7 +35,7 @@ android {
 
     defaultConfig {
         applicationId = "dev.mi6e4ka.openstore"
-        minSdk = 21
+        minSdk = 23
         targetSdk = 37
         versionCode = (project.findProperty("versionCode") as String?)?.toInt() ?: 1
         versionName = project.findProperty("versionName") as String? ?: ("git-" + gitCommitShort)
