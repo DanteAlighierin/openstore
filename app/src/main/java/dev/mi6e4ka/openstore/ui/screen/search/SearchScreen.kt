@@ -121,13 +121,14 @@ fun SearchScreen(navController: NavController = rememberNavController()) {
             verticalArrangement = Arrangement.SpaceBetween,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Column {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
                 if (!areNotificationsEnabled) {
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(top = 8.dp)
-                            .height(50.dp)
+                            .height(64.dp)
                             .clip(RoundedCornerShape(12.dp))
                             .clickable(onClick = {
                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -139,7 +140,7 @@ fun SearchScreen(navController: NavController = rememberNavController()) {
                         colors = CardDefaults.cardColors(containerColor = Color(109, 255, 30, 40))
                     ) {
                         Row(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
                                 .fillMaxHeight()
@@ -158,7 +159,6 @@ fun SearchScreen(navController: NavController = rememberNavController()) {
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(0.dp)
                             .height(50.dp)
                             .clip(RoundedCornerShape(12.dp))
                             .clickable(onClick = {
@@ -171,7 +171,7 @@ fun SearchScreen(navController: NavController = rememberNavController()) {
                         colors = CardDefaults.cardColors(containerColor = Color(109, 255, 30, 40))
                     ) {
                         Row(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
                                 .fillMaxHeight()
