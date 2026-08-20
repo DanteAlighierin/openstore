@@ -106,4 +106,10 @@
     <string name="notification_eta">Remaining: %1$s</string>
     <string name="seconds_short">s</string>
     <string name="notifications_disabled">Enable notifications to track downloads</string>
+    <string name="settings_check_openstore_updates_title">Check for OpenStore updates</string>
+    <string name="settings_check_openstore_updates_description">Automatically check for new OpenStore releases</string>
+    <string name="update_available_title">OpenStore update available</string>
+    <string name="update_available_message">Version %1$s is now available (current: %2$s)</string>
+    <string name="update_download">Download</string>
+    <string name="update_later">Later</string>
 </resources>
