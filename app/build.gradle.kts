@@ -95,8 +95,8 @@ android {
     lint {
         checkReleaseBuilds = false
 	}
-    compileSdkMinor = 0
     buildToolsVersion = "37.0.0"
+    compileSdkMinor = 1
 }
 
 kotlin {
