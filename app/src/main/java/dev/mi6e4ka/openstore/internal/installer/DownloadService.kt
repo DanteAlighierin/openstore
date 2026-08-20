@@ -148,8 +148,8 @@ class DownloadService : Service() {
                             apkFile.delete()
                         }
 
-                        val request = Request.Builder().url(item.url).build()
-                        val call = okHttpClient.newCall(request)
+                        val request = okhttp3.Request.Builder().url(item.url).build()
+                        val call = AppModule.okHttpClient.newCall(request)
                         val job = coroutineContext[Job]!!
                         val cancelHandler = job.invokeOnCompletion { call.cancel() }
 
@@ -434,12 +434,6 @@ class DownloadService : Service() {
         const val NOTIFICATION_ID = 1001
         const val CHANNEL_ID = "openstore_download_channel"
         private const val TAG = "DownloadService"
-
-        private val okHttpClient = OkHttpClient.Builder()
-            .connectTimeout(60, TimeUnit.SECONDS)
-            .readTimeout(120, TimeUnit.SECONDS)
-            .writeTimeout(120, TimeUnit.SECONDS)
-            .build()
     }
 }
 

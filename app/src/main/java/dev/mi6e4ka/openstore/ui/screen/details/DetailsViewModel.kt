@@ -75,7 +75,6 @@ sealed class InstallStatus {
 class DetailsViewModel(private val appPlatform: String, private val apkInstaller: ApkInstaller) : ViewModel() {
     private val _state = MutableStateFlow(DetailsState())
     val state: StateFlow<DetailsState> = _state.asStateFlow()
-    private var cancelDownload: (() -> Unit)? = null
     private var cancelFolderDownload: (() -> Unit)? = null
 
     init {
@@ -242,32 +241,6 @@ class DetailsViewModel(private val appPlatform: String, private val apkInstaller
         apkInstaller.context.startService(intent)
     }
 
-    private fun installApp(context: Context, apkFiles: List<File>) {
-        val packageName = state.value.item?.packageName ?: "tmp"
-        _state.update { it.copy(installStatus = InstallStatus.Pending) }
-
-        apkInstaller.installApp(
-            packageName = packageName,
-            apkFiles = apkFiles,
-            onSessionFinished = { success ->
-                _state.update { it.copy(installStatus = InstallStatus.Success, isDownloading = false) }
-                if (success) {
-                    _state.update { it.copy(isInstalled = true, isNeedUpgrade = false, installerPackageName = context.packageName) }
-                    apkInstaller.cleanApkFiles(apkFiles.map { it.name })
-                }
-            },
-            onError = { error ->
-                if (error.message?.contains("Failed to allocate") == true) {
-                    Toast.makeText(context, R.string.insufficient_memory, Toast.LENGTH_SHORT).show()
-                } else {
-                    println("apk installer $error")
-                    Toast.makeText(context, R.string.installing_error, Toast.LENGTH_SHORT).show()
-                }
-                _state.update { it.copy(installStatus = InstallStatus.Idle, isDownloading = false) }
-            }
-        )
-    }
-
     fun retryDownloadAfterInvalid(context: Context) {
         _state.update {
             it.copy(
@@ -290,7 +263,28 @@ class DetailsViewModel(private val appPlatform: String, private val apkInstaller
                 invalidActualHash = null
             )
         }
-        installApp(context, apkFiles)
+        val packageName = state.value.item?.packageName ?: "tmp"
+        _state.update { it.copy(installStatus = InstallStatus.Pending) }
+        apkInstaller.installApp(
+            packageName = packageName,
+            apkFiles = apkFiles,
+            onSessionFinished = { success ->
+                _state.update { it.copy(installStatus = InstallStatus.Success, isDownloading = false) }
+                if (success) {
+                    _state.update { it.copy(isInstalled = true, isNeedUpgrade = false, installerPackageName = context.packageName) }
+                    apkInstaller.cleanApkFiles(apkFiles.map { it.name })
+                }
+            },
+            onError = { error ->
+                if (error.message?.contains("Failed to allocate") == true) {
+                    Toast.makeText(context, R.string.insufficient_memory, Toast.LENGTH_SHORT).show()
+                } else {
+                    println("apk installer $error")
+                    Toast.makeText(context, R.string.installing_error, Toast.LENGTH_SHORT).show()
+                }
+                _state.update { it.copy(installStatus = InstallStatus.Idle, isDownloading = false) }
+            }
+        )
     }
 
     fun clearInvalidDownloadState() {
