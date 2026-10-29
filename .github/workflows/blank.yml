@@ -32,6 +32,9 @@ jobs:
           git clone --bare "$CODEBERG_URL" /tmp/codeberg-mirror
           git -C /tmp/codeberg-mirror remote set-url --push origin "https://x-access-token:${GH_PAT}@github.com/DanteAlighierin/openstore.git"
 
-          git -C /tmp/codeberg-mirror push --prune --tags origin \
+          # GitHub refuses to delete the default branch during a prune push.
+          # Skip pruning so the mirror can sync branches without rejecting the
+          # current/default branch (for example, master).
+          git -C /tmp/codeberg-mirror push origin \
             'refs/heads/*:refs/heads/*' \
             'refs/tags/*:refs/tags/*'
