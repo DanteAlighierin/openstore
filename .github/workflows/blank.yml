@@ -9,8 +9,6 @@ jobs:
   mirror:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    name: Mirror
-
     permissions:
       contents: write
 
@@ -20,12 +18,11 @@ jobs:
       GITHUB_URL: https://github.com/DanteAlighierin/openstore.git
 
     steps:
-      - name: Configure Git safe directories
+      - name: Prepare clean mirror dir
         shell: bash
         run: |
           set -euxo pipefail
           git config --global --add safe.directory '*'
-          git config --global --add safe.directory /github/workspace
           rm -rf /tmp/codeberg-mirror
 
       - name: Mirror Codeberg to GitHub
@@ -35,4 +32,7 @@ jobs:
 
           git clone --mirror "$CODEBERG_URL" /tmp/codeberg-mirror
           git -C /tmp/codeberg-mirror remote set-url --push origin "https://x-access-token:${GH_PAT}@github.com/DanteAlighierin/openstore.git"
-          git -C /tmp/codeberg-mirror push --mirror
+
+          git -C /tmp/codeberg-mirror push --prune --tags origin \
+            'refs/heads/*:refs/heads/*' \
+            'refs/tags/*:refs/tags/*'
