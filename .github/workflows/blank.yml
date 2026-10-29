@@ -1,0 +1,24 @@
+name: Mirror from Codeberg
+
+on:
+  schedule:
+    - cron: '0 */4 * * *'
+  workflow_dispatch:
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    name: Mirror
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Add workspace to Git safe.directory
+        run: git config --global --add safe.directory /github/workspace
+
+      - name: Mirror Codeberg to GitHub
+        id: mirror
+        uses: bridgelightcloud/github-mirror-action@v1
+        with:
+          origin: 'https://codeberg.org/mi6e4ka/openstore.git'
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
