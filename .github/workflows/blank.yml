@@ -10,9 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     name: Mirror
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
       - name: Add workspace to Git safe.directory
         run: git config --global --add safe.directory /github/workspace
 
@@ -21,4 +18,4 @@ jobs:
         uses: bridgelightcloud/github-mirror-action@v1
         with:
           origin: 'https://codeberg.org/mi6e4ka/openstore.git'
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+          github_token: ${{ secrets.GH_PAT }}
