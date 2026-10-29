@@ -9,6 +9,8 @@ jobs:
   mirror:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    name: Mirror
+
     permissions:
       contents: write
 
@@ -18,7 +20,7 @@ jobs:
       GITHUB_URL: https://github.com/DanteAlighierin/openstore.git
 
     steps:
-      - name: Configure Git safety
+      - name: Configure Git safe directories
         shell: bash
         run: |
           set -euxo pipefail
