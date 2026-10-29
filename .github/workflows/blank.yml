@@ -10,15 +10,19 @@ jobs:
     runs-on: ubuntu-latest
     name: Mirror
     steps:
-      - name: Checkout target repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-
-      - name: Push to GitHub
+      - name: Prepare mirror workspace
         run: |
-          git remote add codeberg https://codeberg.org/mi6e4ka/openstore.git
-          git fetch codeberg --tags --prune
-          git push "https://${{ secrets.GH_PAT }}@github.com/${{ github.repository }}.git" --all --force
-          git push "https://${{ secrets.GH_PAT }}@github.com/${{ github.repository }}.git" --tags --force
+          git config --global --add safe.directory '*'
+          rm -rf /tmp/codeberg-mirror
+
+      - name: Mirror Codeberg to GitHub
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+          CODEBERG_URL: https://codeberg.org/mi6e4ka/openstore.git
+          GITHUB_URL: https://github.com/DanteAlighierin/openstore.git
+        run: |
+          set -euxo pipefail
+
+          git clone --mirror "$CODEBERG_URL" /tmp/codeberg-mirror
+          git -C /tmp/codeberg-mirror remote set-url --push origin "https://x-access-token:${GH_PAT}@github.com/DanteAlighierin/openstore.git"
+          git -C /tmp/codeberg-mirror push --mirror
