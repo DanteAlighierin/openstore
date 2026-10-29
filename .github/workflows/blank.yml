@@ -15,10 +15,9 @@ jobs:
     env:
       GH_PAT: ${{ secrets.GH_PAT }}
       CODEBERG_URL: https://codeberg.org/mi6e4ka/openstore.git
-      GITHUB_URL: https://github.com/DanteAlighierin/openstore.git
 
     steps:
-      - name: Prepare clean mirror dir
+      - name: Prepare mirror dir
         shell: bash
         run: |
           set -euxo pipefail
@@ -30,7 +29,7 @@ jobs:
         run: |
           set -euxo pipefail
 
-          git clone --mirror "$CODEBERG_URL" /tmp/codeberg-mirror
+          git clone --bare "$CODEBERG_URL" /tmp/codeberg-mirror
           git -C /tmp/codeberg-mirror remote set-url --push origin "https://x-access-token:${GH_PAT}@github.com/DanteAlighierin/openstore.git"
 
           git -C /tmp/codeberg-mirror push --prune --tags origin \
